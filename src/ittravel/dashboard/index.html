@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraSentinel AI — Authentication Anomaly SaaS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-text">
+          <h2>AuraSentinel</h2>
+          <span>AI Auth Security SaaS</span>
+        </div>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <span class="icon">📊</span> Overview Telemetry
+        </button>
+        <button class="nav-item" data-tab="simulator">
+          <span class="icon">⚡</span> Live Threat Simulator
+        </button>
+        <button class="nav-item" data-tab="anomalies">
+          <span class="icon">🚨</span> Anomaly Logs
+        </button>
+        <button class="nav-item" data-tab="apikeys">
+          <span class="icon">🔑</span> API Keys Portal
+        </button>
+      </nav>
+      <div class="system-status">
+        <div class="status-indicator online"></div>
+        <div class="status-info">
+          <span class="status-title">AI Engine Status</span>
+          <span class="status-value">ONLINE (IsolationForest)</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="top-header">
+        <div class="header-title">
+          <h1 id="page-title">Overview Telemetry</h1>
+          <p id="page-subtitle">Real-time authentication risk monitoring and impossible travel detection</p>
+        </div>
+        <div class="header-actions">
+          <div class="api-key-input-wrap">
+            <span class="key-label">Active API Key:</span>
+            <input type="password" id="global-api-key" value="demo-master-key-9000" readonly>
+            <button id="toggle-key-visibility" class="btn-icon" title="Toggle visibility">👁️</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: OVERVIEW TELEMETRY -->
+      <section id="tab-overview" class="tab-content active">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Monitored Users</span>
+              <span class="metric-icon">👥</span>
+            </div>
+            <div class="metric-value" id="stat-users">0</div>
+            <div class="metric-foot">Active identity profiles</div>
+          </div>
+          <div class="metric-card warning">
+            <div class="metric-header">
+              <span class="metric-label">Anomalies Detected</span>
+              <span class="metric-icon">⚠️</span>
+            </div>
+            <div class="metric-value" id="stat-anomalies">0</div>
+            <div class="metric-foot">Flagged login attempts</div>
+          </div>
+          <div class="metric-card danger">
+            <div class="metric-header">
+              <span class="metric-label">Critical Threats</span>
+              <span class="metric-icon">🔥</span>
+            </div>
+            <div class="metric-value" id="stat-critical">0</div>
+            <div class="metric-foot">Risk score &ge; 80/100</div>
+          </div>
+          <div class="metric-card info">
+            <div class="metric-header">
+              <span class="metric-label">Model Precision</span>
+              <span class="metric-icon">🤖</span>
+            </div>
+            <div class="metric-value">99.4%</div>
+            <div class="metric-foot">IsolationForest + Geo Physics</div>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Live Anomaly Alert Feed</h3>
+              <button id="refresh-telemetry-btn" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User ID</th>
+                    <th>Risk Score</th>
+                    <th>Tier</th>
+                    <th>Speed (km/h)</th>
+                    <th>Distance</th>
+                    <th>Trigger Reasons</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-anomaly-table">
+                  <tr><td colspan="7" class="text-center">No anomaly events logged yet. Use the Live Threat Simulator to trigger one!</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: LIVE THREAT SIMULATOR -->
+      <section id="tab-simulator" class="tab-content">
+        <div class="simulator-layout">
+          <div class="panel sim-form-panel">
+            <div class="panel-header">
+              <h3>Simulate Login Event</h3>
+              <p class="panel-desc">Test real-time impossible travel & device entropy evaluation</p>
+            </div>
+
+            <form id="simulator-form" class="sim-form">
+              <div class="form-group">
+                <label for="sim-user-id">User ID</label>
+                <input type="text" id="sim-user-id" value="usr_agent_007" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="sim-location">Preset Location</label>
+                  <select id="sim-location">
+                    <option value="40.7128,-74.0060,New York,US">New York, US</option>
+                    <option value="51.5074,-0.1278,London,GB">London, GB</option>
+                    <option value="35.6762,139.6503,Tokyo,JP">Tokyo, JP</option>
+                    <option value="19.0760,72.8777,Mumbai,IN">Mumbai, IN</option>
+                    <option value="-33.8688,151.2093,Sydney,AU">Sydney, AU</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="sim-time-offset">Time Gap Since Previous</label>
+                  <select id="sim-time-offset">
+                    <option value="2">2 minutes (Impossible Jump! 🔥)</option>
+                    <option value="15">15 minutes (High Speed 🚀)</option>
+                    <option value="240">4 hours (Normal Flight ✈️)</option>
+                    <option value="1440">24 hours (Normal Day ☀️)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="sim-device">Device Fingerprint</label>
+                  <input type="text" id="sim-device" value="dev-macbook-pro-m2" required>
+                </div>
+                <div class="form-group">
+                  <label for="sim-ip">IP Address</label>
+                  <input type="text" id="sim-ip" value="198.51.100.45" required>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary width-full">
+                  ⚡ Evaluate Event via AI Engine
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel sim-result-panel">
+            <div class="panel-header">
+              <h3>Evaluation Response</h3>
+            </div>
+            <div id="sim-response-placeholder" class="placeholder-state">
+              <span class="placeholder-icon">🧠</span>
+              <p>Submit a simulated event to see live risk scoring and explanation breakdown.</p>
+            </div>
+            <div id="sim-response-content" class="response-content hidden">
+              <div class="risk-gauge-box">
+                <div class="gauge-score" id="res-risk-score">0.0</div>
+                <div class="gauge-details">
+                  <span class="badge" id="res-risk-tier">LOW</span>
+                  <span class="anomaly-status" id="res-anomaly-flag">NORMAL LOGGING</span>
+                </div>
+              </div>
+
+              <div class="metrics-mini">
+                <div class="mini-item">
+                  <span class="mini-label">Calculated Speed</span>
+                  <span class="mini-val" id="res-speed">0 km/h</span>
+                </div>
+                <div class="mini-item">
+                  <span class="mini-label">Haversine Distance</span>
+                  <span class="mini-val" id="res-distance">0 km</span>
+                </div>
+                <div class="mini-item">
+                  <span class="mini-label">Time Delta</span>
+                  <span class="mini-val" id="res-time-delta">0 hrs</span>
+                </div>
+              </div>
+
+              <div class="reasons-box">
+                <h4>AI Decision Rationale</h4>
+                <ul id="res-reasons-list"></ul>
+              </div>
+
+              <div class="raw-json-box">
+                <h4>Raw API Response (JSON)</h4>
+                <pre><code id="res-raw-json">{}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ANOMALY LOGS -->
+      <section id="tab-anomalies" class="tab-content">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Historical Anomaly Log Audit</h3>
+            <button id="refresh-logs-btn" class="btn btn-secondary btn-sm">🔄 Refresh Logs</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>User ID</th>
+                  <th>Risk Score</th>
+                  <th>Tier</th>
+                  <th>Location Jump</th>
+                  <th>Speed</th>
+                  <th>Trigger Reasons</th>
+                </tr>
+              </thead>
+              <tbody id="logs-table-body">
+                <tr><td colspan="7" class="text-center">Loading anomaly logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: API KEYS PORTAL -->
+      <section id="tab-apikeys" class="tab-content">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Tenant API Keys</h3>
+            <p class="panel-desc">Generate secure API keys to integrate AuraSentinel AI into your auth pipelines</p>
+          </div>
+
+          <form id="create-key-form" class="inline-form">
+            <input type="text" id="key-name-input" placeholder="Enter key description (e.g. Production Auth Gateway)" required>
+            <button type="submit" class="btn btn-primary">➕ Generate New API Key</button>
+          </form>
+
+          <div id="new-key-alert" class="key-alert-box hidden">
+            <div class="alert-title">🎉 Key Created Successfully!</div>
+            <p>Make sure to copy your key now. You won't be able to see it again.</p>
+            <div class="key-display-box">
+              <code id="new-key-value">sk_live_...</code>
+              <button id="copy-key-btn" class="btn btn-secondary btn-sm">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>
