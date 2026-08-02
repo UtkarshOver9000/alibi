@@ -1,203 +1,232 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const globalApiKeyInput = document.getElementById('global-api-key');
-  const toggleKeyBtn = document.getElementById('toggle-key-visibility');
+(() => {
+  const API_KEY = () => document.getElementById('global-api-key').value.trim();
+  const HEADERS = () => ({ 'Content-Type': 'application/json', 'X-API-Key': API_KEY() });
 
-  // Toggle API Key visibility
-  toggleKeyBtn.addEventListener('click', () => {
-    if (globalApiKeyInput.type === 'password') {
-      globalApiKeyInput.type = 'text';
-    } else {
-      globalApiKeyInput.type = 'password';
-    }
+  // ── API KEY TOGGLE ──
+  const keyInput = document.getElementById('global-api-key');
+  document.getElementById('toggle-key-btn').addEventListener('click', () => {
+    keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
   });
 
-  const getHeaders = () => ({
-    'Content-Type': 'application/json',
-    'X-API-Key': globalApiKeyInput.value.trim(),
-  });
-
-  // Tab Navigation
-  const navItems = document.querySelectorAll('.nav-item');
-  const tabContents = document.querySelectorAll('.tab-content');
-  const pageTitle = document.getElementById('page-title');
-  const pageSubtitle = document.getElementById('page-subtitle');
-
+  // ── TAB ROUTING ──
   const tabMeta = {
-    overview: { title: 'Overview Telemetry', subtitle: 'Real-time authentication risk monitoring and impossible travel detection' },
-    simulator: { title: 'Live Threat Simulator', subtitle: 'Simulate authentication events and test real-time AI risk evaluation' },
-    anomalies: { title: 'Anomaly Logs', subtitle: 'Audit log of historical high-risk security triggers' },
-    apikeys: { title: 'API Keys Portal', subtitle: 'Manage tenant keys for system integration' },
+    overview:  'Identity Threat Intelligence',
+    sandbox:   'Interactive Evaluation Sandbox',
+    logs:      'Audit Log Inspector',
+    tutorials: 'Developer Integration Guide & Tutorials',
+    apikeys:   'Tenant API Keys Portal',
   };
 
-  navItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const tab = item.getAttribute('data-tab');
-      navItems.forEach(i => i.classList.remove('active'));
-      tabContents.forEach(c => c.classList.remove('active'));
-
-      item.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
       document.getElementById(`tab-${tab}`).classList.add('active');
-
-      if (tabMeta[tab]) {
-        pageTitle.textContent = tabMeta[tab].title;
-        pageSubtitle.textContent = tabMeta[tab].subtitle;
-      }
-
-      if (tab === 'overview' || tab === 'anomalies') {
-        loadTelemetry();
-        loadAnomalies();
-      }
+      if (tab === 'overview') { loadStats(); loadAnomalies('overview-table-body'); }
+      if (tab === 'logs')     { loadAnomalies('audit-table-body'); }
     });
   });
 
-  // Fetch SaaS Telemetry Stats
-  async function loadTelemetry() {
+  // ── STATS ──
+  async function loadStats() {
     try {
-      const res = await fetch('/v1/stats', { headers: getHeaders() });
+      const res = await fetch('/v1/stats', { headers: HEADERS() });
       if (!res.ok) return;
-      const data = await res.json();
-      document.getElementById('stat-users').textContent = data.active_monitored_users || 0;
-      document.getElementById('stat-anomalies').textContent = data.total_anomalies_detected || 0;
-      document.getElementById('stat-critical').textContent = data.critical_threats || 0;
-    } catch (e) {
-      console.error('Failed to load telemetry stats', e);
-    }
+      const d = await res.json();
+      document.getElementById('stat-users').textContent     = d.active_monitored_users   ?? 0;
+      document.getElementById('stat-anomalies').textContent = d.total_anomalies_detected ?? 0;
+      document.getElementById('stat-critical').textContent  = d.critical_threats          ?? 0;
+    } catch (e) { console.warn('Stats fetch failed', e); }
   }
 
-  // Fetch Anomaly Logs
-  async function loadAnomalies() {
+  document.getElementById('refresh-overview-btn')?.addEventListener('click', () => {
+    loadStats();
+    loadAnomalies('overview-table-body');
+  });
+
+  // ── ANOMALY ROWS ──
+  async function loadAnomalies(tableId) {
+    const body = document.getElementById(tableId);
+    if (!body) return;
     try {
-      const res = await fetch('/v1/anomalies?limit=50', { headers: getHeaders() });
-      if (!res.ok) return;
-      const logs = await res.json();
-
-      const overviewTable = document.getElementById('overview-anomaly-table');
-      const logsTable = document.getElementById('logs-table-body');
-
-      if (!logs || logs.length === 0) {
-        const emptyRow = '<tr><td colspan="7" class="text-center">No anomaly events logged yet. Use the Live Threat Simulator to trigger one!</td></tr>';
-        if (overviewTable) overviewTable.innerHTML = emptyRow;
-        if (logsTable) logsTable.innerHTML = emptyRow;
+      const res = await fetch('/v1/anomalies?limit=50', { headers: HEADERS() });
+      if (!res.ok) { body.innerHTML = `<tr><td colspan="7" class="text-muted text-center">Auth error — check API key.</td></tr>`; return; }
+      const rows = await res.json();
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No anomalies recorded yet. Use the Interactive Sandbox to fire test events.</td></tr>';
         return;
       }
-
-      const renderRows = logs.map(a => `
+      body.innerHTML = rows.map(a => `
         <tr>
-          <td>${new Date(a.timestamp).toLocaleTimeString()}</td>
-          <td><strong>${a.user_id}</strong></td>
-          <td>${a.risk_score} / 100</td>
-          <td><span class="badge ${a.risk_tier.toLowerCase()}">${a.risk_tier}</span></td>
-          <td>${a.velocity_kmph} km/h</td>
-          <td>${a.distance_km} km</td>
-          <td>${(a.reasons || []).join(', ')}</td>
-        </tr>
-      `).join('');
-
-      if (overviewTable) overviewTable.innerHTML = renderRows;
-      if (logsTable) logsTable.innerHTML = renderRows;
-    } catch (e) {
-      console.error('Failed to load anomaly logs', e);
-    }
+          <td>${new Date(a.timestamp).toLocaleString()}</td>
+          <td>${a.user_id}</td>
+          <td>${a.risk_score}/100</td>
+          <td><span class="risk-badge ${a.risk_tier.toLowerCase()}">${a.risk_tier}</span></td>
+          <td>${a.velocity_kmph.toLocaleString()} km/h</td>
+          <td>${a.distance_km.toLocaleString()} km</td>
+          <td>${(a.reasons||[]).join(' · ')}</td>
+        </tr>`).join('');
+    } catch (e) { body.innerHTML = `<tr><td colspan="7" class="text-muted text-center">Failed to fetch logs.</td></tr>`; }
   }
 
-  document.getElementById('refresh-telemetry-btn')?.addEventListener('click', () => { loadTelemetry(); loadAnomalies(); });
-  document.getElementById('refresh-logs-btn')?.addEventListener('click', loadAnomalies);
+  document.getElementById('refresh-logs-btn')?.addEventListener('click', () => loadAnomalies('audit-table-body'));
 
-  // Live Threat Simulator Form Submit
-  const simForm = document.getElementById('simulator-form');
-  simForm?.addEventListener('submit', async (e) => {
+  // ── SANDBOX FORM ──
+  let lastPayload = null;
+  let lastResponse = null;
+
+  const sbForm = document.getElementById('sandbox-form');
+  sbForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const userId = document.getElementById('sim-user-id').value;
-    const locVal = document.getElementById('sim-location').value;
-    const [latStr, lonStr, city, country] = locVal.split(',');
-    const minutesOffset = parseInt(document.getElementById('sim-time-offset').value);
-    const deviceId = document.getElementById('sim-device').value;
-    const ip = document.getElementById('sim-ip').value;
+    const [lat, lon, city, country] = document.getElementById('sb-preset').value.split(',');
+    const mins = parseInt(document.getElementById('sb-time').value);
+    const login_ts = new Date(Date.now() + mins * 60000).toISOString();
 
-    const loginTs = new Date(Date.now() + minutesOffset * 60 * 1000).toISOString();
-
-    const payload = {
-      user_id: userId,
-      login_ts: loginTs,
-      lat: parseFloat(latStr),
-      lon: parseFloat(lonStr),
-      city: city,
-      country: country,
-      device_id: deviceId,
-      ip: ip,
+    lastPayload = {
+      user_id:    document.getElementById('sb-user').value.trim(),
+      login_ts,
+      lat:        parseFloat(lat),
+      lon:        parseFloat(lon),
+      city,
+      country,
+      device_id:  document.getElementById('sb-device').value.trim(),
+      ip:         document.getElementById('sb-ip').value.trim(),
     };
 
     try {
       const res = await fetch('/v1/auth/evaluate', {
         method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(payload),
+        headers: HEADERS(),
+        body: JSON.stringify(lastPayload),
       });
-
-      const data = await res.json();
-
-      document.getElementById('sim-response-placeholder').classList.add('hidden');
-      document.getElementById('sim-response-content').classList.remove('hidden');
-
-      const scoreEl = document.getElementById('res-risk-score');
-      scoreEl.textContent = data.risk_score;
-
-      const tierEl = document.getElementById('res-risk-tier');
-      tierEl.textContent = data.risk_tier;
-      tierEl.className = `badge ${data.risk_tier.toLowerCase()}`;
-
-      const flagEl = document.getElementById('res-anomaly-flag');
-      flagEl.textContent = data.is_anomaly ? '🚨 ANOMALY FLAGGED' : '✅ NORMAL AUTH';
-
-      document.getElementById('res-speed').textContent = `${data.velocity_kmph} km/h`;
-      document.getElementById('res-distance').textContent = `${data.distance_km} km`;
-      document.getElementById('res-time-delta').textContent = `${data.time_delta_hours} hrs`;
-
-      const reasonsList = document.getElementById('res-reasons-list');
-      reasonsList.innerHTML = (data.reasons || []).map(r => `<li>${r}</li>`).join('');
-
-      document.getElementById('res-raw-json').textContent = JSON.stringify(data, null, 2);
-
-      loadTelemetry();
-    } catch (e) {
-      alert('Error evaluating event: ' + e.message);
+      lastResponse = await res.json();
+      // Default: show JSON response view
+      setActiveCodeTab('json');
+      loadStats();
+    } catch (err) {
+      document.getElementById('code-output').textContent = `// ERROR: ${err.message}`;
     }
   });
 
-  // API Key Generation Form
-  const keyForm = document.getElementById('create-key-form');
-  keyForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('key-name-input').value;
+  // ── CODE SNIPPET GENERATOR ──
+  function renderCodeTab(lang) {
+    const out = document.getElementById('code-output');
+    if (!lastPayload) {
+      out.textContent = '// Submit an event first using the configurator above.';
+      return;
+    }
+    const p = lastPayload;
+    const r = lastResponse;
+    const key = API_KEY();
+    const url = `https://<your-deployment>.vercel.app/v1/auth/evaluate`;
 
+    const snippets = {
+      json: JSON.stringify(r || p, null, 2),
+
+      curl: `curl -X POST "${url}" \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: ${key}" \\
+  -d '${JSON.stringify(p)}'`,
+
+      python: `import httpx
+
+VIGILGUARD_API_KEY = "${key}"
+VIGILGUARD_URL = "${url}"
+
+payload = ${JSON.stringify(p, null, 4)}
+
+resp = httpx.post(
+    VIGILGUARD_URL,
+    headers={"X-API-Key": VIGILGUARD_API_KEY},
+    json=payload,
+    timeout=5,
+)
+result = resp.json()
+
+if result["risk_tier"] == "CRITICAL":
+    # Block login — immediate threat
+    raise Exception("Authentication blocked: impossible travel detected")
+elif result["risk_tier"] == "HIGH":
+    # Trigger step-up MFA
+    prompt_mfa(user_id=result["user_id"])
+else:
+    # Allow login
+    grant_session()
+
+print(f"Risk Score: {result['risk_score']}/100 | Tier: {result['risk_tier']}")`,
+
+      node: `const axios = require('axios');
+
+const VIGILGUARD_API_KEY = "${key}";
+const VIGILGUARD_URL = "${url}";
+
+async function evaluateLogin(payload) {
+  const { data } = await axios.post(VIGILGUARD_URL, payload, {
+    headers: { 'X-API-Key': VIGILGUARD_API_KEY },
+    timeout: 5000,
+  });
+
+  if (data.risk_tier === 'CRITICAL') {
+    throw new Error('Login blocked: impossible travel detected');
+  } else if (data.risk_tier === 'HIGH') {
+    return { allowed: false, requireMFA: true, ...data };
+  }
+  return { allowed: true, ...data };
+}
+
+evaluateLogin(${JSON.stringify(p, null, 2)}).then(console.log);`,
+    };
+
+    out.textContent = snippets[lang] || snippets.json;
+  }
+
+  function setActiveCodeTab(lang) {
+    document.querySelectorAll('.code-tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+    renderCodeTab(lang);
+  }
+
+  document.querySelectorAll('.code-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => setActiveCodeTab(btn.dataset.lang));
+  });
+
+  // ── TUTORIAL NAVIGATION ──
+  document.querySelectorAll('.tut-step').forEach(step => {
+    step.addEventListener('click', () => {
+      const n = step.dataset.step;
+      document.querySelectorAll('.tut-step').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tut-panel').forEach(p => p.classList.remove('active'));
+      step.classList.add('active');
+      document.getElementById(`tut-step-${n}`)?.classList.add('active');
+    });
+  });
+
+  // ── API KEY GENERATION ──
+  document.getElementById('key-gen-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('key-label').value.trim();
     try {
       const res = await fetch('/v1/keys/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name }),
+        body: JSON.stringify({ name }),
       });
-      const data = await res.json();
-
-      const alertBox = document.getElementById('new-key-alert');
-      const valBox = document.getElementById('new-key-value');
-      valBox.textContent = data.api_key;
-      alertBox.classList.remove('hidden');
-
-      // Auto-set generated key into global active key input
-      globalApiKeyInput.value = data.api_key;
-    } catch (err) {
-      alert('Error generating key: ' + err.message);
-    }
+      const d = await res.json();
+      document.getElementById('new-key-code').textContent = d.api_key;
+      document.getElementById('key-output-banner').classList.remove('hidden');
+      keyInput.value = d.api_key;
+    } catch (err) { alert('Error generating key: ' + err.message); }
   });
 
   document.getElementById('copy-key-btn')?.addEventListener('click', () => {
-    const keyVal = document.getElementById('new-key-value').textContent;
-    navigator.clipboard.writeText(keyVal);
-    alert('API Key copied to clipboard!');
+    navigator.clipboard.writeText(document.getElementById('new-key-code').textContent);
   });
 
-  // Initial load
-  loadTelemetry();
-  loadAnomalies();
-});
+  // ── INITIAL LOAD ──
+  loadStats();
+  loadAnomalies('overview-table-body');
+})();
