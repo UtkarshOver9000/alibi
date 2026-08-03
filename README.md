@@ -1,6 +1,4 @@
-# 🛡️ AuraSentinel AI — Impossible Travel & Auth Anomaly SaaS Engine
-
-                                                     Impossible-Travel Auth Anomaly Engine
+                                                      Impossible-Travel Auth Anomaly Engine
 
 A login anomaly detector that flags suspicious authentication attempts in real time by combining an IsolationForest model with geo-velocity physics (Haversine distance over time). If a user logs in from Tokyo and then from London twenty minutes later, the implied travel speed is physically impossible — this engine catches that class of attack, along with device and subnet anomalies, and returns a 0–100 risk score.
 
