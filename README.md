@@ -1,69 +1,17 @@
 # 🛡️ AuraSentinel AI — Impossible Travel & Auth Anomaly SaaS Engine
 
-A production-grade **AI-Powered Authentication Anomaly Detection SaaS** that evaluates login attempts in real time using an **IsolationForest ML Ensemble** and **Haversine Geo-Physics**.
+                                                     Impossible-Travel Auth Anomaly Engine
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-IsolationForest-orange)
-![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)
+A login anomaly detector that flags suspicious authentication attempts in real time by combining an IsolationForest model with geo-velocity physics (Haversine distance over time). If a user logs in from Tokyo and then from London twenty minutes later, the implied travel speed is physically impossible — this engine catches that class of attack, along with device and subnet anomalies, and returns a 0–100 risk score.
 
----
+Built as a solo project to explore anomaly detection for account security. The data is synthetic (real auth telemetry is private), but the full pipeline — feature extraction, model, API, and dashboard — runs end to end.
 
-## ✨ Features
+Live demo: https://impossible-travel-auth-anomaly-engi.vercel.app
 
-- **🧠 Ensemble AI Model**: Combines unsupervised `IsolationForest` machine learning with velocity physics, device entropy, and subnet jump heuristics.
-- **🚀 Real-Time FastAPI Engine**: High-throughput REST backend to evaluate authentication events with low latency (<10ms).
-- **🔑 API Key Security**: Header-based `X-API-Key` authorization with tenant management.
-- **🖥️ Interactive SaaS Web Dashboard**: Dark-mode glassmorphism interface featuring live threat simulation, risk score gauges, audit telemetry, and API key provisioning.
-- **📊 Detailed Risk Scoring (0–100)**: Categorizes threats into `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL` risk tiers with human-readable rationale explanations.
+What it does
 
----
-
-## 🏗️ Architecture
-
-```
-[ Login Attempt ] ──> [ FastAPI Endpoint (/v1/auth/evaluate) ]
-                             │
-                      [ X-API-Key Auth ]
-                             │
-                ┌────────────┴────────────┐
-                ▼                         ▼
-      [ State History Store ]   [ IsolationForest ML Engine ]
-                │                         │
-                └────────────┬────────────┘
-                             ▼
-              [ Ensemble Risk Scoring (0-100) ]
-                             │
-                ┌────────────┴────────────┐
-                ▼                         ▼
-      [ Anomaly Log Store ]      [ Web Dashboard UI ]
-```
-
----
-
-## ⚡ Quickstart & Local SaaS Deployment
-
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Launch FastAPI SaaS Server & Web Dashboard
-```bash
-python -m uvicorn ittravel.api.app:app --reload --port 8000
-```
-- **Web Dashboard**: Open [http://localhost:8000](http://localhost:8000)
-- **Interactive Swagger API Docs**: Open [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-## 🔌 API Reference
-
-### 1. Evaluate Login Attempt (`POST /v1/auth/evaluate`)
-**Headers**: `X-API-Key: demo-master-key-9000`
-
-**Request**:
-```json
+Given a login event, the engine returns a risk score and a human-readable reason:
+POST /v1/auth/evaluate
 {
   "user_id": "usr_9000",
   "login_ts": "2026-08-02T15:30:00Z",
@@ -74,38 +22,70 @@ python -m uvicorn ittravel.api.app:app --reload --port 8000
   "device_id": "dev-macbook-pro",
   "ip": "203.0.113.15"
 }
-```
+→ a 0–100 risk score, a tier (LOW / MEDIUM / HIGH / CRITICAL), and the signals that drove it (e.g. "implied travel speed 4,200 km/h from previous login").
 
-**Response**:
-```json
-{
-  "user_id": "usr_9000",
-  "is_anomaly": true,
-  "risk_score": 92.5,
-  "risk_tier": "CRITICAL",
-  "reasons": [
-    "Impossible physical travel velocity (12480.2 km/h > 900 km/h)",
-    "Unrecognized device fingerprint (dev-macbook-pro)"
-  ],
-  "velocity_kmph": 12480.2,
-  "distance_km": 10850.1,
-  "time_delta_hours": 0.869,
-  "previous_location": { "city": "New York", "country": "US", "lat": 40.7128, "lon": -74.0060 },
-  "current_location": { "city": "Tokyo", "country": "JP", "lat": 35.6762, "lon": 139.6503 }
-}
-```
+How it works
 
-### 2. Generate API Key (`POST /v1/keys/generate`)
-```json
-{
-  "name": "Production Gateway Key"
-}
-```
+The score is an ensemble of one learned signal and three deterministic ones:
 
----
+IsolationForest (unsupervised): trained on the feature vectors of a user's normal login behavior; flags points that sit far from the learned distribution.
+Geo-velocity check: Haversine distance between consecutive logins ÷ time elapsed. Speeds above a plausible-travel threshold are strong impossible-travel signals.
+Device entropy: a login from a never-before-seen device raises risk.
+Subnet jump heuristic: sudden moves across unrelated IP subnets add risk.
 
-## 🧪 Run Automated Tests
-```bash
-python -m pytest
-```
-All 9 unit tests cover ML engine scoring, state tracking, edge-case velocities, and API authentication.
+These are combined into a single 0–100 score with a rationale string, so the output is explainable rather than a black box.
+
+Architecture
+[ Login Attempt ] ──> [ FastAPI /v1/auth/evaluate ]
+                             │
+                      [ X-API-Key auth ]
+                             │
+                ┌────────────┴────────────┐
+                ▼                         ▼
+      [ Per-user history store ]   [ IsolationForest engine ]
+                │                         │
+                └────────────┬────────────┘
+                             ▼
+              [ Ensemble risk scoring (0–100) ]
+                             │
+                ┌────────────┴────────────┐
+                ▼                         ▼
+      [ Anomaly log ]            [ Web dashboard ]
+      Run it locally
+      pip install -r requirements.txt
+python -m uvicorn ittravel.api.app:app --reload --port 8000
+Dashboard: http://localhost:8000
+Interactive API docs (Swagger): http://localhost:8000/docs
+
+Authenticated endpoints expect a header: X-API-Key: <your-key>.
+
+Run the tests
+bash
+pytest
+Project layout
+src/ittravel/
+  api/            FastAPI app + auth
+  ml_engine.py    IsolationForest model
+  geo.py          Haversine / velocity logic
+  detect.py       ensemble scoring
+  state.py        per-user login history
+  schema.py       request/response models
+  synthetic_data.py  data generator
+  dashboard/      web UI (HTML/CSS/JS)
+tests/            api, engine, and basic tests
+Limitations & honest notes
+Data is synthetic. The generator produces realistic-looking login patterns, but the model has not been validated against real-world auth telemetry. Detection quality on real data is untested.
+No labeled evaluation yet. There are no precision/recall numbers against a ground-truth set of known-malicious logins — that's the most important next step (see below).
+Thresholds are hand-tuned, not learned from a validation set.
+Single-node, in-memory history. Not built for scale or persistence; it's a demonstration of the detection logic, not a deployment-ready service.
+Roadmap
+ Add a small labeled evaluation set and report precision / recall / ROC-AUC.
+ Replace hand-tuned thresholds with a validation-set sweep.
+ Add a short demo GIF to this README.
+ Persist login history (SQLite) instead of in-memory state.
+License
+
+MIT
+
+
+  
