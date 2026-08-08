@@ -6,7 +6,38 @@ A login anomaly detector that flags suspicious authentication attempts in real t
 
 Built as a solo project to explore anomaly detection for account security. The data is synthetic (real auth telemetry is private), but the full pipeline — feature extraction, model, API, and dashboard — runs end to end.
 
-Live demo: https://impossible-travel-auth-anomaly-engi.vercel.app
+**Live demo: https://impossible-travel-auth-anomaly-engi.vercel.app** — open it, click
+**Interactive Sandbox** in the sidebar, and fire a test event yourself. No signup, no
+API key to find (it's pre-filled).
+
+<details>
+<summary><b>Example: what the sandbox actually returns</b> (captured live, unedited)</summary>
+
+Same user, New York → Tokyo, ~10 seconds apart, from a device/IP the engine has never seen for that user:
+
+```json
+{
+  "user_id": "demo_user_showcase",
+  "is_anomaly": true,
+  "risk_score": 93.6,
+  "risk_tier": "CRITICAL",
+  "reasons": [
+    "Impossible physical travel velocity (2123052.7 km/h > 900 km/h)",
+    "Unrecognized device fingerprint (dev-ios-unregistered-77)",
+    "Login from new IP subnet"
+  ],
+  "velocity_kmph": 2123052.7,
+  "distance_km": 10851.7,
+  "time_delta_hours": 0.005,
+  "previous_location": { "city": "Tokyo", "country": "JP", "lat": 35.6762, "lon": 139.6503 },
+  "current_location": { "city": "New York", "country": "US", "lat": 40.7128, "lon": -74.006 },
+  "timestamp": "2026-08-08T15:39:46.537Z"
+}
+```
+
+Three independent signals (velocity, device, subnet) stack into one explainable score —
+not a black-box number.
+</details>
 
 ## What it does
 
