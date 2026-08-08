@@ -1,72 +1,19 @@
-# 🛡️ AuraSentinel AI — Impossible Travel & Auth Anomaly SaaS Engine
+# Impossible-Travel Auth Anomaly Engine
 
-A production-grade **AI-Powered Authentication Anomaly Detection SaaS** that evaluates login attempts in real time using an **IsolationForest ML Ensemble** and **Haversine Geo-Physics**.
-
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-IsolationForest-orange)
 ![CI](https://github.com/UtkarshOver9000/impossible-travel-auth-anomaly-engine/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/Tests-19%20passing-brightgreen)
-![Coverage](https://img.shields.io/badge/Coverage-87%25-brightgreen)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
----
+A login anomaly detector that flags suspicious authentication attempts in real time by combining an IsolationForest model with geo-velocity physics (Haversine distance over time). If a user logs in from Tokyo and then from London twenty minutes later, the implied travel speed is physically impossible — this engine catches that class of attack, along with device and subnet anomalies, and returns a 0–100 risk score.
 
-## ✨ Features
+Built as a solo project to explore anomaly detection for account security. The data is synthetic (real auth telemetry is private), but the full pipeline — feature extraction, model, API, and dashboard — runs end to end.
 
-- **🧠 Ensemble AI Model**: Combines unsupervised `IsolationForest` machine learning with velocity physics, device entropy, and subnet jump heuristics.
-- **🚀 Real-Time FastAPI Engine**: High-throughput REST backend to evaluate authentication events with low latency (<10ms).
-- **🔑 API Key Security**: Header-based `X-API-Key` authorization with tenant management.
-- **🖥️ Interactive SaaS Web Dashboard**: Dark-mode glassmorphism interface featuring live threat simulation, risk score gauges, audit telemetry, and API key provisioning.
-- **📊 Detailed Risk Scoring (0–100)**: Categorizes threats into `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL` risk tiers with human-readable rationale explanations.
+Live demo: https://impossible-travel-auth-anomaly-engi.vercel.app
 
----
+## What it does
 
-## 🏗️ Architecture
+Given a login event, the engine returns a risk score and a human-readable reason:
 
 ```
-[ Login Attempt ] ──> [ FastAPI Endpoint (/v1/auth/evaluate) ]
-                             │
-                      [ X-API-Key Auth ]
-                             │
-                ┌────────────┴────────────┐
-                ▼                         ▼
-      [ State History Store ]   [ IsolationForest ML Engine ]
-                │                         │
-                └────────────┬────────────┘
-                             ▼
-              [ Ensemble Risk Scoring (0-100) ]
-                             │
-                ┌────────────┴────────────┐
-                ▼                         ▼
-      [ Anomaly Log Store ]      [ Web Dashboard UI ]
-```
-
----
-
-## ⚡ Quickstart & Local SaaS Deployment
-
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Launch FastAPI SaaS Server & Web Dashboard
-```bash
-python -m uvicorn ittravel.api.app:app --reload --port 8000
-```
-- **Web Dashboard**: Open [http://localhost:8000](http://localhost:8000)
-- **Interactive Swagger API Docs**: Open [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-## 🔌 API Reference
-
-### 1. Evaluate Login Attempt (`POST /v1/auth/evaluate`)
-**Headers**: `X-API-Key: demo-master-key-9000`
-
-**Request**:
-```json
+POST /v1/auth/evaluate
 {
   "user_id": "usr_9000",
   "login_ts": "2026-08-02T15:30:00Z",
@@ -79,42 +26,67 @@ python -m uvicorn ittravel.api.app:app --reload --port 8000
 }
 ```
 
-**Response**:
-```json
-{
-  "user_id": "usr_9000",
-  "is_anomaly": true,
-  "risk_score": 92.5,
-  "risk_tier": "CRITICAL",
-  "reasons": [
-    "Impossible physical travel velocity (12480.2 km/h > 900 km/h)",
-    "Unrecognized device fingerprint (dev-macbook-pro)"
-  ],
-  "velocity_kmph": 12480.2,
-  "distance_km": 10850.1,
-  "time_delta_hours": 0.869,
-  "previous_location": { "city": "New York", "country": "US", "lat": 40.7128, "lon": -74.0060 },
-  "current_location": { "city": "Tokyo", "country": "JP", "lat": 35.6762, "lon": 139.6503 }
-}
+→ a 0–100 risk score, a tier (LOW / MEDIUM / HIGH / CRITICAL), and the signals that drove it (e.g. "implied travel speed 4,200 km/h from previous login").
+
+## How it works
+
+The score is an ensemble of one learned signal and three deterministic ones:
+
+- **IsolationForest (unsupervised)**: trained on the feature vectors of a user's normal login behavior; flags points that sit far from the learned distribution.
+- **Geo-velocity check**: Haversine distance between consecutive logins ÷ time elapsed. Speeds above a plausible-travel threshold are strong impossible-travel signals.
+- **Device entropy**: a login from a never-before-seen device raises risk.
+- **Subnet jump heuristic**: sudden moves across unrelated IP subnets add risk.
+
+These are combined into a single 0–100 score with a rationale string, so the output is explainable rather than a black box.
+
+## Architecture
+
+```
+[ Login Attempt ] ──> [ FastAPI /v1/auth/evaluate ]
+                             │
+                      [ X-API-Key auth ]
+                             │
+                ┌────────────┴────────────┐
+                ▼                         ▼
+      [ Per-user history store ]   [ IsolationForest engine ]
+                │                         │
+                └────────────┬────────────┘
+                             ▼
+              [ Ensemble risk scoring (0–100) ]
+                             │
+                ┌────────────┴────────────┐
+                ▼                         ▼
+      [ Anomaly log ]            [ Web dashboard ]
 ```
 
-### 2. Generate API Key (`POST /v1/keys/generate`)
-```json
-{
-  "name": "Production Gateway Key"
-}
+## Run it locally
+
+```bash
+pip install -r requirements.txt
+python -m uvicorn ittravel.api.app:app --reload --port 8000
 ```
 
----
+- Dashboard: http://localhost:8000
+- Interactive API docs (Swagger): http://localhost:8000/docs
 
-## 📊 Model Performance
+Authenticated endpoints expect a header: `X-API-Key: <your-key>`.
 
-`src/ittravel/evaluate.py` measures the production ensemble (IsolationForest + heuristics)
-against `detect_impossible_travel()` — an independently-implemented, vectorized
-geo-velocity reference detector — replayed chronologically over synthetic login
-sequences. This checks whether the real-time engine's added signals (device
-fingerprinting, IP subnet changes, ML scoring) still agree with ground-truth
-physics, not just reproduce it.
+## Run the tests
+
+```bash
+pytest --cov=src --cov-report=term-missing
+```
+
+19 tests, 87% line coverage. Lint with `ruff check .`. CI (`.github/workflows/ci.yml`) runs lint + tests + the evaluation benchmark below on Python 3.10–3.12 for every push and PR.
+
+## Model performance
+
+The engine has no real labeled incidents to validate against (see Limitations), so
+`src/ittravel/evaluate.py` instead benchmarks it against `detect_impossible_travel()` —
+a second, independently-implemented geo-velocity detector (pure pandas, no ML, no
+device/subnet signals) — replayed chronologically over synthetic login sequences. This
+tests whether the production engine's extra signals still agree with plain physics,
+rather than just reproducing it.
 
 Measured on 5,000 synthetic events / 400 users (`python -m ittravel.evaluate --rows 5000 --seed 11`):
 
@@ -122,26 +94,45 @@ Measured on 5,000 synthetic events / 400 users (`python -m ittravel.evaluate --r
 |---|---|
 | Precision | 96.6% |
 | Recall | 100.0% |
-| F1 Score | 98.3% |
+| F1 | 98.3% |
 | Accuracy | 99.5% |
 
-Recall of 100% means the ensemble never misses a reference-labeled impossible-travel
-event in this benchmark; the ~3.4% precision cost comes from device/subnet signals
-correctly flagging additional risk the pure-geometry reference doesn't see (e.g. a new
-device from a nearby but still-anomalous subnet).
+Recall of 100% means the ensemble never misses a reference-flagged impossible-travel
+event in this benchmark; the precision cost comes from device/subnet signals correctly
+flagging additional risk the pure-geometry reference doesn't see.
 
-```bash
-python -m ittravel.evaluate --rows 5000 --seed 11
+## Project layout
+
+```
+src/ittravel/
+  api/                FastAPI app + auth
+  ml_engine.py        production ensemble scoring engine (IsolationForest + heuristics)
+  detect.py           offline geometric reference detector (pandas, no ML)
+  evaluate.py         benchmarks ml_engine.py against detect.py
+  geo.py              Haversine / velocity logic
+  state.py            per-user login history
+  schema.py           request/response models
+  synthetic_data.py   data generator
+  dashboard/          web UI (HTML/CSS/JS)
+tests/                api, engine, detector, and evaluation tests
 ```
 
----
+## Limitations & honest notes
 
-## 🧪 Run Automated Tests
-```bash
-pip install -r requirements.txt
-pytest --cov=src --cov-report=term-missing
-```
-19 unit tests (87% line coverage) cover ML engine scoring, state tracking, edge-case
-velocities, the offline reference detector, the evaluation harness, and API
-authentication/endpoints. Lint with `ruff check .`. CI (`.github/workflows/ci.yml`)
-runs lint + tests + the evaluation harness on Python 3.10–3.12 for every push and PR.
+- **Data is synthetic.** The generator produces realistic-looking login patterns, but the model has not been validated against real-world auth telemetry. Detection quality on real data is untested.
+- **No real ground-truth incidents.** The precision/recall numbers above are against a second synthetic detector, not labeled real-world attacks — that's still the most important next step.
+- **Thresholds are hand-tuned**, not learned from a validation set.
+- **Single-node, in-memory history.** Not built for scale or persistence; it's a demonstration of the detection logic, not a deployment-ready service.
+
+## Roadmap
+
+- [x] Benchmark the engine and report precision / recall / F1 (against a synthetic reference detector — real labeled data is still needed)
+- [x] Add CI (lint + tests + evaluation) on every push/PR
+- [ ] Validate against real (or realistically labeled) auth incidents
+- [ ] Replace hand-tuned thresholds with a validation-set sweep
+- [ ] Add a short demo GIF to this README
+- [ ] Persist login history (SQLite) instead of in-memory state
+
+## License
+
+MIT
