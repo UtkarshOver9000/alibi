@@ -5,21 +5,23 @@ Ensemble AI/ML Anomaly Detection Engine combining IsolationForest and Physics-ba
 from __future__ import annotations
 
 from datetime import datetime, timezone
+
 import numpy as np
 from sklearn.ensemble import IsolationForest
 
 from .geo import haversine_km
-from .schema import LoginEvent, EvaluationResult
-from .state import store, UserState
+from .schema import EvaluationResult, LoginEvent
+from .state import StateStore, UserState, store
 
 
 class AIAnomalyEngine:
-    def __init__(self, contamination: float = 0.05):
+    def __init__(self, contamination: float = 0.05, state_store: StateStore | None = None):
         self.model = IsolationForest(
             n_estimators=100,
             contamination=contamination,
             random_state=42,
         )
+        self.store = state_store if state_store is not None else store
         self._is_trained = False
         self._bootstrap_model()
 
@@ -45,7 +47,7 @@ class AIAnomalyEngine:
         self._is_trained = True
 
     def evaluate_event(self, event: LoginEvent) -> EvaluationResult:
-        user_state: UserState = store.get_user(event.user_id)
+        user_state: UserState = self.store.get_user(event.user_id)
         
         # Parse timestamp
         curr_ts = datetime.fromisoformat(event.login_ts.replace("Z", "+00:00"))
@@ -177,7 +179,7 @@ class AIAnomalyEngine:
         )
 
         if is_anomaly:
-            store.log_anomaly(res.model_dump())
+            self.store.log_anomaly(res.model_dump())
 
         return res
 

@@ -3,6 +3,7 @@ Unit tests for FastAPI REST Endpoints & Authentication.
 """
 
 from fastapi.testclient import TestClient
+
 from ittravel.api.app import app
 
 client = TestClient(app)
@@ -50,3 +51,26 @@ def test_api_stats():
     assert res.status_code == 200
     data = res.json()
     assert data["engine_status"] == "ONLINE"
+
+
+def test_api_anomalies_requires_auth():
+    res = client.get("/v1/anomalies")
+    assert res.status_code == 401
+
+
+def test_api_anomalies_returns_list():
+    res = client.get("/v1/anomalies", headers={"X-API-Key": API_KEY})
+    assert res.status_code == 200
+    assert isinstance(res.json(), list)
+
+
+def test_api_health_check():
+    res = client.get("/v1/health")
+    assert res.status_code == 200
+    assert res.json() == {"status": "ok"}
+
+
+def test_api_dashboard_root_served():
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]

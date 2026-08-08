@@ -10,7 +10,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 CITIES = [
     ("New York", "US", 40.7128, -74.0060),
     ("London", "GB", 51.5074, -0.1278),

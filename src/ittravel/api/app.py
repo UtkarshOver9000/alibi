@@ -5,13 +5,14 @@ FastAPI SaaS REST API for VigilGuard Identity Threat Detection & Response (ITDR)
 from __future__ import annotations
 
 from pathlib import Path
-from fastapi import FastAPI, Depends, Query
+
+from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from ..schema import LoginEvent, EvaluationResult, APIKeyCreate, APIKeyResponse
 from ..ml_engine import engine
+from ..schema import APIKeyCreate, APIKeyResponse, EvaluationResult, LoginEvent
 from ..state import store
 from .auth import verify_api_key
 

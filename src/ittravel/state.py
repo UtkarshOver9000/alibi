@@ -6,29 +6,28 @@ from __future__ import annotations
 
 import secrets
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
 
 
 class UserState:
     def __init__(self, user_id: str):
         self.user_id = user_id
-        self.last_ts: Optional[datetime] = None
-        self.last_lat: Optional[float] = None
-        self.last_lon: Optional[float] = None
-        self.last_city: Optional[str] = None
-        self.last_country: Optional[str] = None
-        self.last_device_id: Optional[str] = None
-        self.last_ip: Optional[str] = None
+        self.last_ts: datetime | None = None
+        self.last_lat: float | None = None
+        self.last_lon: float | None = None
+        self.last_city: str | None = None
+        self.last_country: str | None = None
+        self.last_device_id: str | None = None
+        self.last_ip: str | None = None
         self.known_devices: set[str] = set()
-        self.login_history: List[dict] = []
+        self.login_history: list[dict] = []
 
     def update(
         self,
         ts: datetime,
         lat: float,
         lon: float,
-        city: Optional[str],
-        country: Optional[str],
+        city: str | None,
+        country: str | None,
         device_id: str,
         ip: str,
     ):
@@ -55,14 +54,14 @@ class UserState:
 
 class StateStore:
     def __init__(self):
-        self.users: Dict[str, UserState] = {}
-        self.api_keys: Dict[str, dict] = {
+        self.users: dict[str, UserState] = {}
+        self.api_keys: dict[str, dict] = {
             "demo-master-key-9000": {
                 "name": "Default Admin Key",
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
         }
-        self.anomaly_logs: List[dict] = []
+        self.anomaly_logs: list[dict] = []
 
     def get_user(self, user_id: str) -> UserState:
         if user_id not in self.users:
@@ -84,7 +83,7 @@ class StateStore:
         if len(self.anomaly_logs) > 200:
             self.anomaly_logs.pop()
 
-    def get_anomalies(self, limit: int = 50) -> List[dict]:
+    def get_anomalies(self, limit: int = 50) -> list[dict]:
         return self.anomaly_logs[:limit]
 
 

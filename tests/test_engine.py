@@ -2,10 +2,8 @@
 Unit tests for AI Anomaly Engine & Geo-Physics Calculations.
 """
 
-import pytest
-from ittravel.schema import LoginEvent
 from ittravel.ml_engine import AIAnomalyEngine
-from ittravel.state import StateStore
+from ittravel.schema import LoginEvent
 
 
 def test_first_login_is_low_risk():

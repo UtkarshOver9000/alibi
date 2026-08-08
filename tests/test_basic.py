@@ -1,5 +1,5 @@
-from ittravel.synthetic_data import generate_synthetic
 from ittravel.detect import detect_impossible_travel
+from ittravel.synthetic_data import generate_synthetic
 
 
 def test_detect_runs():
