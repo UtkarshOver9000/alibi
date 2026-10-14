@@ -4,13 +4,15 @@ import gzip
 import zipfile
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
 
-from ittravel.netrisk import panel, train
+from ittravel.netrisk import panel, score, train
 
 SAMPLE = Path(__file__).parent / "fixtures" / "raw" / "threatfox_full_sample.json.gz"
+HOME_ISPS = (3320, 2856, 9498)  # Deutsche Telekom, BT, Bharti Airtel: huge, with a few infected boxes each
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +41,7 @@ def test_features_never_look_ahead(export, nets):
         assert np.array_equal(panel.features(servers, families, nets, w), panel.features(later_s, later_f, nets, w))
 
 
-def test_training_end_to_end(export, monkeypatch):
+def test_training_and_scoring_end_to_end(export, monkeypatch, tmp_path):
     monkeypatch.setattr(train, "MAX_ROUNDS", 30)
     monkeypatch.setattr(train, "BOOTSTRAP", 10)
     card, bundle = train.train(export)
@@ -50,3 +52,15 @@ def test_training_end_to_end(export, monkeypatch):
     assert test["new_attack_servers"] > 100 and 0.5 < test["roc_auc"] <= 1
     lo, hi = card["confidence_intervals"]["top_1pct_of_addresses_recall"]
     assert 0 <= lo <= test["top_1pct_of_addresses"]["recall"] <= hi <= 1
+
+    joblib.dump(bundle, tmp_path / "netrisk_model.joblib")
+    scored = score.score(export, train.NETWORK, tmp_path / "netrisk_model.joblib")
+    pct = dict(zip(scored["asn"].tolist(), scored["pct"].tolist(), strict=True))
+    assert len(pct) > 50_000 and scored["top"] and scored["top"][0]["percentile"] >= 99
+
+
+def test_the_shipped_model_keeps_home_isps_out_of_the_riskiest_addresses(export):
+    scored = score.score(export, train.NETWORK)
+    pct = dict(zip(scored["asn"].tolist(), scored["pct"].tolist(), strict=True))
+    assert all(pct[asn] < 99 for asn in HOME_ISPS)
+    assert all(t["servers_last_4_weeks"] > 0 and t["addresses"] >= score.MIN_LISTED_SIZE for t in scored["top"])

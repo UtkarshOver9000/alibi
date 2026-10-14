@@ -1,0 +1,126 @@
+{
+  "name": "Network risk model",
+  "question": "How likely is an address in this network to become a new attack server next week?",
+  "data": {
+    "source": "abuse.ch ThreatFox, full export (ip:port indicators)",
+    "url": "https://threatfox.abuse.ch/export/json/full/",
+    "licence": "CC0",
+    "newest_indicator": "2026-10-14 08:28:37",
+    "attack_server_ips": 13142,
+    "networks": 79175,
+    "networks_with_a_server": 1268
+  },
+  "periods": {
+    "history": [
+      "2026-05-04",
+      "2026-06-01"
+    ],
+    "train": [
+      "2026-06-01",
+      "2026-08-10"
+    ],
+    "validation": [
+      "2026-08-10",
+      "2026-09-07"
+    ],
+    "test": [
+      "2026-09-07",
+      "2026-10-12"
+    ]
+  },
+  "features": [
+    "log_servers_per_million_last_week",
+    "log_servers_per_million_last_4_weeks",
+    "log_servers_per_million_before",
+    "log_servers_last_4_weeks",
+    "families_last_4_weeks",
+    "weeks_since_last_server",
+    "log10_network_size",
+    "hosting"
+  ],
+  "chosen": "poisson_glm",
+  "validation_roc_auc": {
+    "gradient_boosting": 0.8924,
+    "poisson_glm": 0.9662,
+    "rule_servers_per_address_last_4_weeks": 0.8769
+  },
+  "gradient_boosting_rounds": 1,
+  "test_metrics": {
+    "model": {
+      "network_weeks": 395875,
+      "new_attack_servers": 3646,
+      "roc_auc": 0.9643,
+      "top_0.1pct_of_addresses": {
+        "networks": 1820,
+        "recall": 0.3936,
+        "lift": 392.5
+      },
+      "top_1pct_of_addresses": {
+        "networks": 3573,
+        "recall": 0.6934,
+        "lift": 69.1
+      }
+    },
+    "gradient_boosting": {
+      "network_weeks": 395875,
+      "new_attack_servers": 3646,
+      "roc_auc": 0.9091,
+      "top_0.1pct_of_addresses": {
+        "networks": 1985,
+        "recall": 0.376,
+        "lift": 374.7
+      },
+      "top_1pct_of_addresses": {
+        "networks": 3686,
+        "recall": 0.6805,
+        "lift": 67.2
+      }
+    },
+    "poisson_glm": {
+      "network_weeks": 395875,
+      "new_attack_servers": 3646,
+      "roc_auc": 0.9643,
+      "top_0.1pct_of_addresses": {
+        "networks": 1820,
+        "recall": 0.3936,
+        "lift": 392.5
+      },
+      "top_1pct_of_addresses": {
+        "networks": 3573,
+        "recall": 0.6934,
+        "lift": 69.1
+      }
+    },
+    "rule_servers_per_address_last_4_weeks": {
+      "network_weeks": 395875,
+      "new_attack_servers": 3646,
+      "roc_auc": 0.8801,
+      "top_0.1pct_of_addresses": {
+        "networks": 1354,
+        "recall": 0.3804,
+        "lift": 378.1
+      },
+      "top_1pct_of_addresses": {
+        "networks": 2058,
+        "recall": 0.6807,
+        "lift": 68.1
+      }
+    }
+  },
+  "confidence_intervals": {
+    "top_0.1pct_of_addresses_recall": [
+      0.3315,
+      0.5107
+    ],
+    "top_1pct_of_addresses_recall": [
+      0.6066,
+      0.7846
+    ],
+    "resamples": 100
+  },
+  "live_differences": [
+    "Live scores are recomputed with every snapshot from the latest weeks of ThreatFox data, so they follow the attack servers reported most recently; the model itself was trained once, on the weeks named here.",
+    "IPs are placed in networks with today's IP-to-network table, also for past weeks, so a range that changed owner since then is counted under its current network."
+  ],
+  "scikit_learn": "1.9.1"
+}
