@@ -17,9 +17,10 @@ router = APIRouter()
 @router.post("/v1/demo/check", tags=["Evaluation"])
 async def demo_check(story: DemoStory):
     """Score a whole sign-in story in one call, no key needed: the account's usual sign-ins, then the one being
-    tested. Runs under a fresh throwaway user id, so the public demo never touches other accounts."""
+    tested. Runs in a throwaway sandbox (its own users and per-IP history, dropped after the call), so the public
+    demo keeps nothing and never touches other accounts or how real logins from the same IP are scored."""
     uid = f"demo-{uuid4().hex[:12]}"
-    engine = get_engine()
+    engine = get_engine().sandbox()
     results = [engine.evaluate_event(e.model_copy(update={"user_id": uid})) for e in story.events]
     timeline = [
         {

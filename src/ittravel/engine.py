@@ -16,6 +16,7 @@ check (great-circle distance / time > 900 km/h) is applied on top.
 
 from __future__ import annotations
 
+import copy
 import json
 import math
 from collections import deque
@@ -63,6 +64,16 @@ class RiskEngine:
         self.models = joblib.load(models) if models.exists() else None
         self.card = json.loads(card.read_text()) if card.exists() and self.models is not None else {}
         self.ip_history: dict[str, deque] = {}
+
+    def sandbox(self) -> RiskEngine:
+        """A copy that shares the loaded models but has its own users and per-IP history.
+
+        Keyless demo checks run on a sandbox and throw it away afterwards, so nothing a demo sends is kept,
+        and no demo can change how real logins from the same IP are scored."""
+        clone = copy.copy(self)
+        clone.store = StateStore()
+        clone.ip_history = {}
+        return clone
 
     # --- features -------------------------------------------------------
     def _ip_window(self, ip: str, now: datetime) -> tuple[int, int]:
