@@ -42,4 +42,5 @@ async def model_card():
     card = get_engine().card
     if not card:
         raise HTTPException(503, "Model files are not deployed here; verdicts use the network and travel rules only")
-    return {k: card[k] for k in ("dataset", "alert_budget", "test_metrics", "thresholds", "scikit_learn")}
+    keys = ("dataset", "alert_budget", "test_metrics", "thresholds", "live_differences", "scikit_learn")
+    return {k: card[k] for k in keys if k in card}

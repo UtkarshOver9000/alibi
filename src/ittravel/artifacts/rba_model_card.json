@@ -78,6 +78,10 @@
     "from": "2020-02-03 12:43:30.772000",
     "to": "2021-02-28 23:59:58.756000"
   },
+  "live_differences": [
+    "Two inputs count the sign-ins and failures from the same IP address in the past hour. In training they counted every sign-in the whole service saw. A live Alibi server counts only the sign-ins sent to it (each server instance on its own, a demo only its own story), so these counts run lower live, and an attack spread over many servers looks quieter than it is.",
+    "Each user's history (usual countries, networks and devices) starts empty on a new server instance, so a returning user's first sign-in there is scored like a new account's first sign-in."
+  ],
   "scikit_learn": "1.9.1",
   "score_quantiles": {
     "ato": {

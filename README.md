@@ -205,7 +205,8 @@ Every `/v1` response carries an `X-Data-As-Of` header with the snapshot date.
 - IP geolocation (DB-IP Lite) is roughly city-accurate; states with fewer than 100,000 addresses are not rated.
 - Ransomware counts are what gangs post on their leak sites, not every attack, and the source records no victim
   country or industry, so Alibi can't break them down that way.
-- Login history and rate limits live in memory per serverless instance.
+- Login history and rate limits live in memory per serverless instance, so the per-IP counts the model uses run
+  lower live than in training, where they covered the whole service (`/v1/model` lists these differences).
 
 ## Roadmap
 

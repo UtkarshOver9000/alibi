@@ -66,6 +66,7 @@ def test_model_card_endpoint():
         for key in ("roc_auc", "pr_auc", "precision", "recall", "log_loss", "confusion_matrix"):
             assert key in metrics
     assert card["dataset"]["logins"] > 30_000_000
+    assert any("IP address" in note for note in card["live_differences"])  # live per-IP counts differ from training
 
 
 def test_anomaly_log_and_stats():
