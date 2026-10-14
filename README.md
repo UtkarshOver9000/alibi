@@ -167,6 +167,7 @@ Training splits, features and policy: [docs/TRAINING_DATA_POLICY.md](docs/TRAINI
 | abuse.ch Feodo Tracker botnet C2 blocklist | CC0 | daily | Botnet command-and-control servers. |
 | abuse.ch URLhaus recent malware URLs | CC0 | daily | Malware download URLs reported in the last 30 days. |
 | abuse.ch ThreatFox recent indicators | CC0 | daily | Indicators of compromise shared in the last 48 hours. |
+| abuse.ch ThreatFox full export | CC0 | daily | Every indicator ThreatFox still holds (about the last six months) with the day it was first seen; the network-risk model learns from it and scores every network with it. |
 | Spamhaus DROP (IPv4) | free to use per the Spamhaus DROP terms | daily | Address blocks hijacked or run by criminals. |
 | Spamhaus ASN-DROP | free to use per the Spamhaus DROP terms | daily | Whole networks (ASNs) run by criminals. |
 | RansomLook ransomware leak-site posts, last 7 days | CC BY 4.0 (RansomLook); Alibi shows totals by day and gang only, never victim names or links | daily | Every post on ransomware gangs' leak sites in the last 7 days. |

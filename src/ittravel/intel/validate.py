@@ -80,6 +80,17 @@ def _epss(path: Path) -> None:
     _need(head[2].startswith("CVE-"), "no scores")
 
 
+def _threatfox_zip(path: Path) -> None:
+    import zipfile
+
+    try:
+        with zipfile.ZipFile(path) as zf:
+            data = json.loads(zf.read(zf.namelist()[0]))
+    except (zipfile.BadZipFile, IndexError, ValueError) as e:
+        raise InvalidFeed(f"not a ThreatFox zip export: {e}") from e
+    _rows_of([r for g in data.values() for r in g], "ioc_value", 1000, "indicators")
+
+
 CHECKS = {
     "epss": _epss,
     "hibp_breaches": lambda p: _rows_of(_json(p), "PwnCount", 500, "breaches"),
@@ -90,6 +101,7 @@ CHECKS = {
     "feodo": lambda p: _rows_of(_json(p), "ip_address", 0, "C2 servers"),
     "urlhaus": _urlhaus,
     "threatfox": lambda p: _rows_of([r for g in _json(p).values() for r in g], "ioc_value", 100, "indicators"),
+    "threatfox_full": _threatfox_zip,
     "spamhaus_drop": lambda p: _jsonl(p, "cidr", 100),
     "spamhaus_asndrop": lambda p: _jsonl(p, "asn", 50),
     "ransomlook": lambda p: _rows_of(_json(p), "group_name", 10, "posts"),

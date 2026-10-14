@@ -92,6 +92,7 @@ Changes from the Alibi master plan (`#` numbers refer to its 299 items). Newest 
 - Check the live site's health every hour and fail loudly when a feed is stale (#37)
 - Add a network-risk trainer on 2026 ThreatFox data, split strictly by time (#78)
 - Ship the network-risk model trained on June to October 2026 (#312)
+- Score every network from ThreatFox's full export on each snapshot
 
 Covered without a separate change:
 
