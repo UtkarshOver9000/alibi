@@ -1,0 +1,31 @@
+name: Uptime
+
+# Every hour: read the live site's /v1/health. The run fails, and GitHub emails whoever last changed this
+# schedule, when the site doesn't answer or any feed is stale or missing; the log names each feed at fault.
+# Point it at another deployment with the repository variable ALIBI_URL.
+on:
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check /v1/health
+        env:
+          URL: ${{ vars.ALIBI_URL || 'https://impossible-travel-auth-anomaly-engi.vercel.app' }}
+        run: |
+          curl -fsS --retry 3 --retry-delay 20 --retry-all-errors -m 30 "$URL/v1/health" -o health.json
+          python3 - <<'PY'
+          import json, sys
+          health = json.load(open("health.json"))
+          print(f"status {health['status']}, snapshot {health['snapshot']}")
+          for f in health["feeds"]:
+              if f["status"] in ("stale", "missing"):
+                  print(f"::error::{f['name']} is {f['status']} (last download {f['last_success'] or 'never'})")
+          sys.exit(health["status"] != "ok")
+          PY

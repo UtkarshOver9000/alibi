@@ -32,8 +32,10 @@ Public sources ──(scripts/fetch_intel.sh)──> data/intel/ (raw, not commi
                  └─(python -m ittravel.intel.snapshot)──> src/ittravel/intel_data/ (committed, ~13 MB)
                       breaches.json  flaws.json  threats.json  bad_ips.json  countries.json
                       states.json  heat.json  cables.json  network.npz  drop.npz  meta.json
-GitHub Action refresh-intel.yml (daily 03:17 UTC) runs both steps and commits intel_data/
-Vercel redeploys on each push → API reads intel_data/ from the deployed bundle
+GitHub Action refresh-intel.yml (every 6 hours and on each push to main) runs both steps and publishes
+main + the new snapshot as one commit on the `data` branch → Vercel deploys it, and the API reads intel_data/
+GitHub Action uptime.yml (hourly) reads the live /v1/health and fails, which emails the owner, when the site
+is down or a feed is stale or missing
 
 RBA zip (Zenodo, 1.1 GB) ──rba/load.py──> data/rba.duckdb ──rba/train.py──> src/ittravel/artifacts/
       rba_models.joblib (two HistGradientBoosting models)   rba_model_card.json (metrics, thresholds, score quantiles)
@@ -45,7 +47,7 @@ Browser ──GET /──> dashboard ──fetch /v1/intel/*──> service.py �
 
 ## Where things live
 
-- **Snapshot:** `src/ittravel/intel_data/`, rebuilt daily. Its date is in `meta.json` (`fetched_at`).
+- **Snapshot:** `src/ittravel/intel_data/`, rebuilt every 6 hours from the feeds that are due. Its date is in `meta.json` (`fetched_at`).
 - **Models:** `src/ittravel/artifacts/`, trained once on RBA (2020-02 to 2021-02). They are not retrained
   automatically.
 - **Live, not snapshotted:** news and video feeds (cached 30 minutes per instance), and the Tor exit list

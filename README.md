@@ -4,6 +4,7 @@
 
 ![CI](https://github.com/UtkarshOver9000/alibi/actions/workflows/ci.yml/badge.svg)
 ![Refresh](https://github.com/UtkarshOver9000/alibi/actions/workflows/refresh-intel.yml/badge.svg)
+![Uptime](https://github.com/UtkarshOver9000/alibi/actions/workflows/uptime.yml/badge.svg)
 
 Alibi is an open threat-intelligence dashboard built only on real public data. It covers:
 - which companies lost their customers' data, and how it got out;
