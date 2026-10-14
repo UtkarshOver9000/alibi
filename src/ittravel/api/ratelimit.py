@@ -15,6 +15,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from .. import settings
+
 # path prefix -> (bucket size, refill per second). First match wins.
 LIMITS = (
     ("/v1/demo/", (20, 20 / 60)),  # a full sign-in story per call: 20 a minute
@@ -25,10 +27,14 @@ EXEMPT = ("/v1/health",)
 
 
 def client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    """The caller's address. X-Forwarded-For is read only behind trusted proxies, and then from the right: each proxy
+    appends the address it saw, so the entry added by our outermost proxy is the first one a client can't forge."""
+    direct = request.client.host if request.client else "unknown"
+    hops = settings.trusted_proxy_hops()
+    forwarded = [part.strip() for part in request.headers.get("x-forwarded-for", "").split(",") if part.strip()]
+    if hops and len(forwarded) >= hops:
+        return forwarded[-hops]
+    return direct
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):

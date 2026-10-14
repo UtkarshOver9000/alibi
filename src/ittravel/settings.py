@@ -21,3 +21,12 @@ def offline() -> bool:
 def velocity_threshold_kmh() -> float:
     """Speed between two sign-ins above which travel counts as impossible."""
     return float(os.getenv("ALIBI_VELOCITY_THRESHOLD") or os.getenv("AEGIS_VELOCITY_THRESHOLD") or 900)
+
+
+def trusted_proxy_hops() -> int:
+    """How many proxies in front of the app append to X-Forwarded-For. With none (the default) the header is ignored,
+    since anyone can write it. Vercel replaces the header with the caller's real address, so there the default is 1."""
+    value = os.getenv("ALIBI_TRUSTED_PROXY_HOPS")
+    if value:
+        return max(int(value), 0)
+    return 1 if os.getenv("VERCEL") else 0
