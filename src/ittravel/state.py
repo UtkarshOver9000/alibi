@@ -9,12 +9,13 @@ record.
 from __future__ import annotations
 
 import secrets
-from collections import deque
+from collections import OrderedDict, deque
 from datetime import UTC, datetime
 
 from . import settings
 
 HISTORY_LIMIT = 50
+MAX_USERS = 100_000  # beyond this the least recently seen users are forgotten, so memory stays bounded
 
 
 def master_key() -> str | None:
@@ -63,15 +64,21 @@ class UserState:
 
 
 class StateStore:
-    def __init__(self):
-        self.users: dict[str, UserState] = {}
+    def __init__(self, max_users: int = MAX_USERS):
+        self.users: OrderedDict[str, UserState] = OrderedDict()  # least recently seen first
+        self.max_users = max_users
         self.api_keys: dict[str, dict] = {}
         self.anomaly_logs: list[dict] = []
 
     def get_user(self, user_id: str) -> UserState:
-        if user_id not in self.users:
-            self.users[user_id] = UserState(user_id)
-        return self.users[user_id]
+        user = self.users.get(user_id)
+        if user is None:
+            user = self.users[user_id] = UserState(user_id)
+            while len(self.users) > self.max_users:
+                self.users.popitem(last=False)  # a forgotten user starts again with no history
+        else:
+            self.users.move_to_end(user_id)
+        return user
 
     def create_api_key(self, name: str) -> dict:
         key = f"alibi_{secrets.token_hex(16)}"

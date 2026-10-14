@@ -35,6 +35,8 @@ and cannot change how real logins from the same IP are scored.
 
 Logins sent to the keyed `POST /v1/auth/evaluate` are kept only in that server instance's memory
 (the last 50 per user and the last 200 HIGH/CRITICAL results) and are lost when the instance stops.
+Each instance keeps at most 100,000 users (the least recently seen are forgotten first) and per-IP
+counts for at most 50,000 IPs, so memory stays bounded however many requests arrive.
 Do not send real user data to the public demo.
 
 ## Reporting a vulnerability

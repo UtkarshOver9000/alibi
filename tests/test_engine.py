@@ -126,3 +126,20 @@ def test_engine_falls_back_to_rules_without_model_files(tmp_path):
     eng = RiskEngine(StateStore(), artifact_dir=tmp_path)
     v = eng.evaluate_event(LoginEvent(user_id="r", login_ts="2026-10-01T10:00:00Z", ip=malware_ip("IN"), device_id="d"))
     assert v.risk_tier == "CRITICAL" and any("Model unavailable" in r for r in v.reasons)
+
+
+def test_tracked_ips_stay_bounded(engine):
+    engine.max_ips = 10
+    for i in range(30):  # one login per IP, two hours apart, so older IPs fall out of the one-hour window
+        engine.evaluate_event(login(f"u{i}", minutes=i * 120, ip=f"198.51.100.{i}"))
+    assert len(engine.ip_history) <= 10
+    assert "198.51.100.29" in engine.ip_history  # the newest IP still counts
+
+
+def test_least_recently_seen_users_are_forgotten():
+    store = StateStore(max_users=3)
+    for name in ("a", "b", "c"):
+        store.get_user(name)
+    store.get_user("a")  # seen again, so "b" is now the oldest
+    store.get_user("d")
+    assert list(store.users) == ["c", "a", "d"]
