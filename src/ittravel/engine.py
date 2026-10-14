@@ -43,6 +43,9 @@ ACTIONS = {
 }
 GUESSING_FAILS = 5  # wrong passwords in the user's last 10 attempts that count as someone guessing
 TIER_RANK = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
+IP_WINDOW_SECS = 3600  # ip_attempts_1h and ip_failures_1h look back one hour, as in training
+MAX_TRACKED_IPS = 50_000  # past this, IPs with no attempt in the last hour are forgotten
+MAX_ATTEMPTS_PER_IP = 10_000  # one IP's window is capped, so a flood from one address can't grow it forever
 
 
 def _velocity_threshold() -> float:
@@ -64,6 +67,7 @@ class RiskEngine:
         self.models = joblib.load(models) if models.exists() else None
         self.card = json.loads(card.read_text()) if card.exists() and self.models is not None else {}
         self.ip_history: dict[str, deque] = {}
+        self.max_ips = MAX_TRACKED_IPS
 
     def sandbox(self) -> RiskEngine:
         """A copy that shares the loaded models but has its own users and per-IP history.
@@ -77,10 +81,25 @@ class RiskEngine:
 
     # --- features -------------------------------------------------------
     def _ip_window(self, ip: str, now: datetime) -> tuple[int, int]:
-        window = self.ip_history.setdefault(ip, deque())
-        while window and (now - window[0][0]).total_seconds() > 3600:
+        window = self.ip_history.get(ip)
+        if not window:
+            return 0, 0
+        while window and (now - window[0][0]).total_seconds() > IP_WINDOW_SECS:
             window.popleft()
         return len(window), sum(1 for _, ok in window if not ok)
+
+    def _remember_ip(self, ip: str, now: datetime, success: bool) -> None:
+        self.ip_history.setdefault(ip, deque(maxlen=MAX_ATTEMPTS_PER_IP)).append((now, success))
+        if len(self.ip_history) <= self.max_ips:
+            return
+        # Too many IPs tracked: drop those with no attempt in the last hour (they no longer count), then the least
+        # recently active, down to 90% of the cap so this sweep runs rarely.
+        keep = int(self.max_ips * 0.9)
+        active = [
+            (w[-1][0], ip, w) for ip, w in self.ip_history.items() if (now - w[-1][0]).total_seconds() <= IP_WINDOW_SECS
+        ]
+        active.sort(key=lambda row: row[0])
+        self.ip_history = {ip: w for _, ip, w in active[-keep:]}
 
     def features(self, user: UserState, event: LoginEvent, now: datetime) -> dict:
         n_prior = user.login_count
@@ -223,7 +242,7 @@ class RiskEngine:
         )
 
         user.record(event, now)
-        self.ip_history.setdefault(event.ip, deque()).append((now, event.success))
+        self._remember_ip(event.ip, now, event.success)
         if result.is_anomaly:
             self.store.log_anomaly(result.model_dump())
         return result
