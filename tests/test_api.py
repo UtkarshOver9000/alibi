@@ -100,6 +100,24 @@ def test_demo_endpoint_is_rate_limited_per_ip():
     assert other.status_code == 422
 
 
+def test_demo_checks_are_sandboxed():
+    """A keyless demo keeps nothing and cannot change how a real login from the same IP is scored."""
+    from ittravel.engine import get_engine
+
+    engine = get_engine()
+    kept = (len(engine.store.users), len(engine.ip_history), len(engine.store.anomaly_logs))
+    guesses = [
+        {**EVENT, "user_id": "x", "ip": "203.0.113.9", "success": False, "login_ts": f"2026-08-03T09:{m:02d}:00Z"}
+        for m in range(20)
+    ]
+    demo = client.post("/v1/demo/check", json={"events": guesses}, headers={"X-Forwarded-For": "198.51.100.90"})
+    assert demo.status_code == 200
+    assert (len(engine.store.users), len(engine.ip_history), len(engine.store.anomaly_logs)) == kept
+    real = {**EVENT, "user_id": "sandbox-check", "ip": "203.0.113.9", "login_ts": "2026-08-03T09:30:00Z"}
+    feats = client.post("/v1/auth/evaluate", json=real, headers=KEY).json()["features"]
+    assert feats["ip_attempts_1h"] == 0 and feats["ip_failures_1h"] == 0
+
+
 def test_security_headers():
     page = client.get("/")
     assert "script-src 'self'" in page.headers["content-security-policy"]

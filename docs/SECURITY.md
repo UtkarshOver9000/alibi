@@ -29,8 +29,12 @@ gateway or CDN limit for a hard global cap.
 
 ## Data handling
 
-Login events sent to the demo are kept only in that server instance's memory (the last 50
-per user and the last 200 HIGH/CRITICAL results) and are lost when the instance stops.
+`POST /v1/demo/check` scores each story in a throwaway sandbox: it gets its own user history and
+per-IP counts, and both are dropped as soon as the response is sent. A demo therefore keeps nothing
+and cannot change how real logins from the same IP are scored.
+
+Logins sent to the keyed `POST /v1/auth/evaluate` are kept only in that server instance's memory
+(the last 50 per user and the last 200 HIGH/CRITICAL results) and are lost when the instance stops.
 Do not send real user data to the public demo.
 
 ## Reporting a vulnerability
