@@ -11,7 +11,10 @@
 
 ## Rate limits
 
-Per client IP (first `X-Forwarded-For` hop), token bucket, in memory per server instance:
+Per client IP, token bucket, in memory per server instance. The client IP is the connecting address unless
+`ALIBI_TRUSTED_PROXY_HOPS` says how many proxies sit in front of the app; only then is `X-Forwarded-For` read, from
+the right, so a client can't dodge the limit by writing its own header. On Vercel, which replaces that header with the
+caller's real address, it counts as 1 without being set.
 
 | Path | Limit |
 |---|---|

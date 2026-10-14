@@ -92,7 +92,8 @@ def test_keyed_endpoints_are_off_without_a_server_key(monkeypatch):
     assert client.post("/v1/auth/evaluate", json=EVENT, headers=KEY).status_code == 503
 
 
-def test_demo_endpoint_is_rate_limited_per_ip():
+def test_demo_endpoint_is_rate_limited_per_ip(monkeypatch):
+    monkeypatch.setenv("ALIBI_TRUSTED_PROXY_HOPS", "1")
     ip = {"X-Forwarded-For": "198.51.100.77"}
     codes = [client.post("/v1/demo/check", json={}, headers=ip).status_code for _ in range(21)]
     assert codes[:20] == [422] * 20 and codes[20] == 429
@@ -100,9 +101,11 @@ def test_demo_endpoint_is_rate_limited_per_ip():
     assert other.status_code == 422
 
 
-def test_demo_checks_are_sandboxed():
+def test_demo_checks_are_sandboxed(monkeypatch):
     """A keyless demo keeps nothing and cannot change how a real login from the same IP is scored."""
     from ittravel.engine import get_engine
+
+    monkeypatch.setenv("ALIBI_TRUSTED_PROXY_HOPS", "1")
 
     engine = get_engine()
     kept = (len(engine.store.users), len(engine.ip_history), len(engine.store.anomaly_logs))
@@ -116,6 +119,28 @@ def test_demo_checks_are_sandboxed():
     real = {**EVENT, "user_id": "sandbox-check", "ip": "203.0.113.9", "login_ts": "2026-08-03T09:30:00Z"}
     feats = client.post("/v1/auth/evaluate", json=real, headers=KEY).json()["features"]
     assert feats["ip_attempts_1h"] == 0 and feats["ip_failures_1h"] == 0
+
+
+def test_forwarded_for_is_trusted_only_behind_a_proxy(monkeypatch):
+    from starlette.requests import Request
+
+    from ittravel.api.ratelimit import client_ip
+
+    def ip(forwarded: str) -> str:
+        scope = {"type": "http", "headers": [(b"x-forwarded-for", forwarded.encode())], "client": ("10.0.0.5", 4321)}
+        return client_ip(Request(scope))
+
+    monkeypatch.delenv("ALIBI_TRUSTED_PROXY_HOPS", raising=False)
+    monkeypatch.delenv("VERCEL", raising=False)
+    assert ip("198.51.100.1") == "10.0.0.5"  # no proxy: a client can't choose its own bucket
+    monkeypatch.setenv("ALIBI_TRUSTED_PROXY_HOPS", "1")
+    assert ip("1.2.3.4, 198.51.100.2") == "198.51.100.2"  # what our proxy saw, not what the client wrote
+    monkeypatch.setenv("ALIBI_TRUSTED_PROXY_HOPS", "2")
+    assert ip("1.2.3.4, 198.51.100.3, 10.0.0.9") == "198.51.100.3"
+    assert ip("198.51.100.4") == "10.0.0.5"  # fewer entries than proxies: the header can't be trusted
+    monkeypatch.delenv("ALIBI_TRUSTED_PROXY_HOPS")
+    monkeypatch.setenv("VERCEL", "1")
+    assert ip("198.51.100.5") == "198.51.100.5"
 
 
 def test_security_headers():
