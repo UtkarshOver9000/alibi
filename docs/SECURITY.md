@@ -25,6 +25,9 @@ caller's real address, it counts as 1 without being set.
 Over the limit returns 429 with `Retry-After`. Each serverless instance counts on its own, so add a
 gateway or CDN limit for a hard global cap.
 
+Request bodies are capped at 256 KB and anything larger gets 413. This holds when a client streams the body in
+chunks without a `Content-Length`: reading stops as soon as the cap is passed.
+
 ## Not provided by this project
 
 - Persistent or shared state: history is per process (see ARCHITECTURE.md).

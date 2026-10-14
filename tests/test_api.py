@@ -198,3 +198,10 @@ def test_inputs_are_validated_and_bodies_capped():
         assert client.post("/v1/auth/evaluate", json=body, headers=KEY).status_code == 422
     huge = client.post("/v1/demo/check", content=b"x" * (300 * 1024), headers={"Content-Type": "application/json"})
     assert huge.status_code == 413
+    # streamed in chunks, with no Content-Length to check up front
+    chunked = client.post(
+        "/v1/demo/check", content=iter([b"x" * 1024] * 300), headers={"Content-Type": "application/json"}
+    )
+    assert chunked.status_code == 413
+    small = client.post("/v1/demo/check", content=iter([b"{}"]), headers={"Content-Type": "application/json"})
+    assert small.status_code == 422  # under the cap, so it reaches validation

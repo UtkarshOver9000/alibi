@@ -8,10 +8,11 @@ daily data snapshot, and login-risk scoring with two models trained on the RBA d
 
 | Path | What it does |
 |---|---|
-| `api/app.py` | The app: middleware (CORS, gzip, rate limits, `X-Data-As-Of`), static files, the dashboard page |
+| `api/app.py` | The app: middleware (CORS, gzip, rate limits, body cap, `X-Data-As-Of`), static files, the dashboard page |
 | `api/routes/` | One router per area: `intel` (snapshot data, search, IP lookup, STIX), `globe` (textures, pick map, legends), `demo` (keyless story scoring, model metrics), `auth` (keyed evaluate, audit, stats, keys), `health` (per-feed status) |
 | `api/auth.py` | `X-API-Key` checks for the keyed routes (key from `ALIBI_API_KEY` only) |
 | `api/ratelimit.py` | Per-IP token-bucket limits on `/v1/*` |
+| `api/bodylimit.py` | 256 KB cap on request bodies, sent whole or streamed in chunks |
 | `engine.py` | `RiskEngine`: builds the 19 live features, scores both models, maps percentiles to tiers, then applies the rule layer: malware IP → CRITICAL; criminal network, Tor, new hosting / VPN network, 5+ failed passwords, or > 900 km/h travel → at least HIGH |
 | `state.py` | In-memory per-user history and issued API keys (lost on restart) |
 | `schema.py` | Pydantic request and response models |
