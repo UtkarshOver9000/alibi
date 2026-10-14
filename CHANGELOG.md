@@ -87,6 +87,7 @@ Changes from the Alibi master plan (`#` numbers refer to its 299 items). Newest 
 - Cap streamed request bodies too, not just ones with Content-Length (#304)
 - Stop the README claiming ransomware by industry and country (#308)
 - Say where live scoring sees less than training did (#306)
+- Test training end to end on real RBA rows (#305)
 
 Covered without a separate change:
 
@@ -96,7 +97,7 @@ Covered without a separate change:
 - The RBA dataset (Wiefling et al., CC BY 4.0) is cited in the README, sources.yaml and the model card (#113)
 - Per-IP token-bucket rate limits with Retry-After were already in place (api/ratelimit.py) (#240)
 
-Plan items done so far: 77 of 308 (#172, #175, #241, #243, #244, #246, #248, #259, #260, #261, #265, #152, #160, #169, #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13, #14, #15, #16, #17, #18, #19, #20, #21, #22, #23, #24, #25, #26, #27, #28, #29, #30, #31, #32, #33, #35, #36, #38, #39, #40, #42, #61, #62, #115, #136, #137, #151, #153, #154, #155, #158, #159, #168, #276, #277, #293, #300, #302, #301, #303, #304, #113, #240, #308, #306).
+Plan items done so far: 78 of 308 (#172, #175, #241, #243, #244, #246, #248, #259, #260, #261, #265, #152, #160, #169, #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11, #12, #13, #14, #15, #16, #17, #18, #19, #20, #21, #22, #23, #24, #25, #26, #27, #28, #29, #30, #31, #32, #33, #35, #36, #38, #39, #40, #42, #61, #62, #115, #136, #137, #151, #153, #154, #155, #158, #159, #168, #276, #277, #293, #300, #302, #301, #303, #304, #113, #240, #308, #306, #305).
 
 ## 1.0 plan
 

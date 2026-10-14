@@ -1,12 +1,22 @@
+import gzip
 import json
+import sys
+import zipfile
+from pathlib import Path
 
 import duckdb
 import pandas as pd
 import pytest
 
 from ittravel.cli import score_file
+from ittravel.engine import RiskEngine
+from ittravel.rba import load, train
 from ittravel.rba.features import FEATURE_COLUMNS, build_features
 from ittravel.rba.train import evaluate, score_quantiles, threshold_for_budget
+from ittravel.schema import LoginEvent
+from ittravel.state import StateStore
+
+RBA_SAMPLE = Path(__file__).parent / "fixtures" / "rba-sample.csv.gz"
 
 
 def test_cli_scores_events_in_order(tmp_path):
@@ -70,3 +80,34 @@ def test_evaluate_reports_alert_metrics():
     assert m["alert_rate"] == 0.4 and m["alerts_per_10k_logins"] == 4000.0
     assert m["recall"] == 0.5 and m["precision"] == 0.5
     assert m["roc_auc"] == pytest.approx(5 / 6, abs=1e-4)
+
+
+def test_training_runs_end_to_end_on_real_rba_rows(tmp_path, monkeypatch):
+    """Zip like Zenodo's -> DuckDB -> features -> both models -> model card -> the live engine scores with them."""
+    archive = tmp_path / "rba-dataset.zip"
+    with zipfile.ZipFile(archive, "w") as zf:
+        zf.writestr("rba-dataset.csv", gzip.decompress(RBA_SAMPLE.read_bytes()))
+    db = tmp_path / "rba.duckdb"
+    assert load.load(archive, db, chunk_rows=1000) == 2676  # three chunks, so appending is covered too
+
+    artifacts = tmp_path / "artifacts"
+    monkeypatch.setattr(train, "ARTIFACT_DIR", artifacts)
+    monkeypatch.setattr(train, "MAX_ROUNDS", 40)  # enough to exercise round picking; the real run tries 500
+    monkeypatch.setattr(sys, "argv", ["train", "--db", str(db), "--reports-dir", str(tmp_path / "reports")])
+    train.main()
+
+    card = json.loads((artifacts / "rba_model_card.json").read_text())
+    assert card["features"] == FEATURE_COLUMNS and card["live_differences"]
+    assert card["dataset"]["logins"] == 2676 and card["dataset"]["account_takeovers"] == 25
+    for target in ("ato", "attack_ip"):
+        test = card["test_metrics"][target]
+        assert test["positives"] > 0 and 0 <= test["roc_auc"] <= 1
+        assert card["score_quantiles"][target]["values"] == sorted(card["score_quantiles"][target]["values"])
+    report = json.loads((tmp_path / "reports" / "rba_metrics.json").read_text())
+    assert set(report["targets"]) == {"ato", "attack_ip"}
+    assert (tmp_path / "reports" / "figures" / "rba_training_curves.png").stat().st_size > 0
+
+    engine = RiskEngine(state_store=StateStore(), artifact_dir=artifacts)
+    login = LoginEvent(user_id="u", login_ts="2026-08-03T09:00:00Z", ip="84.208.20.10", device_id="d", country="NO")
+    result = engine.evaluate_event(login)
+    assert 0 <= result.ato_probability <= 1 and result.risk_tier in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}

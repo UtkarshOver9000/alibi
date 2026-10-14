@@ -43,6 +43,7 @@ ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "artifacts"
 NEG_SAMPLE = 3_000_000
 VAL_NEG_SAMPLE = 1_000_000
 ALERT_BUDGET = 0.01  # share of logins that may be sent to step-up authentication
+MAX_ROUNDS = 500  # boosting rounds tried; validation picks how many to keep
 SEED = 7
 
 
@@ -153,7 +154,7 @@ def train_target(con, target: str, bounds) -> tuple[dict, HistGradientBoostingCl
         early_stopping=False,
         random_state=SEED,
     )
-    full = HistGradientBoostingClassifier(max_iter=500, **params).fit(xt, yt, sample_weight=wt)
+    full = HistGradientBoostingClassifier(max_iter=MAX_ROUNDS, **params).fit(xt, yt, sample_weight=wt)
     train_curve = [log_loss(yt, _clip(p[:, 1]), sample_weight=wt, labels=[0, 1]) for p in full.staged_predict_proba(xt)]
     val_curve = [log_loss(yv, _clip(p[:, 1]), sample_weight=wv, labels=[0, 1]) for p in full.staged_predict_proba(xv)]
     best = int(np.argmin(val_curve)) + 1
