@@ -708,9 +708,11 @@ def build_heat(raw: Path) -> dict:
     points = []
     for ip, info in bad.items():
         if ip in geo:
-            points.append([round(geo[ip][0], 2), round(geo[ip][1], 2), kinds.get(info["what"], "dl"), info.get("t")])
-    points += [[round(geo[ip][0], 2), round(geo[ip][1], 2), "tor", None] for ip in sorted(tor_ips) if ip in geo]
-    points += [[round(geo[ip][0], 2), round(geo[ip][1], 2), "drop", None] for ip in drop_starts if ip in geo]
+            points.append(
+                [round(geo[ip][0], 2), round(geo[ip][1], 2), kinds.get(info["what"], "dl"), info.get("t"), ip]
+            )
+    points += [[round(geo[ip][0], 2), round(geo[ip][1], 2), "tor", None, ip] for ip in sorted(tor_ips) if ip in geo]
+    points += [[round(geo[ip][0], 2), round(geo[ip][1], 2), "drop", None, ip] for ip in drop_starts if ip in geo]
     events = {
         "types": {
             "c2": "Botnet control server",

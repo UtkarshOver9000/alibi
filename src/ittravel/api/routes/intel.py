@@ -91,7 +91,8 @@ async def intel_states():
 @router.get("/v1/intel/events", tags=["Intel"])
 async def intel_events():
     """Typed points for the globe: malware servers with their report time (unix seconds), Tor exits and
-    Spamhaus criminal ranges, each placed by DB-IP: [lat, lng, type, time]."""
+    Spamhaus criminal ranges, each placed by DB-IP: [lat, lng, type, time, ip]. For a criminal range the ip is
+    the first address of the block."""
     return FileResponse(str(service.DATA / "events.json"), media_type="application/json")
 
 
