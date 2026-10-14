@@ -244,7 +244,7 @@ def _previous_epss() -> tuple[dict[str, tuple[float, float]], str | None, str | 
         date = meta["flaws"].get("epss_date")
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
         return {}, None, None
-    feed = next((f for f in meta.get("feeds", []) if f.get("id") == "epss" and f.get("available")), {})
+    feed: dict = next((f for f in meta.get("feeds", []) if f.get("id") == "epss" and f.get("available")), {})
     scores = {r["cve"]: (r["epss"], r["epss_pct"]) for r in rows if r.get("epss") is not None}
     return scores, date, feed.get("updated")
 
