@@ -1,3 +1,5 @@
+import ipaddress
+
 from fastapi.testclient import TestClient
 
 from ittravel.api.app import app
@@ -299,9 +301,10 @@ def test_readme_numbers_and_sources_match_the_data():
 def test_events_activity_and_country_ranks():
     ev = client.get("/v1/intel/events").json()
     assert set(ev["types"]) == {"c2", "dl", "tor", "drop"}
-    for lat, lng, kind, t in ev["points"][:500]:
+    for lat, lng, kind, t, ip in ev["points"][:500]:
         assert -90 <= lat <= 90 and -180 <= lng <= 180 and kind in ev["types"]
         assert t is None or isinstance(t, int)
+        assert ipaddress.ip_address(ip).version == 4  # each point can be looked up
     act = client.get("/v1/intel/activity").json()
     assert len(act["per_hour"]) == 48 and sum(act["per_hour"]) == act["last_48h"] >= act["new_today"] >= 0
     lg = client.get("/v1/intel/globe/malicious_ips/legend").json()
