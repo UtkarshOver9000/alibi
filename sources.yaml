@@ -104,6 +104,17 @@ feeds:
     parser: snapshot.build_threats
     description: Indicators of compromise shared in the last 48 hours.
 
+  - id: threatfox_full
+    name: abuse.ch ThreatFox full export
+    url: https://threatfox.abuse.ch/export/json/full/
+    file: threatfox_full.json.zip
+    licence: CC0
+    auth: none
+    cadence: 1d
+    max_age: 3d
+    parser: snapshot.build_netrisk
+    description: Every indicator ThreatFox still holds (about the last six months) with the day it was first seen; the network-risk model learns from it and scores every network with it.
+
   - id: spamhaus_drop
     name: Spamhaus DROP (IPv4)
     url: https://www.spamhaus.org/drop/drop_v4.json

@@ -1,8 +1,9 @@
 """
 Who owns an IP address, which country it is announced from, and whether it is a
 Tor exit, a hosting/cloud/VPN network, a server reported for malware (abuse.ch)
-or part of a network run by criminals (Spamhaus DROP). Data: the intel snapshot,
-plus the Tor Project's live exit list.
+or part of a network run by criminals (Spamhaus DROP), plus how its network ranks
+for hosting new attack servers (netrisk). Data: the intel snapshot, plus the Tor
+Project's live exit list.
 """
 
 from __future__ import annotations
@@ -35,6 +36,7 @@ class NetworkInfo:
     private: bool
     threat: str | None = None  # what abuse.ch saw this IP doing, e.g. "Botnet control server (Cobalt Strike)"
     criminal_network: bool = False  # on Spamhaus DROP / ASN-DROP
+    risk_pct: float | None = None  # network-risk percentile of this network's addresses (netrisk), if scored
 
     @property
     def label(self) -> str:
@@ -63,6 +65,24 @@ def _threat_tables():
     bad = json.loads((DATA / "bad_ips.json").read_text())
     drop = np.load(DATA / "drop.npz")
     return bad, drop["start"], drop["end"], set(drop["asn"].tolist())
+
+
+@lru_cache(maxsize=1)
+def _risk_table() -> tuple[np.ndarray, np.ndarray]:
+    path = DATA / "netrisk.npz"
+    if not path.exists():
+        return np.zeros(0, dtype=np.uint32), np.zeros(0, dtype=np.float32)
+    z = np.load(path)
+    return z["asn"], z["pct"]
+
+
+def network_risk(asn: int | None) -> float | None:
+    """Address-weighted percentile of this network for hosting a new attack server next week (99.9 = riskiest 0.1%)."""
+    asns, pct = _risk_table()
+    if asn is None or not asns.size:
+        return None
+    i = int(np.searchsorted(asns, asn))
+    return round(float(pct[i]), 2) if i < asns.size and asns[i] == asn else None
 
 
 def _threat(ip: str, n: int, asn: int | None) -> tuple[str | None, bool]:
@@ -116,6 +136,7 @@ def lookup(ip: str) -> NetworkInfo:
         False,
         threat,
         criminal,
+        network_risk(a),
     )
 
 

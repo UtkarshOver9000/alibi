@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from ittravel.intel import validate
 from ittravel.netrisk import panel, score, train
 
 SAMPLE = Path(__file__).parent / "fixtures" / "raw" / "threatfox_full_sample.json.gz"
@@ -27,6 +28,14 @@ def export(tmp_path_factory):
 @pytest.fixture(scope="module")
 def nets():
     return panel.Networks(train.NETWORK)
+
+
+def test_the_export_passes_its_feed_check_and_junk_fails(export, tmp_path):
+    validate.check("threatfox_full", export)
+    junk = tmp_path / "threatfox_full.json.zip"
+    junk.write_bytes(b"<html>maintenance</html>")
+    with pytest.raises(validate.InvalidFeed, match="not a ThreatFox zip"):
+        validate.check("threatfox_full", junk)
 
 
 def test_features_never_look_ahead(export, nets):
@@ -64,3 +73,12 @@ def test_the_shipped_model_keeps_home_isps_out_of_the_riskiest_addresses(export)
     pct = dict(zip(scored["asn"].tolist(), scored["pct"].tolist(), strict=True))
     assert all(pct[asn] < 99 for asn in HOME_ISPS)
     assert all(t["servers_last_4_weeks"] > 0 and t["addresses"] >= score.MIN_LISTED_SIZE for t in scored["top"])
+
+
+def test_each_ip_carries_its_network_risk():
+    from ittravel.intel.network import lookup, network_risk
+
+    assert network_risk(3320) < 99  # Deutsche Telekom's home lines
+    assert network_risk(None) is None and network_risk(4_294_967_295) is None  # unknown network: no score, not zero
+    home = lookup("84.208.20.10")  # Telenor Norway
+    assert home.asn and home.risk_pct is not None and home.risk_pct < 99

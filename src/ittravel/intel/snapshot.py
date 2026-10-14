@@ -496,6 +496,22 @@ def build_threats(raw: Path) -> tuple[dict, Counter]:
     return threats, by_country
 
 
+def build_netrisk(raw: Path) -> dict:
+    """Score every network for next week with the network-risk model, from ThreatFox's full export."""
+    from ..netrisk.score import score
+
+    path = raw / "threatfox_full.json.zip"
+    if not path.exists():  # not downloaded this time: keep the last scores rather than drop the signal
+        return {**json.loads((OUT / "netrisk.json").read_text())["meta"], "reused": True}
+    scored = score(path, OUT / "network.npz")
+    np.savez_compressed(OUT / "netrisk.npz", asn=scored["asn"], pct=scored["pct"], rate=scored["rate"])
+    names = json.loads((OUT / "network_names.json").read_text())["asn_names"]
+    info = {"weeks": scored["weeks"], "networks": len(scored["asn"])}
+    top = [t | {"network": names.get(str(t["asn"]))} for t in scored["top"]]
+    (OUT / "netrisk.json").write_text(json.dumps({"meta": info, "top": top}, indent=1))
+    return info
+
+
 def build_cables(raw: Path) -> tuple[dict, Counter]:
     """Submarine internet cables and their landing stations: the physical links between countries."""
     import pycountry
@@ -846,6 +862,7 @@ def main() -> None:
     meta = {"fetched_at": (args.raw / "fetched_at.txt").read_text().strip()}
     net, hosting_ips = reuse_network() if args.reuse_network else build_network(args.raw)
     meta["network"] = net
+    meta["netrisk"] = build_netrisk(args.raw)
     meta["breaches"] = build_breaches(args.raw)
     meta["flaws"] = build_flaws(args.raw)
     threats, bad_by_country = build_threats(args.raw)
