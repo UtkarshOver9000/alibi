@@ -1263,7 +1263,8 @@ loaders.results = async () => {
     `With only ${ato.positives} takeovers to test on, that catch rate is uncertain: anywhere from about 43% to 80%. ` +
     `Spotting sign-ins from known attack IPs is harder: the model ranks them well above chance (ROC-AUC ${ip.roc_auc.toFixed(2)}) ` +
     `but catches only ${pct(ip.recall, 1)} at that budget, which is why Alibi adds today's Tor, VPN, malware-server and criminal-network checks on top. ` +
-    "These models have not yet been tested on 2025 or 2026 logins.";
+    "These models have not yet been tested on 2025 or 2026 logins. " +
+    (m.live_differences || []).join(" ");
   const now = Date.now();
   $("#currency").innerHTML = fr.feeds.map((f) => {
     const age = f.updated ? now - new Date(f.updated) : null;

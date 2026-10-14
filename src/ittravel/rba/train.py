@@ -59,6 +59,15 @@ def period_bounds(con) -> tuple:
 # Account-takeover labels only exist from 2020-02 to 2020-11 (the incident team's
 # labels stop there), so that target is split inside the labelled window.
 ATO_BOUNDS = (datetime(2020, 2, 1), datetime(2020, 8, 1), datetime(2020, 10, 1), datetime(2020, 12, 1))
+# Where live scoring sees less than training did; written into the model card and shown on Sources and accuracy.
+LIVE_DIFFERENCES = [
+    "Two inputs count the sign-ins and failures from the same IP address in the past hour. In training they counted "
+    "every sign-in the whole service saw. A live Alibi server counts only the sign-ins sent to it (each server "
+    "instance on its own, a demo only its own story), so these counts run lower live, and an attack spread over many "
+    "servers looks quieter than it is.",
+    "Each user's history (usual countries, networks and devices) starts empty on a new server instance, so a "
+    "returning user's first sign-in there is scored like a new account's first sign-in.",
+]
 
 
 def fetch(con, where: str, target: str, neg_sample: int | None = None):
@@ -269,6 +278,7 @@ def main() -> None:
         "test_metrics": {t: report["targets"][t]["model_test"] for t in models},
         "alert_budget": ALERT_BUDGET,
         "dataset": report["dataset"],
+        "live_differences": LIVE_DIFFERENCES,
         "scikit_learn": sklearn.__version__,
     }
     (ARTIFACT_DIR / "rba_model_card.json").write_text(json.dumps(card, indent=2))
