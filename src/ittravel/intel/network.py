@@ -24,6 +24,26 @@ TOR_LIVE_URL = "https://check.torproject.org/torbulkexitlist"
 _tor_live: tuple[float, frozenset[str]] = (0.0, frozenset())
 
 
+CLOUD_ASN_MAP: dict[int, str] = {
+    16509: "Amazon Web Services (AWS)",
+    14618: "Amazon Web Services (AWS)",
+    7224: "Amazon Web Services (AWS)",
+    15169: "Google Cloud (GCP)",
+    396982: "Google Cloud (GCP)",
+    8075: "Microsoft Azure",
+    8068: "Microsoft Azure",
+    8069: "Microsoft Azure",
+    12076: "Microsoft Azure",
+    13335: "Cloudflare",
+    209242: "Cloudflare",
+    14061: "DigitalOcean",
+    31898: "Oracle Cloud (OCI)",
+    24940: "Hetzner Online",
+    16276: "OVHcloud",
+    63949: "Linode / Akamai",
+}
+
+
 @dataclass(frozen=True)
 class NetworkInfo:
     ip: str
@@ -36,6 +56,7 @@ class NetworkInfo:
     threat: str | None = None  # what abuse.ch saw this IP doing, e.g. "Botnet control server (Cobalt Strike)"
     criminal_network: bool = False  # on Spamhaus DROP / ASN-DROP
     risk_pct: float | None = None  # network-risk percentile of this network's addresses (netrisk), if scored
+    cloud_provider: str | None = None  # Recognized cloud/hosting hyperscaler (AWS, GCP, Azure, Cloudflare)
 
     @property
     def label(self) -> str:
@@ -125,17 +146,19 @@ def lookup(ip: str) -> NetworkInfo:
         return NetworkInfo(ip, None, None, None, False, ip in tor, False, threat, criminal)
     a = int(asn[i])
     threat, criminal = _threat(ip, n, a)
+    cloud = CLOUD_ASN_MAP.get(a)
     return NetworkInfo(
         ip,
         a,
         asn_names.get(str(a)),
         countries[int(cc[i])] or None,
-        bool(hosting[i]),
+        bool(hosting[i] or cloud),
         ip in tor,
         False,
         threat,
         criminal,
         network_risk(a),
+        cloud,
     )
 
 

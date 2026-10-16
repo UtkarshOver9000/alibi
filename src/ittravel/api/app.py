@@ -23,7 +23,9 @@ from .routes import export as export_routes
 from .routes import globe as globe_routes
 from .routes import health as health_routes
 from .routes import intel as intel_routes
+from .routes import metrics as metrics_routes
 from .routes import shield as shield_routes
+from .routes import taxii as taxii_routes
 from .routes import terminal as terminal_routes
 
 app = FastAPI(
@@ -148,6 +150,8 @@ for module in (
     terminal_routes,
     shield_routes,
     defense_routes,
+    taxii_routes,
+    metrics_routes,
     export_routes,
     health_routes,
 ):
