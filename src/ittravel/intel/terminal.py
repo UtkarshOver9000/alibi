@@ -59,10 +59,12 @@ def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
     matched_asns = []
     for asn_str, org_name in asn_names.items():
         if needle in org_name.lower() or needle == asn_str:
-            matched_asns.append({
-                "asn": int(asn_str),
-                "name": org_name,
-            })
+            matched_asns.append(
+                {
+                    "asn": int(asn_str),
+                    "name": org_name,
+                }
+            )
             if len(matched_asns) >= limit:
                 break
 
