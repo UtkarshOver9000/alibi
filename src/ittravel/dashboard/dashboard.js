@@ -114,13 +114,11 @@ function show(hash) {
   $$(".tab").forEach((s) => (s.hidden = s.id !== `tab-${tab}`));
   $$("nav a").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
   if (!loaded.has(tab) && loaders[tab]) load(tab);
-  if (tab === "check" && tripMap) setTimeout(() => tripMap.invalidateSize(), 50);
   document.body.classList.toggle("on-globe", tab === "globe");
   document.body.classList.toggle("on-sheet", tab !== "globe");
   if (tab === "globe" && globe) setTimeout(sizeGlobe, 50);
   if (globe && !flat) tab === "globe" ? globe.resumeAnimation() : globe.pauseAnimation(); // a covered globe costs nothing
   window.scrollTo(0, 0);
-  if (tab === "check" && PRESETS[story]) applyPreset(story);
   if (tab === "globe") [...route().params].length ? applyUrlState() : syncUrl();
 }
 window.addEventListener("hashchange", () => show(location.hash.slice(1)));
@@ -1163,168 +1161,158 @@ loaders.flaws = async () => {
     <td class="num">${r.epss == null ? "not scored" : pct(r.epss, 1)}</td></tr>`).join("");
 };
 
-// ---------- account takeover: check a sign-in ----------
-// Main business city of each country in the picker (for the map and the travel-speed check).
-const CITIES = {
-  IN: ["Mumbai", 19.076, 72.8777], US: ["New York", 40.7128, -74.006], GB: ["London", 51.5074, -0.1278],
-  DE: ["Berlin", 52.52, 13.405], FR: ["Paris", 48.8566, 2.3522], NL: ["Amsterdam", 52.3676, 4.9041],
-  BR: ["São Paulo", -23.5505, -46.6333], JP: ["Tokyo", 35.6762, 139.6503], SG: ["Singapore", 1.3521, 103.8198],
-  AE: ["Dubai", 25.2048, 55.2708], AU: ["Sydney", -33.8688, 151.2093], CA: ["Toronto", 43.6532, -79.3832],
-  NG: ["Lagos", 6.5244, 3.3792], ZA: ["Johannesburg", -26.2041, 28.0473], RU: ["Moscow", 55.7558, 37.6173],
-  CN: ["Shanghai", 31.2304, 121.4737], KR: ["Seoul", 37.5665, 126.978], ID: ["Jakarta", -6.2088, 106.8456],
-};
-const DEVICES = {
-  same: { device_id: "usual-laptop", browser: "Chrome 128.0", os: "Windows 10", device_type: "desktop" },
-  new: { device_id: "unknown-phone", browser: "Chrome Mobile 128.0", os: "Android 14", device_type: "mobile" },
-};
-const PRESETS = {
-  usual: { home: "IN", country: "IN", net: "home", device: "same", minutes: 900, fails: 0, correct: true },
-  tor: { home: "IN", country: "IN", net: "tor", device: "same", minutes: 600, fails: 0, correct: true },
-  vpn: { home: "IN", country: "IN", net: "vpn", device: "same", minutes: 600, fails: 0, correct: true },
-  malware: { home: "IN", country: "IN", net: "malware", device: "same", minutes: 600, fails: 0, correct: true },
-  abroad: { home: "IN", country: "BR", net: "newhome", device: "new", minutes: 2880, fails: 0, correct: true },
-  travel: { home: "IN", country: "GB", net: "newhome", device: "same", minutes: 10, fails: 0, correct: true },
-  guessing: { home: "IN", country: "IN", net: "newhome", device: "new", minutes: 600, fails: 6, correct: true },
-};
-// risk bar colour per tier: green, amber, orange, red
-const TIER_COLOR = { LOW: "#2f7a4f", MEDIUM: "#d4a017", HIGH: "#e8710a", CRITICAL: "#b42318" };
-const SAY = {
-  LOW: "Looks like the real owner. Let them in.",
-  MEDIUM: "A little unusual, but believable. Let them in and keep a note.",
-  HIGH: "This story doesn't add up. Ask for a one-time code first.",
-  CRITICAL: "Very likely not the owner. Block it and alert them.",
-};
+// ---------- Tech Bloomberg Terminal ----------
+loaders.terminal = async () => {};  // lazy: search is user-driven, no auto-load
 
-let tripMap, tripLayer, checkReady;
-const ensureCheck = () => (checkReady ??= setupCheck());
-loaders.check = ensureCheck;
+(function wireTerminal() {
+  const form = $("#terminal-form");
+  const qInput = form?.querySelector("input[name='q']") ?? form?.querySelector("input");
+  if (!form) return;
 
-async function setupCheck() {
-  api("/v1/model").then(() => $("#tab-check .updated") || $("#tab-check .page-head").insertAdjacentHTML("afterend",
-    '<p class="fineprint updated">Network checks use today\'s threat data; the model was trained on 2020 to 2021 logins.</p>'));
-  const [{ data }] = await Promise.all([world(), need("leaflet")]);
-  const names = data.countries;
-  const opts = Object.keys(CITIES)
-    .sort((a, b) => names[a].name.localeCompare(names[b].name))
-    .map((cc) => `<option value="${cc}">${esc(names[cc].name)} (${CITIES[cc][0]})</option>`).join("");
-  $("#f-home").innerHTML = opts;
-  $("#f-country").innerHTML = opts;
-  tripMap = L.map("trip-map", { scrollWheelZoom: false, worldCopyJump: true }).setView([30, 40], 2);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 6, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(tripMap);
-  tripLayer = L.layerGroup().addTo(tripMap);
-  applyPreset("usual", false);
-}
-
-async function applyPreset(name, run = true) {
-  if (run) await ensureCheck();
-  const p = PRESETS[name];
-  $("#f-home").value = p.home;
-  $("#f-country").value = p.country;
-  $("#f-net").value = p.net;
-  $("#f-device").value = p.device;
-  $("#f-minutes").value = p.minutes;
-  $("#f-fails").value = p.fails;
-  $("#f-correct").checked = p.correct;
-  $$("[data-preset]").forEach((b) => b.classList.toggle("on", b.dataset.preset === name));
-  if (run) runCheck();
-}
-$$("[data-preset]").forEach((b) => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
-$("#check-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  $$("[data-preset]").forEach((b) => b.classList.remove("on"));
-  runCheck();
-});
-
-function loginEvent(ts, ip, cc, device, success) {
-  const [city, lat, lon] = CITIES[cc];
-  return { user_id: "demo", login_ts: new Date(ts).toISOString(), ip, country: cc, city, lat, lon, success, ...DEVICES[device] };
-}
-
-async function runCheck() {
-  await ensureCheck();
-  const home = $("#f-home").value, there = $("#f-country").value, net = $("#f-net").value, device = $("#f-device").value;
-  const minutes = Math.max(1, +$("#f-minutes").value || 1), fails = Math.min(10, Math.max(0, +$("#f-fails").value || 0));
-  const btn = $("#f-go");
-  $("#f-err").textContent = "";
-  btn.disabled = true;
-  btn.textContent = "Checking…";
-  try {
-    const [hs, ts] = await Promise.all([samples(home), samples(there)]);
-    const usual = hs.home[0];
-    let ip;
-    if (net === "home") ip = home === there ? usual : ts.home[0];
-    else if (net === "newhome") ip = home === there ? ts.home[1] || ts.home[0] : ts.home[0];
-    else if (net === "vpn") ip = ts.hosting[0];
-    else if (net === "malware") ip = { ip: ts.malware, network: "reported malware server" };
-    else if (ts.tor) ip = { ip: ts.tor, network: "Tor" };
-    else throw new Error("This server can't reach the Tor Project's exit list right now (torproject.org is blocked on some networks), so the Tor story can't be checked here.");
-
-    // Two weeks of ordinary sign-ins from home, then the one being tested.
-    const testAt = Date.now();
-    const lastUsual = testAt - minutes * 60000;
-    const events = [];
-    for (let i = 6; i >= 0; i--) events.push(loginEvent(lastUsual - i * 2 * 86400000, usual.ip, home, "same", true));
-    for (let i = fails; i >= 1; i--) events.push(loginEvent(testAt - i * 20000, ip.ip, there, device, false));
-    events.push(loginEvent(testAt, ip.ip, there, device, $("#f-correct").checked));
-
-    const { verdict } = await api("/v1/demo/check", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ events }),
-    });
-    renderVerdict(verdict, usual, ip, home, there, fails);
-  } catch (err) {
-    $("#f-err").textContent = err.message;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Run check";
+  function runTerminal(q) {
+    if (!q) return;
+    const box = $("#terminal-results");
+    box.innerHTML = '<p class="muted">Pulling dossier…</p>';
+    api(`/v1/terminal/company?q=${encodeURIComponent(q)}`)
+      .then((d) => {
+        const grade = d.grade ?? "—";
+        const gradeColor = { A: "#2f7a4f", B: "#3d7ab5", C: "#d4a017", D: "#e8710a", F: "#b42318" }[grade[0]] ?? "#666";
+        const subdomains = d.attack_surface?.subdomains ?? [];
+        const kevs = (d.exploited_cves ?? []).slice(0, 5);
+        const breaches = d.breach_summary ?? {};
+        const asns = (d.asn_profile ?? []).slice(0, 6);
+        box.innerHTML = `
+          <div class="panel" style="margin-bottom:1rem">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
+              <span style="font-size:2.5rem;font-weight:700;color:${gradeColor};line-height:1">${esc(grade)}</span>
+              <div>
+                <b style="font-size:1.1rem">${esc(d.company ?? q)}</b><br>
+                <span class="fineprint">${esc(d.primary_domain ?? "")}</span>
+              </div>
+            </div>
+            <ul style="margin:0;padding-left:1.2rem">
+              ${(d.summary_bullets ?? []).map((b) => `<li>${esc(b)}</li>`).join("") || "<li class='muted'>No summary available.</li>"}
+            </ul>
+          </div>
+          ${breaches.total_breaches ? `<div class="panel" style="margin-bottom:1rem">
+            <b>Breach history</b> — ${fmt(breaches.total_breaches)} breaches · ${fmt(breaches.total_records ?? 0)} records exposed
+          </div>` : ""}
+          ${asns.length ? `<div class="panel" style="margin-bottom:1rem">
+            <b>Network footprint</b><br>
+            <table style="width:100%;margin-top:.5rem"><tbody>
+              ${asns.map((a) => `<tr><td>AS${esc(a.asn)}</td><td>${esc(a.network)}</td><td style="text-align:right">${esc(a.country ?? "")}</td></tr>`).join("")}
+            </tbody></table>
+          </div>` : ""}
+          ${kevs.length ? `<div class="panel" style="margin-bottom:1rem">
+            <b>Known-exploited flaws (CISA KEV)</b>
+            <ul style="margin:.4rem 0 0;padding-left:1.2rem">
+              ${kevs.map((c) => `<li><a href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener">${esc(c)}</a></li>`).join("")}
+            </ul>
+          </div>` : ""}
+          ${subdomains.length ? `<div class="panel">
+            <b>Attack surface — certificate-transparency subdomains (${subdomains.length})</b>
+            <div style="margin-top:.4rem;font-family:monospace;font-size:.8rem;line-height:1.7">
+              ${subdomains.slice(0, 30).map((s) => esc(s)).join("<br>")}
+              ${subdomains.length > 30 ? `<br><span class="fineprint">…and ${subdomains.length - 30} more</span>` : ""}
+            </div>
+          </div>` : ""}`;
+      })
+      .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
   }
-}
 
-// HIGH without impossible travel means the pattern is unusual for this account, not that the trip can't happen
-const say = (v) => (v.risk_tier === "HIGH" && !v.reasons.some((r) => r.startsWith("Impossible travel"))
-  ? "Unusual for this user. Ask for a one-time code first." : SAY[v.risk_tier]);
+  form.addEventListener("submit", (e) => { e.preventDefault(); runTerminal(qInput?.value.trim()); });
+  $$("[data-terminal]").forEach((b) => b.addEventListener("click", () => {
+    if (qInput) qInput.value = b.dataset.terminal;
+    runTerminal(b.dataset.terminal);
+  }));
+})();
 
-function renderVerdict(v, usual, ip, home, there, fails) {
-  const n = v.network || {};
-  const reasons = v.reasons.length ? v.reasons : ["Nothing unusual compared with this account's history"];
-  const facts = [
-    ["Network", `${esc(n.network || "unknown")}${n.asn ? ` (AS${n.asn})` : ""}`],
-    ["Connection type", esc(n.type || "unknown")],
-    ["IP address", esc(ip.ip)],
-    ["IP registered in", esc(n.country || "unknown")],
-    ["Takeover model", `riskier than ${v.ato_percentile}% of real sign-ins`],
-    ["Attack-IP model", `riskier than ${v.attack_ip_percentile}% of real sign-ins`],
-  ];
-  if (v.distance_km > 0) facts.push(["Distance from last sign-in", `${fmt(Math.round(v.distance_km))} km`],
-    ["Speed needed", `${fmt(Math.round(v.velocity_kmph))} km/h`]);
-  $("#verdict").innerHTML = `<h3>Verdict</h3>
-    <span class="badge ${v.risk_tier}">${v.risk_tier}</span>
-    <p class="say">${say(v)}</p>
-    <div class="meter"><div style="width:${v.risk_score}%;background:${TIER_COLOR[v.risk_tier]}"></div></div>
-    <p class="fineprint">The model rates it riskier than ${v.risk_score}% of sign-ins in the real test data. Alibi would ${esc(v.recommended_action)}.</p>
-    <p class="fineprint tiers">LOW is below the 90th percentile · MEDIUM is the 90th or above · HIGH the 99th or above ·
-      CRITICAL the 99.9th or above. A rule (malware server, Tor, new VPN, impossible travel, password guessing) can raise the tier.</p>
-    <details class="howto"><summary>How to read this</summary>
-      <p>The percentile compares this sign-in with ${fmt(5403650)} real sign-ins from the model's test data. Riskier than
-      99% means only 1 sign-in in 100 looked riskier to the model. The tier turns that into an action: LOW lets the
-      person in, MEDIUM lets them in and logs it, HIGH asks for a one-time code, CRITICAL blocks and alerts the owner.
-      The two models look at different things: the takeover model at this account's own history, the attack-IP model
-      at how the IP behaves across all accounts.</p></details>
-    <h3>Why</h3><ul>${reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>
-    <div class="facts">${facts.map(([k, val]) => `<div><b>${k}</b>${val}</div>`).join("")}</div>
-    <p class="fineprint">History sent first: 7 sign-ins over two weeks from ${esc(usual.network)} in ${CITIES[home][0]}${fails ? `, then ${fails} wrong passwords` : ""}.</p>`;
+// ---------- live footprint ----------
+loaders.check = async () => {};  // user-driven
 
-  tripLayer.clearLayers();
-  const a = CITIES[home], b = CITIES[there];
-  L.circleMarker([a[1], a[2]], { radius: 7, color: css("--accent"), fillOpacity: 0.9 }).bindTooltip(`Usual: ${a[0]}`).addTo(tripLayer);
-  const color = { LOW: css("--ok"), MEDIUM: css("--warn"), HIGH: css("--risk"), CRITICAL: css("--risk") }[v.risk_tier];
-  L.circleMarker([b[1], b[2]], { radius: 8, color, fillOpacity: 0.9 }).bindTooltip(`This sign-in: ${b[0]}`).addTo(tripLayer);
-  if (home !== there) {
-    L.polyline([[a[1], a[2]], [b[1], b[2]]], { color, dashArray: "6 6" }).addTo(tripLayer);
-    tripMap.fitBounds([[a[1], a[2]], [b[1], b[2]]], { padding: [40, 40], maxZoom: 5 });
-  } else tripMap.setView([a[1], a[2]], 4);
-}
+(function wireFootprint() {
+  const form = $("#footprint-form");
+  const ipInput = form?.querySelector("input");
+  if (!form) return;
+
+  const TIER_COL = { CLEAN: "#2f7a4f", LOW: "#3d7ab5", MEDIUM: "#d4a017", HIGH: "#e8710a", CRITICAL: "#b42318" };
+
+  function runFootprint(ip) {
+    if (!ip) return;
+    const box = $("#footprint-results");
+    box.innerHTML = '<p class="muted">Pulling footprint…</p>';
+    api(`/v1/terminal/footprint?ip=${encodeURIComponent(ip)}`)
+      .then((d) => {
+        const tier = d.threat_tier ?? "UNKNOWN";
+        const col = TIER_COL[tier] ?? "#888";
+        const net = d.network ?? {};
+        const cables = (d.subsea_cables ?? []).slice(0, 5);
+        box.innerHTML = `
+          <div class="panel" style="margin-bottom:1rem">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
+              <span style="font-size:1.5rem;font-weight:700;color:${col}">${esc(tier)}</span>
+              <div><b>${esc(ip)}</b><br><span class="fineprint">${esc(net.network ?? "")}${net.asn ? ` · AS${net.asn}` : ""}</span></div>
+            </div>
+            <div class="facts" style="margin-top:.5rem">
+              <div><b>Country</b>${esc(net.country ?? "—")}</div>
+              <div><b>Type</b>${esc(net.type ?? "—")}</div>
+              ${d.is_tor ? '<div><b>Tor exit</b>yes</div>' : ""}
+              ${d.is_malware ? `<div><b>Malware flag</b><span class="tag">yes — ${esc(d.malware_threat ?? "")}</span></div>` : ""}
+              ${d.is_criminal_network ? '<div><b>Criminal network</b><span class="tag">Spamhaus</span></div>' : ""}
+            </div>
+          </div>
+          ${cables.length ? `<div class="panel"><b>Nearby subsea cables</b><ul style="margin:.4rem 0 0;padding-left:1.2rem">${cables.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>` : ""}`;
+      })
+      .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
+  }
+
+  form.addEventListener("submit", (e) => { e.preventDefault(); runFootprint(ipInput?.value.trim()); });
+  $$("[data-fp]").forEach((b) => b.addEventListener("click", () => {
+    if (ipInput) ipInput.value = b.dataset.fp;
+    runFootprint(b.dataset.fp);
+  }));
+})();
+
+// ---------- DNS shield ----------
+loaders.shield = async () => {};  // user-driven
+
+(function wireShield() {
+  const form = $("#shield-form");
+  const domInput = form?.querySelector("input");
+  if (!form) return;
+
+  function runShield(domain) {
+    if (!domain) return;
+    const box = $("#shield-results");
+    box.innerHTML = '<p class="muted">Checking domain…</p>';
+    api(`/v1/shield/check?domain=${encodeURIComponent(domain)}`)
+      .then((d) => {
+        const verdict = d.verdict ?? "UNKNOWN";
+        const col = verdict === "ALLOW" ? "#2f7a4f" : "#b42318";
+        const ips = (d.resolved_ips ?? []).slice(0, 8);
+        box.innerHTML = `
+          <div class="panel">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
+              <span style="font-size:1.5rem;font-weight:700;color:${col}">${esc(verdict)}</span>
+              <div><b>${esc(domain)}</b></div>
+            </div>
+            <div class="facts">
+              <div><b>Entropy</b>${d.entropy != null ? d.entropy.toFixed(3) : "—"}</div>
+              ${d.dga_reason ? `<div><b>DGA signal</b>${esc(d.dga_reason)}</div>` : ""}
+              ${d.bad_ip_hits?.length ? `<div><b>Bad IPs</b>${d.bad_ip_hits.map(esc).join(", ")}</div>` : ""}
+            </div>
+            ${ips.length ? `<div style="margin-top:.75rem"><b>Resolved IPs</b><div style="font-family:monospace;font-size:.85rem;margin-top:.3rem;line-height:1.8">${ips.map(esc).join("<br>")}</div></div>` : ""}
+          </div>`;
+      })
+      .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
+  }
+
+  form.addEventListener("submit", (e) => { e.preventDefault(); runShield(domInput?.value.trim()); });
+  $$("[data-shield]").forEach((b) => b.addEventListener("click", () => {
+    if (domInput) domInput.value = b.dataset.shield;
+    runShield(b.dataset.shield);
+  }));
+})();
 
 // ---------- news ----------
 loaders.news = async () => {

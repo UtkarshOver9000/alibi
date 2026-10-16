@@ -11,10 +11,41 @@ Aggregates:
 
 from __future__ import annotations
 
+import json
+import os
+import urllib.parse
+import urllib.request
 from typing import Any
 
 from .network import lookup
 from .service import _load, bad_ip, meta
+
+
+def fetch_crtsh_subdomains(domain: str, max_results: int = 30) -> list[str]:
+    """Fetch live subdomains via Certificate Transparency (crt.sh). Returns [] if offline or unreachable."""
+    if os.getenv("ALIBI_OFFLINE"):
+        return []
+    clean_domain = domain.strip().lower().lstrip(".")
+    if "." not in clean_domain or len(clean_domain) < 4:
+        return []
+    url = f"https://crt.sh/?q=%.{urllib.parse.quote(clean_domain)}&output=json"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Alibi-Planetary-Terminal/1.0 (+https://github.com/UtkarshOver9000/alibi)"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
+            data = json.loads(resp.read().decode("utf-8", errors="replace"))
+            subs = set()
+            for entry in data:
+                name_value = entry.get("name_value", "")
+                for sub in name_value.split("\n"):
+                    sub = sub.strip().lower().lstrip("*.")
+                    if sub.endswith(clean_domain) and sub != clean_domain:
+                        subs.add(sub)
+            return sorted(subs)[:max_results]
+    except Exception:
+        return []
 
 
 def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
@@ -67,7 +98,16 @@ def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
     ransomware_history = threats_data.get("ransomware", {})
     recent_ransomware_claims = ransomware_history.get("victims", 0)
 
-    # 5. Calculate Security Health Score (0 - 100)
+    # 5. Live Certificate Transparency (crt.sh)
+    target_domain = ""
+    if "." in needle and not needle.replace(".", "").isdigit():
+        target_domain = needle
+    elif matched_breaches and matched_breaches[0].get("domain"):
+        target_domain = matched_breaches[0]["domain"]
+
+    live_subdomains = fetch_crtsh_subdomains(target_domain) if target_domain else []
+
+    # 6. Calculate Security Health Score (0 - 100)
     score = 100
     # Penalty for active KEV flaws
     score -= min(len(matched_flaws) * 4, 30)
@@ -98,7 +138,7 @@ def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
         grade = "F"
         grade_desc = "Critical Threat Exposure / Urgent Remediation Required"
 
-    # 6. Executive 3-Bullet Plain-English Summary
+    # 7. Executive Plain-English Summary
     top_cve = matched_flaws[0]["cve"] if matched_flaws else "None active"
     bullets = [
         f"Infrastructure: Identified {len(matched_asns)} dedicated ASNs and routing blocks on public networks.",
@@ -111,6 +151,10 @@ def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
             f"({total_breached_accounts:,} accounts exposed)."
         ),
     ]
+    if live_subdomains:
+        bullets.append(
+            f"Attack Surface: Discovered {len(live_subdomains)} live subdomains via Certificate Transparency."
+        )
 
     return {
         "query": query,
@@ -132,6 +176,12 @@ def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
             "total_exploited_flaws": len(matched_flaws),
             "ransomware_weaponized": len(ransomware_flaws),
             "high_risk_cves": matched_flaws[:limit],
+        },
+        "attack_surface": {
+            "domain": target_domain or None,
+            "subdomains": live_subdomains,
+            "total_subdomains_found": len(live_subdomains),
+            "source": "Certificate Transparency (crt.sh)",
         },
         "ransomware": {
             "recent_extortion_claims_tracked": recent_ransomware_claims,
