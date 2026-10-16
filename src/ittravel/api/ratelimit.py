@@ -9,28 +9,36 @@ right place for a hard global cap.
 from __future__ import annotations
 
 import math
+import os
 import time
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from .. import settings
-
 # path prefix -> (bucket size, refill per second). First match wins.
 LIMITS = (
-    ("/v1/demo/", (20, 20 / 60)),  # a full sign-in story per call: 20 a minute
-    ("/v1/auth/", (60, 1.0)),
+    ("/v1/terminal/", (60, 1.0)),
+    ("/v1/shield/", (60, 1.0)),
     ("/v1/", (120, 2.0)),  # read-only intel endpoints
 )
 EXEMPT = ("/v1/health",)
+
+
+def trusted_proxy_hops() -> int:
+    """How many proxies in front of the app append to X-Forwarded-For. With none (the default) the header is ignored,
+    since anyone can write it. Vercel replaces the header with the caller's real address, so there the default is 1."""
+    value = os.getenv("ALIBI_TRUSTED_PROXY_HOPS")
+    if value:
+        return max(int(value), 0)
+    return 1 if os.getenv("VERCEL") else 0
 
 
 def client_ip(request: Request) -> str:
     """The caller's address. X-Forwarded-For is read only behind trusted proxies, and then from the right: each proxy
     appends the address it saw, so the entry added by our outermost proxy is the first one a client can't forge."""
     direct = request.client.host if request.client else "unknown"
-    hops = settings.trusted_proxy_hops()
+    hops = trusted_proxy_hops()
     forwarded = [part.strip() for part in request.headers.get("x-forwarded-for", "").split(",") if part.strip()]
     if hops and len(forwarded) >= hops:
         return forwarded[-hops]

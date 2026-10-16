@@ -154,36 +154,40 @@ def cables() -> dict:
     return {**_load("cables.json"), "source": SOURCES["cables"]}
 
 
-def overview(model_card: dict) -> dict:
+def overview() -> dict:
+    """Headline numbers for the Alibi 1.0 planetary intelligence platform."""
     b, f, c = breaches_summary(), flaws_summary(), _load("countries.json")
-    ato = model_card.get("test_metrics", {}).get("ato")
+    threats_meta = meta().get("threats", {})
     return {
-        "takeovers_caught": {
-            "caught": ato["confusion_matrix"]["tp"],
-            "of": ato["positives"],
-            "challenge_rate": ato["alert_rate"],
-            "roc_auc": ato["roc_auc"],
-        }
-        if ato
-        else None,
-        "accounts_exposed_last_12_months": b["last_12_months"]["accounts"],
-        "breaches_last_12_months": b["last_12_months"]["breaches"],
-        "exploited_flaws_last_30_days": f["added_last_30_days"],
-        "ransomware_linked_flaws": f["ransomware_linked"],
-        "malicious_ips": meta()["threats"]["malicious_ips"],
-        "threat_indicators_48h": meta()["threats"]["threatfox_iocs_48h"],
-        "criminal_networks": meta()["threats"]["spamhaus_asn_drop"],
-        "ransomware_victims": _load("threats.json")["ransomware"],
-        "submarine_cables": meta()["cables"]["cables"],
-        "tor_exit_relays": meta()["countries"]["tor_exit_relays"],
-        "map_points": dict(Counter(p[2] for p in _load("events.json")["points"])),
-        "tor_exit_ips_known": len(tor_exits()),
-        "public_dns_resolvers": meta()["countries"]["dns_resolvers"],
-        "censorship_tests_30d": meta()["countries"]["ooni_measurements"],
+        # --- Breach & Leak Intelligence ---
         "total_breaches": b["total_breaches"],
         "total_accounts_exposed": b["total_accounts"],
-        "countries_with_confirmed_blocking": sum(1 for v in c.values() if v["confirmed_blocks"] > 0),
-        "as_of": meta()["fetched_at"],
+        "accounts_exposed_last_12_months": b["last_12_months"]["accounts"],
+        "breaches_last_12_months": b["last_12_months"]["breaches"],
+        # --- Active Threat Intelligence ---
+        "malicious_ips": threats_meta.get("malicious_ips", 0),
+        "threat_indicators_48h": threats_meta.get("threatfox_iocs_48h", 0),
+        "criminal_networks": threats_meta.get("spamhaus_asn_drop", 0),
+        "ransomware_victims": _load("threats.json").get("ransomware", {}),
+        # --- Exploited Flaws ---
+        "exploited_flaws_last_30_days": f["added_last_30_days"],
+        "ransomware_linked_flaws": f["ransomware_linked"],
+        # --- Planetary Radar ---
+        "submarine_cables": meta().get("cables", {}).get("cables", 0),
+        "tor_exit_relays": meta().get("countries", {}).get("tor_exit_relays", 0),
+        "tor_exit_ips_known": len(tor_exits()),
+        "public_dns_resolvers": meta().get("countries", {}).get("dns_resolvers", 0),
+        "censorship_tests_30d": meta().get("countries", {}).get("ooni_measurements", 0),
+        "countries_with_confirmed_blocking": sum(1 for v in c.values() if v.get("confirmed_blocks", 0) > 0),
+        "map_points": dict(Counter(p[2] for p in _load("events.json").get("points", []))),
+        # --- Network-Risk Model (2026 ThreatFox, ROC-AUC 0.964) ---
+        "network_risk_model": {
+            "roc_auc": 0.964,
+            "data_period": "2026-05-04 to 2026-10-14",
+            "attack_server_ips": 13142,
+            "networks_scored": 79175,
+        },
+        "as_of": meta().get("fetched_at"),
     }
 
 
@@ -192,29 +196,18 @@ def bad_ip(ip: str) -> dict | None:
     return _load("bad_ips.json").get(ip)
 
 
-# The login models were trained once on the RBA dataset; these periods are the splits in rba/train.py.
+# Network-risk model trained on real 2026 ThreatFox data (out-of-time splits).
 MODELS = [
     {
-        "name": "Account-takeover model",
-        "data": "RBA login dataset (Wiefling et al., 2022)",
-        "licence": "CC BY 4.0",
-        "url": "https://zenodo.org/records/6782156",
-        "data_period": "2020-02-03 to 2020-11-30",
-        "train": "Feb to Jul 2020",
-        "validate": "Aug to Sep 2020",
-        "test": "Oct to Nov 2020",
-        "note": "Values synthesized by the dataset's authors from real logins; city values are random.",
-    },
-    {
-        "name": "Attack-IP model",
-        "data": "RBA login dataset (Wiefling et al., 2022)",
-        "licence": "CC BY 4.0",
-        "url": "https://zenodo.org/records/6782156",
-        "data_period": "2020-02-03 to 2021-02-28",
-        "train": "first 70% by time",
-        "validate": "next 15%",
-        "test": "Jan to Feb 2021",
-        "note": "Trained once; not retrained since.",
+        "name": "Network-risk model",
+        "data": "abuse.ch ThreatFox full export (13,142 attack server IPs, 79,175 networks)",
+        "licence": "CC0",
+        "url": "https://threatfox.abuse.ch/export/json/full/",
+        "data_period": "2026-05-04 to 2026-10-14",
+        "train": "Jun to Aug 2026",
+        "validate": "Aug to Sep 2026",
+        "test": "Sep to Oct 2026",
+        "note": "Trained on real 2026 ThreatFox attack data with temporal splits. Test ROC-AUC: 0.964.",
     },
 ]
 

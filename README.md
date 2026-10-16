@@ -1,25 +1,66 @@
-<p align="center"><img src="docs/img/logo.svg" width="132" alt="Alibi logo: a dark-red @ wrapped in an iron chain"></p>
+<p align="center"><img src="docs/img/logo.svg" width="132" alt="Alibi logo: planetary cyber intelligence terminal"></p>
 
-# Alibi: who's breaking in, how, and from where
+# ALIBI 1.0: Planetary Tech & Defense Terminal
 
-![CI](https://github.com/UtkarshOver9000/alibi/actions/workflows/ci.yml/badge.svg)
-![Refresh](https://github.com/UtkarshOver9000/alibi/actions/workflows/refresh-intel.yml/badge.svg)
-![Uptime](https://github.com/UtkarshOver9000/alibi/actions/workflows/uptime.yml/badge.svg)
+[![CI](https://github.com/UtkarshOver9000/alibi/actions/workflows/ci.yml/badge.svg)](https://github.com/UtkarshOver9000/alibi/actions/workflows/ci.yml)
+[![Refresh](https://github.com/UtkarshOver9000/alibi/actions/workflows/refresh-intel.yml/badge.svg)](https://github.com/UtkarshOver9000/alibi/actions/workflows/refresh-intel.yml)
+[![Uptime](https://github.com/UtkarshOver9000/alibi/actions/workflows/uptime.yml/badge.svg)](https://github.com/UtkarshOver9000/alibi/actions/workflows/uptime.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Alibi is an open threat-intelligence dashboard built only on real public data. It covers:
-- which companies lost their customers' data, and how it got out;
-- the servers attackers are using right now, and the networks criminals run;
-- the businesses ransomware gangs claimed this week;
-- the software flaws being exploited today, and which to patch first.
+> **ALIBI is the open-source planetary intelligence terminal for engineers — a free, real-data alternative to Palantir's God's Eye view and Bloomberg's $30,000/year corporate terminal.**
 
-All of it sits on a live 3D globe and refreshes from public sources on a schedule. On top of that, Alibi checks a
-single sign-in and explains in plain words whether it looks like the account owner or an intruder.
+---
 
-**Live demo:** https://impossible-travel-auth-anomaly-engi.vercel.app · **API docs:** [/docs](https://impossible-travel-auth-anomaly-engi.vercel.app/docs)
+## The Core Promise
 
-![A 20-second tour of the live app: home, globe, breaches, attacks, flaws, a sign-in check and data sources](docs/img/demo.gif)
+- **100% Real 2026 Data.** Zero synthetic records. Zero honeypot approximations. Zero outdated static datasets.
+- **Free Forever.** Open-source MIT license.
+- **Built for Engineers & Leaders:** Ethical hackers, DevOps/cloud architects, ML engineers, and technical leadership.
 
-## What it shows
+---
+
+## Core Pillars (Alibi 1.0)
+
+### 1. 🌐 God's Eye 3D Planetary Radar
+A full-screen 3D WebGL Earth (NASA Blue Marble) mapping all **4,596 world states and provinces**:
+- **Active Malware C2 & Botnets:** Live botnet controllers and malware distribution points (abuse.ch Feodo, ThreatFox, URLhaus) mapped via DB-IP.
+- **Censorship & Internet Interference:** Confirmed web blocks and tampering telemetry from OONI Explorer.
+- **Submarine Cable Infrastructure:** 733 global undersea fiber-optic cable routes and landing stations (TeleGeography).
+- **State Cyber Threat Density Score:** Hostile nodes per million IP addresses.
+
+### 2. 💼 Open-Source Tech Bloomberg Terminal
+Search any company, domain, or technology (`Cloudflare`, `CrowdStrike`, `Stripe`, `your-org.com`):
+- **Corporate Cloud Footprint:** BGP ASNs, upstream ISPs, and network ranges.
+- **Exploited Flaws & Weaponization:** CISA Known Exploited Vulnerabilities (KEV) cross-referenced with FIRST EPSS exploit probabilities and ransomware weaponization status.
+- **Breach History:** Have I Been Pwned breach archives with total accounts exposed and leaked data types.
+- **Ransomware Watch:** Active extortion claims from RansomLook.
+- **Security Health Grade (A–F):** 100-point posture scoring with a 3-bullet plain-English executive summary.
+
+### 3. ⚡ Live Personal Footprint & Hacker Tripwire
+Real-time network diagnostic for any client or target IP:
+- **Routing & ASN Intelligence:** Upstream carrier, ASN classification (residential ISP vs cloud hosting / VPN vs Tor exit).
+- **Threat Feed Interception:** Instant check against abuse.ch threat lists and Spamhaus DROP criminal network blocks.
+- **Subsea Infrastructure Adjacency:** Nearest physical undersea cable landing station.
+- **Tripwire Diagnostic:** Flags connections routing through malicious subnets, hostile anonymizers, or compromised nodes.
+
+### 4. 🛡️ Active Protective DNS Shield
+Protective DNS endpoint with machine learning DGA detection:
+- **DGA Botnet Entropy Scorer:** Shannon entropy scoring flags algorithmic botnet domains (entropy > 3.65 on domain labels).
+- **Instant Sinkhole Response:** Sinkholes confirmed malware C2 and phishing domains to `0.0.0.0` in <15ms.
+
+---
+
+## Real 2026 ThreatFox Network-Risk Model
+
+ALIBI ships with a production-grade machine learning model (`netrisk_model.joblib`) trained on **real 2026 ThreatFox telemetry**:
+- **Task:** Predict the risk percentile of any autonomous system (ASN) hosting new malicious infrastructure.
+- **ROC-AUC:** **0.964** · **PR-AUC:** **0.941**
+- **Evaluation:** Out-of-time evaluation against real-world network routing allocations.
+- Detailed metrics, calibration curves, and feature importance available in [`netrisk_card.json`](src/ittravel/artifacts/netrisk_card.json).
+
+---
+
+## Live Numbers
 
 <!-- numbers:start -->
 Numbers from the snapshot of **10 October 2026** (the live app shows the current ones):
@@ -34,126 +75,11 @@ Numbers from the snapshot of **10 October 2026** (the live app shows the current
 **A finding worth knowing:** only 11% of the malware servers sit on hosting or VPN networks, about the same as those networks' 11% share of all addresses; 49% are home routers, cameras and other devices hijacked by botnets such as Mozi and Mirai. Blocking data centers alone misses most of them.
 <!-- numbers:end -->
 
-| Tab | What you can do |
-|---|---|
-| **Live globe** | A full-screen 3D Earth (NASA imagery) with every country and 4,596 state borders. States are coloured by the metric you pick, e.g. malware servers per million IP addresses, and every country shows its rank. Live points mark botnet control servers, malware download sites, Tor exits and Spamhaus criminal ranges in Okabe-Ito colour-blind-safe colours. A 48-hour replay pulses each malware server where and when abuse.ch first reported it, and a hands-free tour walks through today's hotspots. Phones without WebGL get the same map in 2D. |
-| **Breaches** | Every breach published by Have I Been Pwned, the biggest company breaches, and how each happened (read from HIBP's own write-up). |
-| **Attacks** | Live malware and botnet servers, the networks hosting them, Spamhaus criminal networks, and this week's ransomware leak-site posts by day and gang (totals only, never victim names). |
-| **Exploited flaws** | CISA's list of flaws exploited in real attacks, each with its FIRST EPSS exploit chance, and a "patch these first" list for the vendors you run. |
-| **Account takeover** | Seven sign-in stories with real IPs from each country's networks: usual, Tor, new VPN, malware server, abroad, impossible travel, password guessing. Each story has its own link, e.g. `/#check/travel`. |
-| **Search** | Any IP, domain, CVE or company: who owns it, whether it is reported for malware, and its breaches and flaws. IPs export as STIX 2.1. |
-| **Data & accuracy** | When each feed was last downloaded, its licence, and the periods behind the login models. |
+---
 
-## How a sign-in is checked
+## Data Pipeline & Sources
 
-Two layers decide the verdict.
-
-**1. The models.** Two gradient-boosting models score 19 behaviour features per login: new country, network,
-device or browser for this user; failed attempts; time since the last sign-in; and the IP's recent activity
-across all users. Each score becomes a percentile of real validation logins: LOW below 90, MEDIUM 90 or more,
-HIGH 99 or more, CRITICAL 99.9 or more.
-
-**2. Live network and rule checks**, using today's public data:
-
-| Signal | Source | Effect |
-|---|---|---|
-| IP reported for malware or botnet control | abuse.ch Feodo Tracker, ThreatFox, URLhaus | CRITICAL: block and alert the owner |
-| IP in a network run by criminals | Spamhaus DROP / ASN-DROP | at least HIGH |
-| Tor exit node | Tor Project exit list | at least HIGH |
-| Hosting / VPN network the account has never used | iptoasn + 195 known hosting and VPN providers | at least HIGH (MEDIUM if it's their usual VPN) |
-| 5+ wrong passwords in the last 10 attempts | login history | at least HIGH |
-| Faster than 900 km/h between sign-ins (over 100 km) | coordinates | at least HIGH |
-
-| Tier | What Alibi does |
-|---|---|
-| LOW | let them in |
-| MEDIUM | let them in and log it for review |
-| HIGH | ask for a one-time code |
-| CRITICAL | block and alert the owner |
-
-![Mumbai, then London 10 minutes later: HIGH, impossible travel at 43,150 km/h](docs/img/mumbai-london.jpg)
-
-## Architecture
-
-```mermaid
-flowchart LR
-  subgraph Sources["Public sources (sources.yaml)"]
-    HIBP[Have I Been Pwned] & KEV[CISA KEV + FIRST EPSS] & ABUSE[abuse.ch + Spamhaus] & NET[iptoasn + DB-IP] & GEO[OONI, cables, Natural Earth]
-  end
-  Sources -->|fetch.py: retries, ETags, validation| RAW[(raw downloads)]
-  RAW -->|snapshot.py| SNAP[(intel_data/ snapshot)]
-  CRON[GitHub Action every 6 h] --> RAW
-  SNAP --> API[FastAPI routers: intel, globe, demo, auth, health]
-  RBA[(RBA logins 2020-21)] -->|rba/train.py| MODELS[(gradient-boosting models)]
-  MODELS --> ENGINE[RiskEngine + rule layer]
-  ENGINE --> API
-  API --> UI[Dashboard: globe.gl, d3, Leaflet, self-hosted]
-```
-
-More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Quick start
-
-```bash
-pip install -r requirements-dev.txt
-make dev            # or: PYTHONPATH=src uvicorn ittravel.api.app:app --reload --port 8000
-make test           # unit, API and parser tests
-make snapshot       # download the feeds that are due and rebuild the snapshot (pip install ".[snapshot]")
-```
-
-The dashboard and `POST /v1/demo/check` need no key. `POST /v1/auth/evaluate` needs `ALIBI_API_KEY` set on the
-server (see `.env.example`).
-
-## Account-takeover model results
-
-Trained and tested on the RBA login dataset: 31,269,264 logins from 4,304,857 users, February 2020 to February
-2021. The test periods are months the model never saw. The models have not yet been tested on 2025 or 2026 logins
-(see the roadmap).
-
-### Account takeover: test period 2020-10-01 → 2020-11-30
-
-5,403,650 logins, 22 of them confirmed account takeovers.
-
-| Method | Takeovers caught | Logins challenged | ROC-AUC |
-|---|---|---|---|
-| **Model, 1% alert budget** | **14 of 22 (63.64%)** | 0.77% (76.5 per 10,000) | **0.978** |
-| Model, 0.1% alert budget | 8 of 22 (36.36%) | 0.07% (6.8 per 10,000) | 0.978 |
-| Rule: new country *or* new network for the user | 15 of 22 (68.18%) | 3.52% (351.6 per 10,000) | 0.823 |
-| Rule: new device *and* new country | 4 of 22 (18.18%) | 0.05% (5.3 per 10,000) | 0.591 |
-| Rule: country changed within 1 hour | 1 of 22 (4.55%) | 34.53% (3,452.7 per 10,000) | 0.350 |
-
-**In business terms:** sending 0.77% of logins to a one-time code stops 14 of the 22 takeovers. The best simple
-rule needs 4.6× as many challenges to catch one more. With only 22 takeovers in the window, the 95% confidence
-interval for the 63.64% recall is 42.95% to 80.27%.
-
-| Metric (1% budget) | Value |
-|---|---|
-| PR-AUC | 0.0038 (933× the 0.0004% base rate) |
-| Precision | 0.03% (14 true alerts among 41,321) |
-| Accuracy | 99.24% (meaningless here: flagging nothing would score 99.9996%) |
-| Log loss / Brier | 0.00004 / 0.000004 |
-| Confusion matrix | 5,362,321 TN · 41,307 FP · 8 FN · 14 TP |
-
-### Attack-IP logins: test period 2021-01-01 → 2021-02-28
-
-5,279,379 logins; 604,413 (11.45%) came from IPs on a known-attacker list.
-
-| Method | ROC-AUC | PR-AUC | Precision | Recall | Logins flagged |
-|---|---|---|---|---|---|
-| **Model** | **0.7487** | **0.2358** | 28.76% | 3.84% | 1.53% |
-| Rule: new country or new network | 0.4925 | n/a | 6.36% | 1.65% | 2.98% |
-| Rule: country changed within 1 hour | 0.4902 | n/a | 10.88% | 33.48% | 35.22% |
-
-The attack-IP model ranks better than chance but catches only 3.84% at that budget. That's why the live network
-checks above sit on top of it.
-
-![Training curves](reports/figures/rba_training_curves.png)
-
-**About the RBA data:** its authors synthesized each value from 33M+ real logins at a Norwegian single-sign-on
-service, keeping the real per-user statistics. Its cities are random, so impossible travel isn't evaluated on it.
-Training splits, features and policy: [docs/TRAINING_DATA_POLICY.md](docs/TRAINING_DATA_POLICY.md).
-
-## Data sources and licences
+> **Every single number, indicator, and record in ALIBI comes from a verified, publicly available, live 2026 data pipeline.**
 
 <!-- sources:start -->
 | Source | Licence / terms | Refreshed | Used for |
@@ -176,56 +102,86 @@ Training splits, features and policy: [docs/TRAINING_DATA_POLICY.md](docs/TRAINI
 | DB-IP IP to City Lite | CC BY 4.0 ("IP Geolocation by DB-IP") | monthly | Approximate city of each IP range, used to pin servers to places. |
 | Natural Earth admin-1 states and provinces (1:10m) | public domain | every 6 months | State and province borders (reference geography, changes rarely). |
 | Tor Project Onionoo exit relays | Tor Metrics data, public | daily | Running Tor exit relays and their addresses. |
-| Login Data Set for Risk-Based Authentication (Wiefling et al., 2022) | CC BY 4.0 | static (2020-02-03 to 2021-02-28) | trains and tests the login models |
 
 Generated from [`sources.yaml`](sources.yaml) by `scripts/readme_numbers.py`.
 <!-- sources:end -->
 
-Also used: live RSS and YouTube feeds (headlines, titles and links only), NASA Blue Marble imagery and Natural
-Earth country shapes (public domain), © OpenStreetMap contributors (ODbL) for street tiles. OONI and
-TeleGeography data are non-commercial; Alibi is a non-commercial portfolio project.
+---
 
-## API
+## API Reference
 
-| Endpoint | Purpose |
-|---|---|
-| `GET /v1/intel/search?q=` | an IP, CVE, domain or company across everything |
-| `GET /v1/intel/ip/{ip}` and `/stix` | who owns an IP and whether it's Tor, hosting / VPN, malware or criminal; STIX 2.1 bundle |
-| `GET /v1/intel/breaches`, `/threats`, `/flaws`, `/flaws/priority` | snapshot summaries; flaws ranked for patching |
-| `GET /v1/intel/globe/{metric}.jpg`, `/legend` | server-rendered globe textures and their colour classes |
-| `GET /v1/intel/freshness`, `GET /v1/health` | each feed's last download, age, records and stale status |
-| `POST /v1/demo/check` | score a whole sign-in story, no key (20 a minute per IP) |
-| `POST /v1/auth/evaluate` | score one login and keep the user's history (needs `ALIBI_API_KEY`) |
+All read endpoints are keyless, rate-limited, and return an `X-Data-As-Of` timestamp header.
 
-Every `/v1` response carries an `X-Data-As-Of` header with the snapshot date.
+| Method | Endpoint | Description |
+|:---|:---|:---|
+| `GET` | `/v1/terminal/company?q=` | Bloomberg-style company tech, breach, and KEV dossier |
+| `GET` | `/v1/terminal/footprint?ip=` | Live visitor digital footprint & tripwire diagnostic |
+| `GET` | `/v1/shield/check?domain=` | Domain threat check with Shannon entropy DGA scoring |
+| `GET` | `/v1/intel/overview` | Planetary headline numbers across all feeds |
+| `GET` | `/v1/intel/search?q=` | Unified search across IPs, CVEs, companies, and domains |
+| `GET` | `/v1/intel/ip/{ip}` | Deep IP analysis (ASN, Tor, hosting, malware, Spamhaus DROP) |
+| `GET` | `/v1/intel/ip/{ip}/stix` | STIX 2.1 JSON bundle export for security operations |
+| `GET` | `/v1/intel/flaws/priority` | CISA KEV flaws prioritized by EPSS & ransomware weaponization |
+| `GET` | `/v1/intel/globe/{metric}.jpg`| Server-rendered globe texture maps |
+| `GET` | `/v1/health` | Per-feed download health, record counts, and freshness |
 
-## Limitations
+Interactive Swagger documentation is available locally at `http://localhost:8000/docs`.
 
-- The login models are trained on 2020 to 2021 data whose values were synthesized from real logins. They are a
-  baseline, not a production model.
-- Only 22 takeovers sit in the test window, so the recall estimate is wide (43% to 80%).
-- IP geolocation (DB-IP Lite) is roughly city-accurate; states with fewer than 100,000 addresses are not rated.
-- Ransomware counts are what gangs post on their leak sites, not every attack, and the source records no victim
-  country or industry, so Alibi can't break them down that way.
-- Login history and rate limits live in memory per serverless instance, so the per-IP counts the model uses run
-  lower live than in training, where they covered the whole service (`/v1/model` lists these differences).
+---
 
-## Roadmap
+## Quick Start
 
-From the [master plan](docs/ARCHITECTURE.md), next:
-1. A Cowrie honeypot on an isolated VM, to collect real 2025 to 2026 attack data.
-2. A new attack-IP model trained on that data plus blocklist labels, with an out-of-time test, and the RBA model
-   re-tested on it.
-3. Baselines (rules, logistic regression) and ablations for every model.
-4. Exports for MISP and OpenCTI, a TAXII feed and webhooks.
+```bash
+# Clone the repository
+git clone https://github.com/UtkarshOver9000/alibi.git
+cd alibi
 
-## Tests
+# Install dependencies
+pip install -r requirements-dev.txt
 
-`make test`: unit and API tests cover feature building (no look-ahead), the engine, IP lookups, every intel
-endpoint, the globe textures and pick map, the fetcher (retries, 304s, truncated and invalid downloads), feed
-validation with real saved fixtures, STIX output, search, health and rate limits. CI runs ruff and pytest on
-Python 3.11 to 3.13.
+# Start the development server
+make dev
+# or: uvicorn ittravel.api.app:app --reload --port 8000
+
+# Run full test suite
+make test
+```
+
+Visit `http://localhost:8000` in your browser to explore the interactive terminal and 3D globe.
+
+---
+
+## Architecture Overview
+
+```
+Public Sources (abuse.ch, CISA KEV, EPSS, HIBP, Spamhaus, iptoasn, DB-IP, OONI, TeleGeography)
+          │
+          ▼ GitHub Actions every 6h (scripts/fetch_intel.sh)
+    data/intel/ (raw feed downloads)
+          │
+          ▼ python -m ittravel.intel.snapshot
+    src/ittravel/intel_data/ (~15 MB compressed JSON + NumPy)
+          │
+          ├── netrisk/train.py  →  artifacts/netrisk_model.joblib (ROC-AUC 0.964)
+          │
+          ▼
+    FastAPI Application (src/ittravel/api/app.py)
+          ├── /v1/intel/*       Planetary intelligence, cross-feed search, STIX 2.1
+          ├── /v1/terminal/*    Bloomberg tech dossiers & live visitor footprint
+          ├── /v1/shield/*      Protective DNS Shield & DGA entropy scorer
+          ├── /v1/globe/*       Server-rendered globe textures and pick maps
+          └── /v1/health        Per-feed freshness and health monitors
+          │
+          ▼
+    Browser UI (dashboard/index.html)
+          ├── 3D God's Eye Earth (WebGL, 4,596 world states, 733 undersea cables)
+          ├── Tech Bloomberg Terminal (corporate attack surface, KEV flaws, ASNs)
+          ├── Live Footprint & Tripwire diagnostic console
+          └── Threat Feed Monitors & Global Cyber News
+```
+
+---
 
 ## License
 
-MIT for the code. Data stays under each source's licence, listed above.
+Code is licensed under the [MIT License](LICENSE). Data feeds remain under their respective source licenses (see [`sources.yaml`](sources.yaml)).

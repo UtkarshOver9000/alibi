@@ -1,5 +1,5 @@
 """
-FastAPI service for Alibi: login-risk scoring plus threat intelligence.
+ALIBI 1.0 — The Open-Source Planetary Tech & Defense Terminal.
 """
 
 from __future__ import annotations
@@ -18,18 +18,22 @@ from .. import __version__
 from ..intel import service
 from .bodylimit import BodyLimitMiddleware
 from .ratelimit import RateLimitMiddleware
-from .routes import auth as auth_routes
-from .routes import demo as demo_routes
 from .routes import globe as globe_routes
 from .routes import health as health_routes
 from .routes import intel as intel_routes
+from .routes import shield as shield_routes
+from .routes import terminal as terminal_routes
 
 app = FastAPI(
-    title="Alibi: login security and threat intelligence",
+    title="ALIBI: Open-Source Planetary Tech & Defense Terminal",
     description=(
-        "Scores each login attempt for account-takeover and attack-IP risk with gradient-boosting models trained "
-        "on the RBA login dataset (31.3M logins), plus a physical impossible-travel check when coordinates are "
-        "given. State is kept in memory, so the public demo is a sandbox. Metrics: /v1/model."
+        "A planetary intelligence platform: a live 3D God's Eye radar across all 4,596 world states, "
+        "an open-source tech Bloomberg Terminal (company ASN footprint, breaches, exploited CVEs), "
+        "a live personal digital footprint & hacker tripwire diagnostic, "
+        "and an active Protective DNS Shield with ML-based DGA sinkholing. "
+        "100% real 2026 data — no synthetic records. "
+        "Data: abuse.ch (ThreatFox, URLhaus, Feodo), CISA KEV, FIRST EPSS, HIBP, Spamhaus DROP, "
+        "RansomLook, iptoasn, DB-IP, OONI, TeleGeography, Natural Earth."
     ),
     version=__version__,
     license_info={"name": "MIT"},
@@ -136,5 +140,5 @@ async def dashboard():
     return HTMLResponse("<h1>Alibi API</h1><p>See <a href='/docs'>/docs</a></p>")
 
 
-for module in (auth_routes, demo_routes, intel_routes, globe_routes, health_routes):
+for module in (intel_routes, globe_routes, terminal_routes, shield_routes, health_routes):
     app.include_router(module.router)

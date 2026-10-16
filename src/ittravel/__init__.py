@@ -1,3 +1,3 @@
-"""Aegis: login risk scoring trained on real login data (RBA dataset)."""
+"""ALIBI 1.0 — Open-Source Planetary Tech & Defense Terminal."""
 
-__version__ = "3.0.0"
+__version__ = "1.0.0"

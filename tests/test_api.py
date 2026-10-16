@@ -1,19 +1,8 @@
-import os
-
 from fastapi.testclient import TestClient
 
 from ittravel.api.app import app
 
 client = TestClient(app)
-KEY = {"X-API-Key": os.environ["ALIBI_API_KEY"]}
-EVENT = {
-    "user_id": "api-user",
-    "login_ts": "2026-08-03T09:00:00Z",
-    "ip": "84.208.20.10",
-    "device_id": "dev-laptop",
-    "country": "NO",
-    "asn": 29695,
-}
 
 
 def test_health_and_dashboard():
@@ -21,105 +10,47 @@ def test_health_and_dashboard():
     assert health["status"] in ("ok", "degraded") and health["snapshot"]
     for feed in health["feeds"]:
         assert {"id", "name", "status", "last_success", "age_hours", "records"} <= feed.keys()
-        assert feed["name"]  # the header names a late feed in words, not by its id
+        assert feed["name"]
     assert "Alibi" in client.get("/").text
 
 
-def test_evaluate_requires_a_key():
-    assert client.post("/v1/auth/evaluate", json=EVENT).status_code == 401
-    assert client.post("/v1/auth/evaluate", json=EVENT, headers={"X-API-Key": "nope"}).status_code == 403
-
-
-def test_evaluate_returns_model_scores():
-    res = client.post("/v1/auth/evaluate", json=EVENT, headers=KEY)
+def test_terminal_company_endpoint():
+    res = client.get("/v1/terminal/company", params={"q": "Cloudflare"})
     assert res.status_code == 200
     data = res.json()
-    assert data["risk_tier"] in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
-    assert 0 <= data["risk_score"] <= 100
-    assert 0 <= data["ato_probability"] <= 1 and 0 <= data["attack_ip_probability"] <= 1
-    assert data["recommended_action"]
+    assert data["query"] == "Cloudflare"
+    assert "grade" in data
+    assert "score" in data
+    assert "executive_summary" in data
+    assert "networks" in data
 
 
-def test_validation_rejects_bad_input():
-    bad = {**EVENT, "rtt_ms": -5}
-    assert client.post("/v1/auth/evaluate", json=bad, headers=KEY).status_code == 422
-
-
-def test_issuing_keys_requires_the_master_key():
-    res = client.post("/v1/keys/generate", json={"name": "svc"}, headers=KEY)
+def test_terminal_footprint_endpoint():
+    res = client.get("/v1/terminal/footprint", params={"ip": "1.1.1.1"})
     assert res.status_code == 200
-    issued = res.json()["api_key"]
-    assert issued.startswith("alibi_")
-    # an issued key can evaluate, but cannot mint more keys
-    assert (
-        client.post("/v1/auth/evaluate", json={**EVENT, "user_id": "k"}, headers={"X-API-Key": issued}).status_code
-        == 200
-    )
-    assert client.post("/v1/keys/generate", json={"name": "x"}, headers={"X-API-Key": issued}).status_code == 403
-    assert client.post("/v1/keys/generate", json={"name": "x"}).status_code == 401
+    data = res.json()
+    assert data["ip"] == "1.1.1.1"
+    assert "network" in data
+    assert data["network"]["asn"] == 13335
+    assert "threat_status" in data
+    assert "level" in data["threat_status"]
 
 
-def test_model_card_endpoint():
-    card = client.get("/v1/model").json()
-    assert set(card["test_metrics"]) == {"ato", "attack_ip"}
-    for metrics in card["test_metrics"].values():
-        for key in ("roc_auc", "pr_auc", "precision", "recall", "log_loss", "confusion_matrix"):
-            assert key in metrics
-    assert card["dataset"]["logins"] > 30_000_000
-    assert any("IP address" in note for note in card["live_differences"])  # live per-IP counts differ from training
+def test_shield_check_endpoint():
+    res = client.get("/v1/shield/check", params={"domain": "google.com"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["domain"] == "google.com"
+    assert data["status"] == "ALLOWED"
+    assert data["action"] == "RESOLVED"
 
-
-def test_anomaly_log_and_stats():
-    client.post("/v1/auth/evaluate", json={**EVENT, "user_id": "t", "lat": 40.71, "lon": -74.0}, headers=KEY)
-    client.post(
-        "/v1/auth/evaluate",
-        json={
-            **EVENT,
-            "user_id": "t",
-            "login_ts": "2026-08-03T09:05:00Z",
-            "lat": 35.67,
-            "lon": 139.65,
-            "country": "JP",
-        },
-        headers=KEY,
-    )
-    logs = client.get("/v1/anomalies", headers=KEY).json()
-    assert any(a["user_id"] == "t" for a in logs)
-    assert client.get("/v1/stats", headers=KEY).json()["users_seen_by_this_instance"] >= 1
-
-
-def test_keyed_endpoints_are_off_without_a_server_key(monkeypatch):
-    monkeypatch.delenv("ALIBI_API_KEY")
-    assert client.post("/v1/auth/evaluate", json=EVENT, headers=KEY).status_code == 503
-
-
-def test_demo_endpoint_is_rate_limited_per_ip(monkeypatch):
-    monkeypatch.setenv("ALIBI_TRUSTED_PROXY_HOPS", "1")
-    ip = {"X-Forwarded-For": "198.51.100.77"}
-    codes = [client.post("/v1/demo/check", json={}, headers=ip).status_code for _ in range(21)]
-    assert codes[:20] == [422] * 20 and codes[20] == 429
-    other = client.post("/v1/demo/check", json={}, headers={"X-Forwarded-For": "198.51.100.78"})
-    assert other.status_code == 422
-
-
-def test_demo_checks_are_sandboxed(monkeypatch):
-    """A keyless demo keeps nothing and cannot change how a real login from the same IP is scored."""
-    from ittravel.engine import get_engine
-
-    monkeypatch.setenv("ALIBI_TRUSTED_PROXY_HOPS", "1")
-
-    engine = get_engine()
-    kept = (len(engine.store.users), len(engine.ip_history), len(engine.store.anomaly_logs))
-    guesses = [
-        {**EVENT, "user_id": "x", "ip": "203.0.113.9", "success": False, "login_ts": f"2026-08-03T09:{m:02d}:00Z"}
-        for m in range(20)
-    ]
-    demo = client.post("/v1/demo/check", json={"events": guesses}, headers={"X-Forwarded-For": "198.51.100.90"})
-    assert demo.status_code == 200
-    assert (len(engine.store.users), len(engine.ip_history), len(engine.store.anomaly_logs)) == kept
-    real = {**EVENT, "user_id": "sandbox-check", "ip": "203.0.113.9", "login_ts": "2026-08-03T09:30:00Z"}
-    feats = client.post("/v1/auth/evaluate", json=real, headers=KEY).json()["features"]
-    assert feats["ip_attempts_1h"] == 0 and feats["ip_failures_1h"] == 0
+    # Test high entropy domain detection
+    dga_res = client.get("/v1/shield/check", params={"domain": "xq7b9kz1m0w8p2r4j6f.biz"})
+    assert dga_res.status_code == 200
+    dga_data = dga_res.json()
+    assert dga_data["status"] == "BLOCKED"
+    assert dga_data["action"] == "SINKHOLED"
+    assert dga_data["sinkhole_ip"] == "0.0.0.0"
 
 
 def test_forwarded_for_is_trusted_only_behind_a_proxy(monkeypatch):
@@ -191,18 +122,7 @@ def test_request_ids_are_echoed_or_made():
     assert len(made) == 32 and made != "bad id!"
 
 
-def test_inputs_are_validated_and_bodies_capped():
-    bad_ip = {**EVENT, "user_id": "v1", "ip": "999.1.1.1"}
-    bad_lat = {**EVENT, "user_id": "v2", "lat": 120.0, "lon": 10.0}
-    bad_ts = {**EVENT, "user_id": "v3", "login_ts": "yesterday"}
-    for body in (bad_ip, bad_lat, bad_ts):
-        assert client.post("/v1/auth/evaluate", json=body, headers=KEY).status_code == 422
-    huge = client.post("/v1/demo/check", content=b"x" * (300 * 1024), headers={"Content-Type": "application/json"})
+def test_body_limit_enforced():
+    huge_data = b"x" * (300 * 1024)
+    huge = client.post("/v1/terminal/company", content=huge_data, headers={"Content-Type": "application/json"})
     assert huge.status_code == 413
-    # streamed in chunks, with no Content-Length to check up front
-    chunked = client.post(
-        "/v1/demo/check", content=iter([b"x" * 1024] * 300), headers={"Content-Type": "application/json"}
-    )
-    assert chunked.status_code == 413
-    small = client.post("/v1/demo/check", content=iter([b"{}"]), headers={"Content-Type": "application/json"})
-    assert small.status_code == 422  # under the cap, so it reaches validation

@@ -219,11 +219,3 @@ live:
     url: John Hammond, NetworkChuck, Marcus Hutchins and Hak5 channel feeds (see intel/news.py)
     licence: titles and links only
     cache: 30m
-
-# Static, used once to train the models.
-static:
-  - id: rba_logins
-    name: Login Data Set for Risk-Based Authentication (Wiefling et al., 2022)
-    url: https://zenodo.org/records/6782156
-    licence: CC BY 4.0
-    period: 2020-02-03 to 2021-02-28

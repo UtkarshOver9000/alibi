@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import os
 import time
 import urllib.request
 from dataclasses import dataclass
@@ -17,8 +18,6 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
-
-from .. import settings
 
 DATA = Path(__file__).resolve().parents[1] / "intel_data"
 TOR_LIVE_URL = "https://check.torproject.org/torbulkexitlist"
@@ -98,7 +97,7 @@ def tor_exits() -> frozenset[str]:
     global _tor_live
     path = DATA / "tor_exits.json"
     snapshot = frozenset(json.loads(path.read_text())) if path.exists() else frozenset()
-    if snapshot or settings.offline():
+    if snapshot or os.getenv("ALIBI_OFFLINE"):
         return snapshot
     if time.time() - _tor_live[0] > 3600:
         try:

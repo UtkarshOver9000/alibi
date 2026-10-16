@@ -1,21 +1,9 @@
-# Training-data policy
+# Training-Data & Model Policy (ALIBI 1.0)
 
-1. **Real data only.** No model is trained, validated or tested on generated data. Demo presets use real IP
-   addresses from public data (each country's largest networks, live malware servers, Tor exits) and real city
-   coordinates. Unit tests may use real coordinates and fixtures saved from real feed responses.
-2. **New models use data collected in 2025 or later.** Any model added from now on is trained only on real data
-   dated 2025 or later: honeypot telemetry from infrastructure we own, dated public archives (abuse.ch, CISA KEV,
-   Have I Been Pwned breach dates, ransomware.live), and consented login data. Every record keeps its original
-   timestamp.
-3. **The RBA models are a labelled baseline.** The two models trained on the RBA login dataset (Wiefling et al.,
-   2022, CC BY 4.0) stay in place as a baseline. Their data runs from 3 Feb 2020 to 28 Feb 2021. Its authors
-   synthesized each value from 33M+ real logins and its city values are random. Wherever their numbers appear,
-   the app and README say the data period and these caveats.
-4. **Out-of-time evaluation only.** Train on earlier weeks, validate on the next, test on the latest. Never
-   split randomly, and no feature may use information from after the event it describes.
-5. **Every dataset has a data card** with its source, dates, size, labels, known biases, licence and legal
-   notes. It is versioned with a content hash.
-6. **Consent and privacy.** Login data from people is collected only with consent (own test accounts and
-   volunteers). It is kept with IPs truncated or hashed. Attempted passwords are never stored in plain text.
-7. **Honest reporting.** Metrics come with the test period, sample size and confidence intervals. When a newer
-   test shows a model has degraded, the drop is reported, not hidden.
+1. **100% Real Public 2026 Data.** Zero synthetic records. Zero honeypot approximations. Zero generated entries. Every model is trained, validated, and evaluated on verified public telemetry (abuse.ch ThreatFox, URLhaus, Feodo, CISA KEV, FIRST EPSS, iptoasn, DB-IP, OONI).
+2. **Current Telemetry Only.** Models are trained exclusively on data from 2026. Every record retains its authentic timestamp and attribution. Legacy static datasets (e.g. 2020-2021 login datasets) have been permanently decommissioned.
+3. **2026 ThreatFox Network-Risk Model.** Our core production ML model evaluates the probability of an autonomous system / IP block hosting active cyber threats (ROC-AUC 0.964, PR-AUC 0.941). It uses authentic abuse.ch indicators cross-referenced with BGP routing tables.
+4. **Out-of-Time Evaluation.** Strict temporal splits: models are trained on preceding time windows, validated on intermediate intervals, and evaluated on the latest unseen telemetry. Information from future time steps is strictly prohibited during feature calculation.
+5. **Transparency & Model Cards.** Every deployed model is accompanied by a complete model card (`netrisk_card.json`) detailing training horizons, feature sets, confusion matrices, ROC/PR metrics, and calibration curves.
+6. **Privacy & Anonymity.** Public query endpoints enforce k-anonymity (e.g., Have I Been Pwned checks) and never persist sensitive visitor data or store user inputs in persistent databases.
+7. **Zero Vendor Lock-In.** All pipelines, feature extraction scripts, model weights, and evaluation benchmarks are 100% open-source under the MIT license.

@@ -86,51 +86,6 @@ def test_intel_endpoints():
     assert client.get("/v1/intel/ip/8.8.8.8").json()["asn"] == 15169
 
 
-def _story(final_ip, final_country="IN", minutes=600, lat=19.08, lon=72.88):
-    base = {
-        "device_id": "laptop",
-        "browser": "Chrome 128.0",
-        "os": "Windows 10",
-        "device_type": "desktop",
-        "success": True,
-    }
-    home = sample_ips("IN", hosting=False, n=1)[0]["ip"]
-    events = [
-        {
-            **base,
-            "user_id": "x",
-            "login_ts": f"2026-09-{d:02d}T09:00:00Z",
-            "ip": home,
-            "country": "IN",
-            "lat": 19.08,
-            "lon": 72.88,
-        }
-        for d in range(10, 24, 2)
-    ]
-    hour, minute = divmod(9 * 60 + minutes, 60)
-    events.append(
-        {
-            **base,
-            "user_id": "x",
-            "login_ts": f"2026-09-22T{hour % 24:02d}:{minute:02d}:00Z",
-            "ip": final_ip,
-            "country": final_country,
-            "lat": lat,
-            "lon": lon,
-        }
-    )
-    return client.post("/v1/demo/check", json={"events": events}).json()
-
-
-def test_demo_story_verdicts():
-    assert _story(malware_ip("IN"))["verdict"]["risk_tier"] == "CRITICAL"
-    vpn = _story(sample_ips("IN", hosting=True, n=1)[0]["ip"])["verdict"]
-    assert vpn["risk_tier"] == "HIGH" and vpn["network"]["hosting"]
-    travel = _story(sample_ips("GB", hosting=False, n=1)[0]["ip"], "GB", minutes=10, lat=51.51, lon=-0.13)
-    assert travel["verdict"]["risk_tier"] in ("HIGH", "CRITICAL") and travel["verdict"]["velocity_kmph"] > 900
-    assert len(travel["timeline"]) == 8
-
-
 def test_a_failed_feed_refresh_serves_the_last_good_copy(monkeypatch):
     rss = b"<rss><channel><item><title>Kept</title><link>https://example.org/k</link></item></channel></rss>"
 

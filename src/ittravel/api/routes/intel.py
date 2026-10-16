@@ -7,7 +7,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse
 
-from ...engine import get_engine
 from ...intel import news, service, stix
 from ...intel.network import lookup, malware_ip, sample_ips, tor_exits
 
@@ -16,8 +15,8 @@ router = APIRouter()
 
 @router.get("/v1/intel/overview", tags=["Intel"])
 async def intel_overview():
-    """Headline numbers for the home page, all from the real data sources."""
-    return service.overview(get_engine().card)
+    """Headline numbers for the Alibi 1.0 planetary intelligence platform."""
+    return service.overview()
 
 
 @router.get("/v1/intel/breaches", tags=["Intel"])
