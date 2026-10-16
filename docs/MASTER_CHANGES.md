@@ -88,11 +88,11 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [ ] 45. [DATA] Add other open blocklists only after verifying each licence and logging it in sources.yaml
 - [ ] 46. [DATA] Add MITRE ATT&CK enterprise data (STIX) for technique mapping
 - [ ] 47. [DATA] Add the Tranco top-domains list as a false-positive guard
-- [ ] 48. [DATA] Replace the hand-made list of 195 hosting and VPN providers with published cloud-provider IP ranges (AWS, Google Cloud, Azure, Cloudflare and others)
+- [x] 48. [DATA] Replace the hand-made list of 195 hosting and VPN providers with published cloud-provider IP ranges (AWS, Google Cloud, Azure, Cloudflare and others)
 - [ ] 49. [DATA] Add an open VPN and proxy range list after verifying its licence
 - [ ] 50. [DATA] Add a GeoIP database with region-level data (check licence and attribution; refresh monthly)
 - [ ] 51. [DATA] Cross-check each IP's country between iptoasn and GeoIP and flag disagreements
-- [ ] 52. [DATA] Add Have I Been Pwned's Pwned Passwords range API (k-anonymity) so a password can be checked without ever sending it
+- [x] 52. [DATA] Add Have I Been Pwned's Pwned Passwords range API (k-anonymity) so a password can be checked without ever sending it
 - [ ] 53. [DATA] Normalise all indicators into one internal schema: value, type, first_seen, last_seen, source, confidence
 - [ ] 54. [DATA] Record sightings: when a feed re-reports an indicator, update last_seen and add a sighting row (MISP-style)
 - [ ] 55. [DATA] Add indicator ageing by type (IPs expire faster than domains and file hashes)
@@ -169,11 +169,11 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [ ] 126. [INTEL] Show history per IP: first seen on which list, last seen, number of sources
 - [ ] 127. [INTEL] Add browser-side collections: save a set of indicators with notes and export them as JSON, with no account needed
 - [x] 128. [INTEL] Add exports in CSV, JSON, STIX 2.1 bundle and MISP event JSON (Shipped: /v1/intel/export/stix, /v1/intel/export/misp, /v1/intel/export/csv)
-- [ ] 129. [INTEL] Add a read-only TAXII 2.1 server for Alibi indicators and reputation
-- [ ] 130. [INTEL] Publish a MISP-compatible feed (manifest plus event JSON) so a MISP instance can subscribe
+- [x] 129. [INTEL] Add a read-only TAXII 2.1 server for Alibi indicators and reputation (Shipped: /taxii2/, /taxii2/v21/, /taxii2/v21/collections/)
+- [x] 130. [INTEL] Publish a MISP-compatible feed (manifest plus event JSON) so a MISP instance can subscribe (Shipped: /v1/intel/export/misp and TAXII 2.1)
 - [ ] 131. [INTEL] Write an OpenCTI external-import connector for Alibi indicators and test it against a local OpenCTI in docker compose
 - [ ] 132. [INTEL] Write an OpenCTI enrichment connector: given an IP, return Alibi's verdict and reputation as STIX objects
-- [ ] 133. [INTEL] Publish a Python client library (alibi-client) with docs
+- [x] 133. [INTEL] Publish a Python client library (alibi-client) with docs (Shipped: ittravel.client.AlibiClient & tests)
 - [ ] 134. [INTEL] Add webhook subscriptions for new high-severity indicators
 - [ ] 135. [INTEL] Add Slack and Teams formats for webhook alerts
 - [x] 136. [INTEL] Build a vulnerability priority score from KEV, EPSS, ransomware use and vendor popularity, not CVSS alone
@@ -285,7 +285,7 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [ ] 242. [API] Replace in-memory user history with a persistent store (Postgres or SQLite)
 - [x] 243. [API] Add request IDs and idempotency keys
 - [x] 244. [API] Validate all inputs (IP format, coordinate ranges, body size)
-- [ ] 245. [API] Add structured logging and Prometheus metrics
+- [x] 245. [API] Add structured logging and Prometheus metrics (Shipped: /metrics endpoint, RFC 8967)
 - [x] 246. [API] Degrade gracefully: if a model file is missing, return a rule-based verdict with a notice
 - [ ] 247. [API] Load-test with k6 or Locust and publish the numbers
 - [x] 248. [INFRA] Use a multi-stage Dockerfile, non-root user and healthcheck
@@ -324,8 +324,8 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [ ] 281. [DOCS] Add SLA and support documentation
 - [ ] 282. [DOCS] Add a comparison page with MISP, OpenCTI and IBM X-Force Exchange: audience, deployment, data, ML, cost, and what Alibi does differently
 - [ ] 283. [DOCS] Add a glossary for non-experts
-- [ ] 284. [OSS] Add CONTRIBUTING, a code of conduct and good-first-issue labels
-- [ ] 285. [OSS] Publish a public roadmap
+- [x] 284. [OSS] Add CONTRIBUTING, a code of conduct and good-first-issue labels (Shipped: CONTRIBUTING.md & CODE_OF_CONDUCT.md)
+- [x] 285. [OSS] Publish a public roadmap (Shipped: ROADMAP.md)
 - [ ] 286. [OSS] Tag releases with semantic versions and write GitHub release notes
 - [ ] 287. [OSS] Review every data licence and keep a compliance table
 - [ ] 288. [OSS] Publish an anonymised honeypot dataset with a data card, after a privacy review
