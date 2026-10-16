@@ -272,6 +272,17 @@
     <dl class="keys" id="help-keys"></dl>
   </div>
 </div>
-<script src="/static/dashboard.js?v=11"></script>
+<div class="palette" id="state-modal" hidden>
+  <div class="palette-box panel" role="dialog" aria-modal="true" aria-labelledby="state-title" style="max-width: 600px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line);">
+      <h3 id="state-title" style="margin: 0; font: 600 16px var(--hud); letter-spacing: 0.08em; text-transform: uppercase;">State Intelligence Dossier</h3>
+      <button class="link" id="state-modal-close" type="button" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-x"/></svg></button>
+    </div>
+    <div id="state-dossier-body" style="padding: 18px; max-height: 65vh; overflow-y: auto;">
+      <p class="muted">Loading regional intelligence...</p>
+    </div>
+  </div>
+</div>
+<script src="/static/dashboard.js?v=12"></script>
 </body>
 </html>

@@ -53,6 +53,26 @@ def test_shield_check_endpoint():
     assert dga_data["sinkhole_ip"] == "0.0.0.0"
 
 
+def test_state_dossier_endpoint():
+    res = client.get("/v1/intel/state/California")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["name"] == "California"
+    assert data["country_code"] == "US"
+    assert "telemetry" in data
+    assert "malware_c2_nodes" in data["telemetry"]
+    assert "threat_tier" in data["telemetry"]
+    assert "ooni_censorship" in data
+
+    # Test index-based lookup
+    res_idx = client.get(f"/v1/intel/state/{data['index']}")
+    assert res_idx.status_code == 200
+    assert res_idx.json()["name"] == "California"
+
+    # Test not found
+    assert client.get("/v1/intel/state/NonexistentState123456").status_code == 404
+
+
 def test_forwarded_for_is_trusted_only_behind_a_proxy(monkeypatch):
     from starlette.requests import Request
 

@@ -5,6 +5,7 @@ Summaries over the intel snapshot, shaped for the dashboard.
 from __future__ import annotations
 
 import json
+import math
 from collections import Counter
 from datetime import date, datetime, timedelta
 from functools import cache
@@ -354,8 +355,6 @@ PRIORITY_WEIGHTS = {"epss": 50, "ransomware": 20, "vendor_reach": 15, "recency":
 
 def prioritised_flaws(vendors: list[str] | None = None, limit: int = 20) -> list[dict]:
     """KEV flaws ranked by EPSS percentile, ransomware use, how often the vendor appears in KEV, and recency."""
-    import math
-
     rows = _load("flaws.json")
     per_vendor = Counter(r["vendor"] for r in rows)
     top_vendor = max(per_vendor.values())
@@ -389,4 +388,100 @@ def activity() -> dict:
         "last_48h": len(times),
         "per_hour": [by_hour.get(h, 0) for h in range(47, -1, -1)],
         "as_of": meta()["fetched_at"],
+    }
+
+
+def state_dossier(identifier: str) -> dict:
+    """State/province cyber intelligence dossier across 4,596 world subdivisions."""
+    identifier = identifier.strip()
+    states_data = _load("states.json")
+    countries_data = countries().get("countries", {})
+
+    target_idx = None
+    target_state = None
+
+    if identifier.isdigit():
+        idx = int(identifier)
+        if 0 <= idx < len(states_data):
+            target_idx = idx
+            target_state = states_data[idx]
+
+    if not target_state:
+        needle = identifier.lower()
+        for idx, s in enumerate(states_data):
+            s_name = (s.get("n") or "").lower()
+            s_cc = (s.get("c") or "").lower()
+            if needle == s_name or needle == f"{s_cc}-{s_name}" or needle == f"{s_cc}_{s_name}":
+                target_idx = idx
+                target_state = s
+                break
+        if not target_state:
+            for idx, s in enumerate(states_data):
+                s_name = (s.get("n") or "").lower()
+                if needle in s_name:
+                    target_idx = idx
+                    target_state = s
+                    break
+
+    if not target_state:
+        raise KeyError(f"State/province '{identifier}' not found in 4,596 world states")
+
+    cc = target_state.get("c", "")
+    country_info = countries_data.get(cc, {})
+    m_count = target_state.get("m", 0)
+    d_count = target_state.get("d", 0)
+    ip_count = target_state.get("ip", 0)
+
+    threat_density = round((m_count / ip_count * 1e6), 2) if ip_count >= 100_000 else None
+
+    if threat_density is None:
+        threat_tier = "UNRATED"
+        tier_desc = "Fewer than 100,000 public IPv4 addresses; sample insufficient for rate"
+    elif threat_density > 100:
+        threat_tier = "CRITICAL"
+        tier_desc = "Extreme malicious node density; active botnet C2 clustering detected"
+    elif threat_density > 35:
+        threat_tier = "HIGH"
+        tier_desc = "Elevated hostile presence exceeding global median by >3x"
+    elif threat_density > 10:
+        threat_tier = "ELEVATED"
+        tier_desc = "Moderate threat presence across regional subnets"
+    else:
+        threat_tier = "LOW"
+        tier_desc = "Low malicious infrastructure density"
+
+    # Undersea cables landing in country
+    all_landings = cables().get("landings", [])
+    local_landings = [lp for lp in all_landings if lp.get("country") == cc]
+
+    # Local hotspots from heat
+    heat_data = _load("heat.json")
+    local_cities = heat_data.get("places", {}).get(cc, {}).get("malware", [])
+
+    return {
+        "index": target_idx,
+        "name": target_state.get("n"),
+        "country_code": cc,
+        "country_name": country_info.get("name", cc),
+        "type": target_state.get("t", "State/Province"),
+        "bounds": target_state.get("b"),
+        "telemetry": {
+            "malware_c2_nodes": m_count,
+            "public_dns_nodes": d_count,
+            "total_ipv4_addresses": ip_count,
+            "threat_density_per_million": threat_density,
+            "threat_tier": threat_tier,
+            "tier_description": tier_desc,
+        },
+        "ooni_censorship": {
+            "confirmed_blocks": country_info.get("confirmed_blocks", 0),
+            "measurement_count": country_info.get("censorship_measurements", 0),
+        },
+        "network_stability": {
+            "hosting_ipv4": country_info.get("hosting_ipv4", 0),
+            "tor_exit_nodes": country_info.get("tor_exits", 0),
+            "subsea_cable_landings": len(local_landings),
+        },
+        "top_threat_cities": [{"city": c[0], "count": c[1]} for c in local_cities[:6]],
+        "as_of": meta().get("fetched_at"),
     }
