@@ -140,7 +140,7 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [ ] 97. [ML] Add a monthly retraining job with an evaluation gate that deploys only if metrics do not regress
 - [ ] 98. [ML] Add drift monitoring (PSI or KS on key features) with alerts
 - [ ] 99. [ML] Add a consented verdict-feedback button (right or wrong) saved for future labels
-- [ ] 100. [ML] Publish a model card for every model
+- [x] 100. [ML] Publish a model card for every model (Shipped: /v1/model endpoint serving netrisk_card.json and RBA baseline metadata)
 - [ ] 101. [ML] Check false-positive rates by country and ASN type and document any bias
 - [ ] 102. [ML] Evaluate evasion by residential-proxy IPs and report recall for them separately
 - [ ] 103. [ML] Add an Isolation Forest anomaly baseline for login behaviour and compare it

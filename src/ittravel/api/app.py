@@ -92,6 +92,8 @@ async def cache_headers(request, call_next):
     path = request.url.path
     if request.method == "GET" and path.startswith("/v1/intel/") and "cache-control" not in response.headers:
         response.headers["Cache-Control"] = "public, max-age=300, s-maxage=1800, stale-while-revalidate=86400"
+    elif path == "/" or path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     elif path == "/v1/health":
         response.headers["Cache-Control"] = "no-store"
     return response
