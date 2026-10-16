@@ -34,13 +34,15 @@
 </header>
 <nav class="rail" aria-label="Modules">
   <a href="#globe" data-tab="globe" aria-label="Live globe"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-globe"/></svg><span class="lbl">Live globe</span></a>
+  <a href="#terminal" data-tab="terminal" aria-label="Tech Terminal"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-radar"/></svg><span class="lbl">Terminal</span></a>
+  <a href="#check" data-tab="check" aria-label="Live Footprint"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg><span class="lbl">Footprint</span></a>
+  <a href="#shield" data-tab="shield" aria-label="DNS Shield"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Shield</span></a>
   <a href="#attacks" data-tab="attacks" aria-label="Threats"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-biohazard"/></svg><span class="lbl">Threats</span><b class="count" data-badge="attacks" hidden></b></a>
   <a href="#breaches" data-tab="breaches" aria-label="Leaks"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-database-zap"/></svg><span class="lbl">Leaks</span><b class="count" data-badge="breaches" hidden></b></a>
   <a href="#flaws" data-tab="flaws" aria-label="Exploited flaws"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bug"/></svg><span class="lbl">Exploited flaws</span><b class="count" data-badge="flaws" hidden></b></a>
   <span class="sep" aria-hidden="true"></span>
-  <a href="#check" data-tab="check" aria-label="Sign-in check"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg><span class="lbl">Sign-in check</span></a>
   <a href="#news" data-tab="news" aria-label="News"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-newspaper"/></svg><span class="lbl">News</span></a>
-  <a href="#results" data-tab="results" aria-label="Sources and accuracy"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Sources and accuracy</span></a>
+  <a href="#results" data-tab="results" aria-label="Sources and accuracy"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-scale"/></svg><span class="lbl">Sources</span></a>
 </nav>
 <div class="world" id="world">
   <div id="globe"></div>
@@ -191,41 +193,67 @@
     <p class="fineprint">Sources: CISA Known Exploited Vulnerabilities catalog (US government public data); <a href="https://www.first.org/epss/" target="_blank" rel="noopener">FIRST EPSS</a>, scored daily.</p>
   </section>
 
-  <section id="tab-check" class="tab page" hidden>
-    <div class="page-head"><h2>Sign-in check</h2>
-      <p class="sub">Two weeks of the account's usual sign-ins go to the model first, then the test sign-in. IP addresses are real, from each country's networks.</p></div>
-    <div class="chips">
-      <button data-preset="usual">Usual sign-in</button>
-      <button data-preset="tor">Through Tor</button>
-      <button data-preset="vpn">New VPN / cloud server</button>
-      <button data-preset="malware">Known malware server</button>
-      <button data-preset="abroad">New country, new phone</button>
-      <button data-preset="travel">Mumbai → London, 10 min</button>
-      <button data-preset="guessing">Password guessing</button>
+  <section id="tab-terminal" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Tech Bloomberg Terminal</h2>
+      <p class="sub">Open-source corporate attack surface & intelligence dossier. Aggregates BGP ASNs, Certificate Transparency subdomains, CISA KEV flaws, and HIBP breaches.</p>
     </div>
-    <div class="grid2">
-      <form id="check-form" class="panel form">
-        <h3>Sign-in</h3>
-        <label>Usual location<select id="f-home"></select></label>
-        <label>This sign-in from<select id="f-country"></select></label>
-        <label>Network<select id="f-net">
-          <option value="home">usual home network</option>
-          <option value="newhome">different home / mobile network</option>
-          <option value="vpn">VPN / cloud server</option>
-          <option value="tor">Tor</option>
-          <option value="malware">server reported for malware</option>
-        </select></label>
-        <label>Device<select id="f-device"><option value="same">usual laptop</option><option value="new">unseen phone</option></select></label>
-        <label>Minutes since last sign-in<input id="f-minutes" type="number" min="1" value="600"></label>
-        <label>Wrong passwords just before<input id="f-fails" type="number" min="0" max="10" value="0"></label>
-        <label class="check"><input id="f-correct" type="checkbox" checked> Password correct this time</label>
-        <button class="btn primary" type="submit" id="f-go">Run check</button>
-        <p class="err" id="f-err"></p>
+    <div class="panel form" style="margin-bottom: 16px;">
+      <form id="terminal-form" style="display: flex; gap: 10px; align-items: center;">
+        <input type="search" id="terminal-q" placeholder="Enter company name, domain, or ASN (e.g. Cloudflare, Stripe, CrowdStrike, github.com)..." style="flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--sans);" required />
+        <button type="submit" class="btn primary" style="padding: 10px 20px;">Analyze</button>
       </form>
-      <div class="panel verdict" id="verdict"><h3>Verdict</h3><p class="muted">Select a scenario or run a check.</p></div>
+      <div class="chips" style="margin-top: 10px;">
+        <button type="button" class="btn-sm chip" data-terminal="Cloudflare">Cloudflare</button>
+        <button type="button" class="btn-sm chip" data-terminal="Stripe">Stripe</button>
+        <button type="button" class="btn-sm chip" data-terminal="CrowdStrike">CrowdStrike</button>
+        <button type="button" class="btn-sm chip" data-terminal="Palo Alto Networks">Palo Alto</button>
+        <button type="button" class="btn-sm chip" data-terminal="Microsoft">Microsoft</button>
+        <button type="button" class="btn-sm chip" data-terminal="github.com">GitHub</button>
+      </div>
     </div>
-    <div class="panel"><div id="trip-map" class="trip-map"></div></div>
+    <div id="terminal-results" aria-live="polite"></div>
   </section>
+
+  <section id="tab-check" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Live Digital Footprint & Hacker Tripwire</h2>
+      <p class="sub">Real-time network query for any IP or your live connection. Inspects carrier network, threat feeds, Spamhaus DROP blocks, and nearest submarine fiber landings.</p>
+    </div>
+    <div class="panel form" style="margin-bottom: 16px;">
+      <form id="footprint-form" style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="footprint-ip" placeholder="Target IP (leave blank to audit your live connection)..." style="flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" />
+        <button type="submit" class="btn primary" style="padding: 10px 20px;">Run Diagnostic</button>
+      </form>
+      <div class="chips" style="margin-top: 10px;">
+        <button type="button" class="btn-sm chip" data-fp="1.1.1.1">Cloudflare (1.1.1.1)</button>
+        <button type="button" class="btn-sm chip" data-fp="8.8.8.8">Google DNS (8.8.8.8)</button>
+        <button type="button" class="btn-sm chip" data-fp="162.243.103.246">Malware C2 Example</button>
+      </div>
+    </div>
+    <div id="footprint-results" aria-live="polite"></div>
+  </section>
+
+  <section id="tab-shield" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Active Protective DNS Shield & DGA Detector</h2>
+      <p class="sub">Domain Generation Algorithm (DGA) entropy detection and real-time malicious domain sinkholing.</p>
+    </div>
+    <div class="panel form" style="margin-bottom: 16px;">
+      <form id="shield-form" style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="shield-domain" placeholder="Domain to inspect (e.g. google.com, xq7b9kz1m0w8p2r4j6f.biz)..." style="flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
+        <button type="submit" class="btn primary" style="padding: 10px 20px;">Inspect Domain</button>
+      </form>
+      <div class="chips" style="margin-top: 10px;">
+        <button type="button" class="btn-sm chip" data-shield="google.com">google.com (Clean)</button>
+        <button type="button" class="btn-sm chip" data-shield="xq7b9kz1m0w8p2r4j6f.biz">xq7b9kz1m0w8p2r4j6f.biz (DGA Botnet)</button>
+        <button type="button" class="btn-sm chip" data-shield="microsoft.com">microsoft.com (Clean)</button>
+        <button type="button" class="btn-sm chip" data-shield="c8v2m9x1q4w7p0l3j6z.info">c8v2m9x1q4w7p0l3j6z.info (DGA Botnet)</button>
+      </div>
+    </div>
+    <div id="shield-results" aria-live="polite"></div>
+  </section>
+
 
   <section id="tab-news" class="tab page" hidden>
     <div class="page-head"><h2>News</h2><p class="sub">Security headlines and videos from public feeds, cached for 30 minutes. Each item links to its source.</p></div>

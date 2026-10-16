@@ -23,6 +23,8 @@ def test_terminal_company_endpoint():
     assert "score" in data
     assert "executive_summary" in data
     assert "networks" in data
+    assert "attack_surface" in data
+    assert "subdomains" in data["attack_surface"]
 
 
 def test_terminal_footprint_endpoint():
