@@ -31,10 +31,11 @@ A full-screen 3D WebGL Earth (NASA Blue Marble) mapping all **4,596 world states
 ### 2. 💼 Open-Source Tech Bloomberg Terminal
 Search any company, domain, or technology (`Cloudflare`, `CrowdStrike`, `Stripe`, `your-org.com`):
 - **Corporate Cloud Footprint:** BGP ASNs, upstream ISPs, and network ranges.
-- **Exploited Flaws & Weaponization:** CISA Known Exploited Vulnerabilities (KEV) cross-referenced with FIRST EPSS exploit probabilities and ransomware weaponization status.
+- **Attack Surface Discovery:** Real-time Certificate Transparency log enumeration (`crt.sh`) for subdomains.
+- **Exploited Flaws & Weaponization:** CISA Known Exploited Vulnerabilities (KEV) cross-referenced with FIRST EPSS exploit probabilities.
 - **Breach History:** Have I Been Pwned breach archives with total accounts exposed and leaked data types.
 - **Ransomware Watch:** Active extortion claims from RansomLook.
-- **Security Health Grade (A–F):** 100-point posture scoring with a 3-bullet plain-English executive summary.
+- **Security Health Grade (A–F):** 100-point posture scoring with an executive summary.
 
 ### 3. ⚡ Live Personal Footprint & Hacker Tripwire
 Real-time network diagnostic for any client or target IP:
@@ -43,10 +44,85 @@ Real-time network diagnostic for any client or target IP:
 - **Subsea Infrastructure Adjacency:** Nearest physical undersea cable landing station.
 - **Tripwire Diagnostic:** Flags connections routing through malicious subnets, hostile anonymizers, or compromised nodes.
 
-### 4. 🛡️ Active Protective DNS Shield
-Protective DNS endpoint with machine learning DGA detection:
+### 4. 🛡️ Active Protective DNS Shield & RFC 8484 DoH
+Protective DNS endpoint with machine learning DGA detection and DNS-over-HTTPS:
 - **DGA Botnet Entropy Scorer:** Shannon entropy scoring flags algorithmic botnet domains (entropy > 3.65 on domain labels).
 - **Instant Sinkhole Response:** Sinkholes confirmed malware C2 and phishing domains to `0.0.0.0` in <15ms.
+- **RFC 8484 Standard:** Full binary wire format (`application/dns-message`) and JSON DoH at `/dns-query`.
+
+### 5. 📡 Planetary BGP & Internet Disruption Radar
+Real-time macro-level internet blackout and outage telemetry:
+- **CAIDA IODA & RIPE RIS:** Monitors routing table withdrawals, BGP leaks, and country-scale transit anomalies.
+- **Impact Analysis:** Severity scoring, transit volume loss percentage, and affected ASNs.
+
+### 6. 📦 Open-Source Supply Chain Analyzer
+Deep package dependency and license audit via Google deps.dev & OSV.dev:
+- **Multi-Ecosystem:** PyPI, npm, Go, Cargo (Rust), and Maven (Java).
+- **Vulnerability Mapping:** Direct correlation with published OSV and GHSA security advisories.
+- **License Risk Analysis:** Detects copyleft / restrictive licenses (AGPL, GPL, LGPL) vs permissive licenses.
+
+### 7. 🕵️ Corporate Breach & Credential Leak Hunter
+Audit domain employee breach exposures and credential safety:
+- **Zero-Knowledge k-Anonymity:** Hashes passwords client-side via SHA-1; only transmits the 5-character prefix (never transmits plaintext or full hashes).
+- **Ransomware Extortion Tracking:** Cross-references corporate domains against active ransomware gang extortion catalogs.
+
+### 8. 🪤 Canary Tokens & Hacker Tripwires
+Deploy deceptive decoy assets into private git repos, configuration files, and databases:
+- **Decoy Formats:** Fake AWS IAM access keys (`.aws/credentials`), Postgres database URIs, and 1x1 tracking beacons.
+- **Instant Intrusion Alarms:** Captures intruder IP, ASN, carrier, reverse geolocation, and user-agent the instant a token is probed.
+
+### 9. 🤖 AI Plain-English Defense Remediation Engine
+Deterministic, actionable mitigations for CVEs, malicious IPs, and DGA botnets:
+- **3-Bullet Executive Card:** What happened, Who is impacted, What to do right now.
+- **60-Second Shell Fixes:** Drop-in shell commands for `iptables`, `nftables`, Suricata, and Windows Firewall.
+
+### 10. 🏭 Global AI & Compute Infrastructure Atlas
+Planetary geospatial registry of frontier computing hubs:
+- **Hyperscaler Superclusters:** AWS US-East, GCP Council Bluffs, Azure Boydton, Meta Prineville, OCI Abilene.
+- **Semiconductor Fabs:** TSMC Tainan, ASML Veldhoven, Intel Chandler.
+- **Integrated Globe Layer:** Visualized directly on the 3D planetary globe.
+
+---
+
+## Open Protocols & Standards
+
+| Standard | Endpoint | Description |
+|:---|:---|:---|
+| **OASIS TAXII 2.1** | `/taxii2/`, `/taxii2/v21/collections/` | Industry standard threat intelligence sharing for SIEMs |
+| **OASIS STIX 2.1** | `/v1/intel/export/stix` | Complete STIX 2.1 JSON indicator bundle |
+| **MISP 2.4** | `/v1/intel/export/misp` | Standard MISP Event JSON export |
+| **RFC 8484 DoH** | `/dns-query` | DNS-over-HTTPS binary wire and JSON resolution |
+| **Prometheus** | `/metrics` | RFC 8967 text exposition metrics for Grafana / Datadog |
+| **Linux nftables** | `/v1/intel/export/nftables` | Drop-in packet filtering ruleset |
+| **Suricata / Snort** | `/v1/intel/export/suricata` | Intrusion Detection System perimeter rules |
+
+---
+
+## Python SDK (`AlibiClient`)
+
+ALIBI includes a zero-dependency, type-safe Python client library:
+
+```python
+from ittravel import AlibiClient
+
+client = AlibiClient()
+
+# Check IP footprint & threat posture
+footprint = client.footprint("1.1.1.1")
+print(f"Tier: {footprint.threat_tier}, ASN: {footprint.network.get('asn')}")
+
+# Analyze company tech attack surface
+company = client.company_tech("Cloudflare")
+print(f"Health Grade: {company.security_grade}, ASNs: {len(company.asns)}")
+
+# Inspect domain via DNS Shield
+shield = client.dns_shield("xq7b9kz1m0w8p2r4j6f.biz")
+print(f"Verdict: {shield.verdict}, Reason: {shield.dga_reason}")
+
+# Analyze open-source package supply chain
+pkg = client.supply_chain("fastapi", ecosystem="pypi")
+print(f"Status: {pkg.security_status}, License: {pkg.license_risk}")
+```
 
 ---
 
@@ -117,20 +193,29 @@ All read endpoints are keyless, rate-limited, and return an `X-Data-As-Of` times
 | `GET` | `/v1/terminal/company?q=` | Bloomberg-style company tech, breach, and KEV dossier |
 | `GET` | `/v1/terminal/footprint?ip=` | Live visitor digital footprint & tripwire diagnostic |
 | `GET` | `/v1/shield/check?domain=` | Domain threat check with Shannon entropy DGA scoring |
-| `GET` | `/v1/intel/state/{code}` | Full 4,596-state intelligence dossier (threat density, OONI, cables) |
+| `GET, POST` | `/dns-query` | RFC 8484 DNS-over-HTTPS wire-format and JSON resolver |
+| `GET` | `/v1/intel/disruptions` | Planetary BGP and CAIDA IODA internet outages |
+| `GET` | `/v1/supply-chain/analyze` | Open-source supply chain risk (deps.dev + OSV) |
+| `GET` | `/v1/terminal/leak-hunter` | Corporate domain employee breach & ransomware audit |
+| `GET` | `/v1/terminal/pwned-password`| Zero-knowledge k-Anonymity password check |
+| `POST` | `/v1/canary/generate` | Generate decoy AWS keys, DB URIs, and tripwires |
+| `GET` | `/v1/canary/alarms` | Intrusion detection alarms from triggered decoys |
+| `GET` | `/v1/remediation/explain` | AI plain-English remediation card & 60s shell commands |
+| `GET` | `/v1/intel/compute-atlas` | Global AI superclusters and semiconductor fab atlas |
+| `GET` | `/taxii2/` | OASIS TAXII 2.1 Server Discovery |
+| `GET` | `/taxii2/v21/collections/` | OASIS TAXII 2.1 Collections list |
+| `GET` | `/metrics` | Prometheus metrics (RFC 8967) for platform health |
+| `GET` | `/v1/intel/state/{code}` | Full 4,596-state intelligence dossier |
 | `GET` | `/v1/intel/overview` | Planetary headline numbers across all feeds |
-| `GET` | `/v1/intel/search?q=` | Unified search across IPs, CVEs, companies, and domains |
-| `GET` | `/v1/intel/ip/{ip}` | Deep IP analysis (ASN, Tor, hosting, malware, Spamhaus DROP) |
-| `GET` | `/v1/intel/ip/{ip}/stix` | Per-IP STIX 2.1 observable bundle |
+| `GET` | `/v1/intel/search?q=` | Unified search across IPs, CVEs, companies, domains |
+| `GET` | `/v1/intel/ip/{ip}` | Deep IP analysis (ASN, Tor, hosting, malware, DROP) |
 | `GET` | `/v1/intel/export/stix` | Planetary STIX 2.1 threat intelligence bundle |
 | `GET` | `/v1/intel/export/misp` | Standard MISP 2.4 Event JSON export |
 | `GET` | `/v1/intel/export/csv` | Clean CSV export of active threat indicators |
 | `GET` | `/v1/intel/export/blocklist.txt`| Plaintext IP blocklist for firewalls and proxies |
 | `GET` | `/v1/intel/export/nftables` | Drop-in Linux nftables packet filter ruleset |
 | `GET` | `/v1/intel/export/suricata` | Suricata / Snort IDS perimeter detection rules |
-| `GET` | `/v1/intel/flaws/priority` | CISA KEV flaws prioritized by EPSS & ransomware weaponization |
-| `GET` | `/v1/intel/globe/{metric}.jpg`| Server-rendered globe texture maps |
-| `GET` | `/v1/health` | Per-feed download health, record counts, and freshness |
+| `GET` | `/v1/health` | Per-feed download health, record counts, freshness |
 
 Interactive Swagger documentation is available locally at `http://localhost:8000/docs`.
 
@@ -143,49 +228,26 @@ Interactive Swagger documentation is available locally at `http://localhost:8000
 git clone https://github.com/UtkarshOver9000/alibi.git
 cd alibi
 
-# Install dependencies
-pip install -r requirements-dev.txt
+# Install dependencies using uv
+uv sync --all-extras
 
 # Start the development server
-make dev
-# or: uvicorn ittravel.api.app:app --reload --port 8000
+uv run uvicorn ittravel.api.app:app --reload --port 8000
 
 # Run full test suite
-make test
+uv run pytest
 ```
 
 Visit `http://localhost:8000` in your browser to explore the interactive terminal and 3D globe.
 
 ---
 
-## Architecture Overview
+## Project Documentation
 
-```
-Public Sources (abuse.ch, CISA KEV, EPSS, HIBP, Spamhaus, iptoasn, DB-IP, OONI, TeleGeography)
-          │
-          ▼ GitHub Actions every 6h (scripts/fetch_intel.sh)
-    data/intel/ (raw feed downloads)
-          │
-          ▼ python -m ittravel.intel.snapshot
-    src/ittravel/intel_data/ (~15 MB compressed JSON + NumPy)
-          │
-          ├── netrisk/train.py  →  artifacts/netrisk_model.joblib (ROC-AUC 0.964)
-          │
-          ▼
-    FastAPI Application (src/ittravel/api/app.py)
-          ├── /v1/intel/*       Planetary intelligence, cross-feed search, STIX 2.1
-          ├── /v1/terminal/*    Bloomberg tech dossiers & live visitor footprint
-          ├── /v1/shield/*      Protective DNS Shield & DGA entropy scorer
-          ├── /v1/globe/*       Server-rendered globe textures and pick maps
-          └── /v1/health        Per-feed freshness and health monitors
-          │
-          ▼
-    Browser UI (dashboard/index.html)
-          ├── 3D God's Eye Earth (WebGL, 4,596 world states, 733 undersea cables)
-          ├── Tech Bloomberg Terminal (corporate attack surface, KEV flaws, ASNs)
-          ├── Live Footprint & Tripwire diagnostic console
-          └── Threat Feed Monitors & Global Cyber News
-```
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Platform Roadmap](ROADMAP.md)
+- [Security Disclosures](.well-known/security.txt)
 
 ---
 
