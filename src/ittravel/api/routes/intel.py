@@ -4,13 +4,22 @@ Read-only threat intelligence from the daily snapshot, plus live news and IP loo
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from ...intel import news, service, stix
 from ...intel.network import lookup, malware_ip, sample_ips, tor_exits
 
 router = APIRouter()
+
+
+@router.get("/v1/intel/state/{code}", tags=["Intel"])
+async def intel_state(code: str):
+    """Full State/Province Dossier (threat density, active malware nodes, ISP stability, OONI blocks, cables)."""
+    try:
+        return service.state_dossier(code)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.get("/v1/intel/overview", tags=["Intel"])

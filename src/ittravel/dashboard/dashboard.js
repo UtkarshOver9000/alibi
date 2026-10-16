@@ -287,8 +287,101 @@ document.addEventListener("keydown", (e) => {
   if ((e.key.toLowerCase() === "k" && (e.ctrlKey || e.metaKey)) || (e.key === "/" && !typing())) {
     e.preventDefault();
     $("#palette").hidden ? openPalette() : closePalette();
-  } else if (e.key === "Escape" && !$("#palette").hidden) closePalette();
+  } else if (e.key === "Escape") {
+    if ($("#state-modal") && !$("#state-modal").hidden) closeStateDossier();
+    else if (!$("#palette").hidden) closePalette();
+  }
 });
+
+function openStateDossier(stateId) {
+  const modal = $("#state-modal");
+  if (!modal) return;
+  modal.hidden = false;
+  const body = $("#state-dossier-body");
+  body.innerHTML = '<p class="muted">Loading regional intelligence telemetry...</p>';
+
+  api(`/v1/intel/state/${encodeURIComponent(stateId)}`)
+    .then((d) => {
+      $("#state-title").textContent = `${d.name} (${d.country_code}) · State Intelligence Dossier`;
+      const t = d.telemetry;
+      const ooni = d.ooni_censorship;
+      const net = d.network_stability;
+
+      const tierColors = {
+        CRITICAL: "var(--crimson)",
+        HIGH: "var(--amber)",
+        ELEVATED: "var(--accent)",
+        LOW: "#22c55e",
+        UNRATED: "var(--dim)",
+      };
+      const tierColor = tierColors[t.threat_tier] || "var(--dim)";
+
+      body.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--line);">
+          <div>
+            <div style="font-size:18px; font-weight:700;">${esc(d.name)}</div>
+            <div class="muted" style="font-size:12px;">${esc(d.type)} · ${esc(d.country_name)}</div>
+          </div>
+          <span style="background:${tierColor}20; color:${tierColor}; border:1px solid ${tierColor}; padding:4px 10px; border-radius:4px; font:700 11px var(--hud); letter-spacing:0.1em;">
+            ${esc(t.threat_tier)}
+          </span>
+        </div>
+
+        <div style="font-size:12px; margin-bottom:16px; color:var(--dim);">
+          ${esc(t.tier_description)}
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:16px;">
+          <div class="card" style="padding:10px; background:var(--bg-card); border-radius:4px; border:1px solid var(--line);">
+            <div class="muted" style="font-size:11px; text-transform:uppercase;">Malware C2 Nodes</div>
+            <div style="font-size:20px; font-weight:700; color:var(--crimson);">${fmt(t.malware_c2_nodes)}</div>
+          </div>
+          <div class="card" style="padding:10px; background:var(--bg-card); border-radius:4px; border:1px solid var(--line);">
+            <div class="muted" style="font-size:11px; text-transform:uppercase;">Threat Density</div>
+            <div style="font-size:20px; font-weight:700;">${t.threat_density_per_million ? t.threat_density_per_million + ' / 1M' : 'N/A'}</div>
+          </div>
+          <div class="card" style="padding:10px; background:var(--bg-card); border-radius:4px; border:1px solid var(--line);">
+            <div class="muted" style="font-size:11px; text-transform:uppercase;">Public DNS Resolvers</div>
+            <div style="font-size:18px; font-weight:600;">${fmt(t.public_dns_nodes)}</div>
+          </div>
+          <div class="card" style="padding:10px; background:var(--bg-card); border-radius:4px; border:1px solid var(--line);">
+            <div class="muted" style="font-size:11px; text-transform:uppercase;">Total IPv4 Allocated</div>
+            <div style="font-size:18px; font-weight:600;">${fmt(t.total_ipv4_addresses)}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <div style="font:600 11px var(--hud); letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); margin-bottom:6px;">Infrastructure & Telemetry</div>
+          <div style="font-size:12.5px; line-height:1.6;">
+            <div>• <b>Hosting / Cloud IPv4:</b> ${compact(net.hosting_ipv4)} addresses announced</div>
+            <div>• <b>Tor Anonymization Relays:</b> ${fmt(net.tor_exit_nodes)} active exit nodes</div>
+            <div>• <b>Submarine Cable Landings:</b> ${fmt(net.subsea_cable_landings)} global fiber landing points</div>
+            <div>• <b>Confirmed Censorship Blocks (OONI):</b> ${fmt(ooni.confirmed_blocks)} blocks across ${compact(ooni.measurement_count)} tests</div>
+          </div>
+        </div>
+
+        ${d.top_threat_cities && d.top_threat_cities.length ? `
+          <div style="margin-top:12px;">
+            <div style="font:600 11px var(--hud); letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); margin-bottom:6px;">Regional Threat Hotspots</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              ${d.top_threat_cities.map((cityObj) => `<span style="background:var(--bg); border:1px solid var(--line); padding:2px 8px; border-radius:3px; font-size:11.5px;">${esc(cityObj.city)}: <b>${cityObj.count}</b></span>`).join("")}
+            </div>
+          </div>
+        ` : ""}
+      `;
+    })
+    .catch((err) => {
+      body.innerHTML = `<p style="color:var(--crimson);">Failed to load state dossier: ${esc(err.message || String(err))}</p>`;
+    });
+}
+
+function closeStateDossier() {
+  const modal = $("#state-modal");
+  if (modal) modal.hidden = true;
+}
+
+$("#state-modal-close")?.addEventListener("click", closeStateDossier);
+$("#state-modal")?.addEventListener("click", (e) => e.target.id === "state-modal" && closeStateDossier());
 
 function searchHtml(r) {
   if (r.kind === "ip") {
@@ -859,7 +952,11 @@ async function selectCountry(f, at) {
   $("#country-panel").innerHTML = `<h3>Inspector <span class="meta">${esc(c.a2)}</span></h3>
     ${selState ? `<div class="place"><b>${esc(selState.n)}</b> <span class="muted">${esc(selState.t)}</span><br>
       ${fmt(selState.m)} malware servers · ${fmt(selState.d)} public DNS servers
-      <br><span class="muted">${perMillion(selState[key], selState.ip)} (${label})</span></div>` : ""}
+      <br><span class="muted">${perMillion(selState[key], selState.ip)} (${label})</span>
+      <button class="btn btn-sm" id="btn-state-dossier" style="margin-top:8px; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>State Intelligence Dossier</span>
+      </button>
+    </div>` : ""}
     <div class="row"><b style="font-size:16px">${esc(c.name)}</b></div>
     ${rank ? `<p class="rank">#${rank[0]} of ${rank[2]} · ${esc(METRICS[metric].title)} (${fmt(rank[1])})</p>` : ""}
     <div class="facts">${facts.map(([k, v]) => `<div><b>${k}</b>${v}</div>`).join("")}</div>
@@ -867,6 +964,9 @@ async function selectCountry(f, at) {
     ${spots.length ? `<p class="fineprint"><b>Top cities:</b> ${spots.slice(0, 6).map(([city, n]) => `${esc(city)} ${fmt(n)}`).join(" · ")}</p>` : ""}
     <p class="fineprint" id="country-nets">Looking up networks…</p>
     <button class="btn" id="add-journey" ${journey.length >= 3 ? "disabled" : ""}>Add to journey</button>`;
+  $("#btn-state-dossier")?.addEventListener("click", () => {
+    if (selState) openStateDossier(selState.i);
+  });
   $("#add-journey").addEventListener("click", () => {
     if (journey.length < 3 && journey.at(-1) !== c.a2) journey.push(c.a2);
     $("#journey-panel").open = true;
