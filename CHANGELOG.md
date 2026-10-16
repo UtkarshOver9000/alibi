@@ -132,3 +132,24 @@ Items from the Alibi 1.0 plan (148 items), newest last.
 - Implemented Active Protective DNS Shield (`/v1/shield/check`) with Shannon entropy DGA botnet detection.
 - Streamlined engine to export 2026 ThreatFox network-risk machine learning model (ROC-AUC 0.964).
 - Cleaned test suite and verified 100% test coverage for all active modules.
+
+## 1.0.1 — State Intelligence Dossier (Phase 2)
+- Added full state/province intelligence dossier (`/v1/intel/state/{code}`) covering all 4,596 world subdivisions.
+- Aggregated real cyber threat density per million IPs, active malware C2 nodes, OONI web censorship anomalies, and physical submarine cables.
+- Added interactive `#state-modal` dialog and dossier inspector button to the frontend HUD.
+
+## 1.0.2 — Terminal, Footprint & DNS Shield UI (Phase 3)
+- Fully wired Tech Bloomberg Terminal tab (`#terminal`) with corporate ASN, CISA KEV, and breach summary.
+- Added live Certificate Transparency integration (`fetch_crtsh_subdomains()`) querying `crt.sh` JSON API for real-time attack surface enumeration.
+- Wired Live Footprint diagnostic tab (`#check`) with threat tiers and network carrier lookups.
+- Wired Active Protective DNS Shield tab (`#shield`) with real-time Shannon entropy DGA botnet scoring and sinkhole verdicts.
+- Removed all legacy ATO check code and invalid map references.
+
+## 1.0.3 — Standard Threat Intelligence Exports (Phase 4)
+- Added planetary STIX 2.1 JSON bundle export (`/v1/intel/export/stix`) aligning with OASIS and OpenCTI standards (#115, #128).
+- Added standard MISP 2.4 Event JSON export (`/v1/intel/export/misp`) (#128).
+- Added clean CSV export of active threat indicators (`/v1/intel/export/csv`) (#128).
+- Added plaintext IP blocklist (`/v1/intel/export/blocklist.txt`) for firewall and proxy ingestion (#146).
+- Added drop-in Linux nftables packet filter ruleset (`/v1/intel/export/nftables`) (#146).
+- Added Suricata / Snort IDS perimeter detection rules (`/v1/intel/export/suricata`) (#146).
+- Updated Makefile train recipe to target 2026 ThreatFox network-risk trainer.

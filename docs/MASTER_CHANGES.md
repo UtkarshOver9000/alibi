@@ -168,7 +168,7 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [x] 125. [INTEL] Classify IPs into Tor exit, VPN, hosting, residential, malware C2, scanner and criminal network (Shipped in ittravel.intel.network & /v1/terminal/footprint)
 - [ ] 126. [INTEL] Show history per IP: first seen on which list, last seen, number of sources
 - [ ] 127. [INTEL] Add browser-side collections: save a set of indicators with notes and export them as JSON, with no account needed
-- [ ] 128. [INTEL] Add exports in CSV, JSON, STIX 2.1 bundle and MISP event JSON
+- [x] 128. [INTEL] Add exports in CSV, JSON, STIX 2.1 bundle and MISP event JSON (Shipped: /v1/intel/export/stix, /v1/intel/export/misp, /v1/intel/export/csv)
 - [ ] 129. [INTEL] Add a read-only TAXII 2.1 server for Alibi indicators and reputation
 - [ ] 130. [INTEL] Publish a MISP-compatible feed (manifest plus event JSON) so a MISP instance can subscribe
 - [ ] 131. [INTEL] Write an OpenCTI external-import connector for Alibi indicators and test it against a local OpenCTI in docker compose
@@ -186,7 +186,7 @@ This list includes everything from `alibi-now.md` and the earlier 152-item roadm
 - [ ] 143. [INTEL] Let users drop in an auth log and parse it in the browser, so raw logs never reach the server
 - [ ] 144. [INTEL] Support sshd auth.log, nginx access logs and Windows 4625 events
 - [ ] 145. [INTEL] Export Sigma rules for the top credential-stuffing patterns
-- [ ] 146. [INTEL] Export blocklists as plain IP list, nftables set and WAF formats, with false-positive warnings from the warninglists
+- [x] 146. [INTEL] Export blocklists as plain IP list, nftables set and WAF formats, with false-positive warnings from the warninglists (Shipped: /v1/intel/export/blocklist.txt, /v1/intel/export/nftables, /v1/intel/export/suricata)
 - [ ] 147. [INTEL] Add campaign pages (Mozi, Mirai): sources, ASNs, countries and weekly trend
 - [ ] 148. [INTEL] Add a small relationship graph per indicator
 - [ ] 149. [INTEL] Add an ASN watchlist and an RSS/Atom feed of new findings

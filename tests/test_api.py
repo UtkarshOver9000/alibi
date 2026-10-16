@@ -148,3 +148,50 @@ def test_body_limit_enforced():
     huge_data = b"x" * (300 * 1024)
     huge = client.post("/v1/terminal/company", content=huge_data, headers={"Content-Type": "application/json"})
     assert huge.status_code == 413
+
+
+def test_export_stix_bundle():
+    res = client.get("/v1/intel/export/stix?limit=10")
+    assert res.status_code == 200
+    bundle = res.json()
+    assert bundle["type"] == "bundle"
+    assert "objects" in bundle
+    assert len(bundle["objects"]) > 0
+
+
+def test_export_misp_event():
+    res = client.get("/v1/intel/export/misp?limit=10")
+    assert res.status_code == 200
+    misp = res.json()
+    assert "Event" in misp
+    assert "Attribute" in misp["Event"]
+    assert len(misp["Event"]["Attribute"]) > 0
+    assert misp["Event"]["Attribute"][0]["type"] == "ip-dst"
+
+
+def test_export_csv():
+    res = client.get("/v1/intel/export/csv?limit=15")
+    assert res.status_code == 200
+    assert "text/csv" in res.headers["content-type"]
+    text = res.text
+    assert "indicator,type,threat" in text
+    assert len(text.strip().splitlines()) > 1
+
+
+def test_export_blocklist_and_firewall_rules():
+    # Plain text blocklist
+    bl = client.get("/v1/intel/export/blocklist.txt?limit=20")
+    assert bl.status_code == 200
+    assert "ALIBI Planetary Threat Intelligence Blocklist" in bl.text
+
+    # nftables
+    nft = client.get("/v1/intel/export/nftables?limit=20")
+    assert nft.status_code == 200
+    assert "table inet filter" in nft.text
+    assert "alibi_threat_nodes" in nft.text
+
+    # Suricata rules
+    sur = client.get("/v1/intel/export/suricata?limit=10")
+    assert sur.status_code == 200
+    assert "alert ip $EXTERNAL_NET" in sur.text
+
