@@ -17,8 +17,7 @@ fetch:  ## download the feeds that are due (see sources.yaml)
 snapshot: fetch  ## rebuild src/ittravel/intel_data from the downloads
 	$(PY) -m ittravel.intel.snapshot --raw data/intel
 
-train:  ## retrain the login models (needs data/rba-dataset.zip, 1.1 GB)
-	$(PY) -m ittravel.rba.load --zip data/rba-dataset.zip --db data/rba.duckdb
-	$(PY) -m ittravel.rba.train --db data/rba.duckdb
+train:  ## retrain the 2026 network-risk model on ThreatFox data
+	$(PY) -m ittravel.netrisk.train --threatfox data/intel/threatfox_full.json.zip
 
 .PHONY: dev test lint fetch snapshot train

@@ -117,10 +117,17 @@ All read endpoints are keyless, rate-limited, and return an `X-Data-As-Of` times
 | `GET` | `/v1/terminal/company?q=` | Bloomberg-style company tech, breach, and KEV dossier |
 | `GET` | `/v1/terminal/footprint?ip=` | Live visitor digital footprint & tripwire diagnostic |
 | `GET` | `/v1/shield/check?domain=` | Domain threat check with Shannon entropy DGA scoring |
+| `GET` | `/v1/intel/state/{code}` | Full 4,596-state intelligence dossier (threat density, OONI, cables) |
 | `GET` | `/v1/intel/overview` | Planetary headline numbers across all feeds |
 | `GET` | `/v1/intel/search?q=` | Unified search across IPs, CVEs, companies, and domains |
 | `GET` | `/v1/intel/ip/{ip}` | Deep IP analysis (ASN, Tor, hosting, malware, Spamhaus DROP) |
-| `GET` | `/v1/intel/ip/{ip}/stix` | STIX 2.1 JSON bundle export for security operations |
+| `GET` | `/v1/intel/ip/{ip}/stix` | Per-IP STIX 2.1 observable bundle |
+| `GET` | `/v1/intel/export/stix` | Planetary STIX 2.1 threat intelligence bundle |
+| `GET` | `/v1/intel/export/misp` | Standard MISP 2.4 Event JSON export |
+| `GET` | `/v1/intel/export/csv` | Clean CSV export of active threat indicators |
+| `GET` | `/v1/intel/export/blocklist.txt`| Plaintext IP blocklist for firewalls and proxies |
+| `GET` | `/v1/intel/export/nftables` | Drop-in Linux nftables packet filter ruleset |
+| `GET` | `/v1/intel/export/suricata` | Suricata / Snort IDS perimeter detection rules |
 | `GET` | `/v1/intel/flaws/priority` | CISA KEV flaws prioritized by EPSS & ransomware weaponization |
 | `GET` | `/v1/intel/globe/{metric}.jpg`| Server-rendered globe texture maps |
 | `GET` | `/v1/health` | Per-feed download health, record counts, and freshness |
