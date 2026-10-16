@@ -1203,52 +1203,84 @@ loaders.terminal = async () => {};  // lazy: search is user-driven, no auto-load
   function runTerminal(q) {
     if (!q) return;
     const box = $("#terminal-results");
-    box.innerHTML = '<p class="muted">Pulling dossier…</p>';
+    box.innerHTML = '<p class="muted">Pulling Bloomberg dossier from BGPView · CISA KEV · HIBP · crt.sh…</p>';
     api(`/v1/terminal/company?q=${encodeURIComponent(q)}`)
       .then((d) => {
         const grade = d.grade ?? "—";
         const gradeColor = { A: "#2f7a4f", B: "#3d7ab5", C: "#d4a017", D: "#e8710a", F: "#b42318" }[grade[0]] ?? "#666";
         const subdomains = d.attack_surface?.subdomains ?? [];
-        const kevs = (d.exploited_cves ?? []).slice(0, 5);
         const breaches = d.breach_summary ?? {};
-        const asns = (d.asn_profile ?? []).slice(0, 6);
+        const breachList = d.breaches?.recent ?? [];
+        const asns = (d.asn_profile ?? []).slice(0, 12);
+        const vulns = (d.vulnerabilities?.top_cves ?? []).slice(0, 8);
+
         box.innerHTML = `
-          <div class="panel" style="margin-bottom:1rem">
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
-              <span style="font-size:2.5rem;font-weight:700;color:${gradeColor};line-height:1">${esc(grade)}</span>
+          <div class="panel" style="margin-bottom:1rem;border-left:5px solid ${gradeColor}">
+            <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.75rem">
+              <span style="font-size:3rem;font-weight:700;color:${gradeColor};line-height:1;min-width:2.5rem">${esc(grade)}</span>
               <div>
-                <b style="font-size:1.1rem">${esc(d.company ?? q)}</b><br>
-                <span class="fineprint">${esc(d.primary_domain ?? "")}</span>
+                <b style="font-size:1.2rem">${esc(d.company ?? q)}</b>${d.primary_domain ? `<span class="fineprint" style="margin-left:.5rem;color:var(--accent)">${esc(d.primary_domain)}</span>` : ""}<br>
+                <span class="fineprint" style="color:var(--dim)">${esc(d.grade_description ?? "")}</span>
+              </div>
+              <div style="margin-left:auto;text-align:right">
+                <div style="font-size:.75rem;color:var(--dim)">Security Health Score</div>
+                <div style="font-size:1.5rem;font-weight:700;color:${gradeColor}">${d.score ?? "—"}/100</div>
               </div>
             </div>
-            <ul style="margin:0;padding-left:1.2rem">
-              ${(d.summary_bullets ?? []).map((b) => `<li>${esc(b)}</li>`).join("") || "<li class='muted'>No summary available.</li>"}
+            <ul style="margin:0;padding-left:1.4rem;line-height:1.8">
+              ${(d.summary_bullets ?? []).map((b) => `<li style="font-size:13px">${esc(b)}</li>`).join("") || "<li class='muted'>No records found. Try a more specific name or domain (e.g. infosys.com, stripe.com).</li>"}
             </ul>
+            <div class="fineprint" style="margin-top:.5rem;color:var(--dim)">Sources: ${esc(d.sources ?? "BGPView · CISA KEV · FIRST EPSS · HIBP · crt.sh")}</div>
           </div>
-          ${breaches.total_breaches ? `<div class="panel" style="margin-bottom:1rem">
-            <b>Breach history</b> — ${fmt(breaches.total_breaches)} breaches · ${fmt(breaches.total_records ?? 0)} records exposed
-          </div>` : ""}
           ${asns.length ? `<div class="panel" style="margin-bottom:1rem">
-            <b>Network footprint</b><br>
-            <table style="width:100%;margin-top:.5rem"><tbody>
-              ${asns.map((a) => `<tr><td>AS${esc(a.asn)}</td><td>${esc(a.network)}</td><td style="text-align:right">${esc(a.country ?? "")}</td></tr>`).join("")}
+            <b>BGP Network Footprint — ${asns.length} Autonomous System${asns.length > 1 ? "s" : ""}</b>
+            <table style="width:100%;margin-top:.6rem;font-size:13px"><tbody>
+              ${asns.map((a) => `<tr>
+                <td><a href="https://bgpview.io/asn/${esc(a.asn)}" target="_blank" rel="noopener" style="font-family:var(--mono)">AS${esc(a.asn)}</a></td>
+                <td>${esc(a.network || a.description || "")}</td>
+                <td style="text-align:right;color:var(--dim)">${esc(a.country ?? "")}</td>
+              </tr>`).join("")}
             </tbody></table>
+            <div class="fineprint" style="margin-top:.4rem">Source: <a href="https://bgpview.io" target="_blank" rel="noopener">BGPView.io</a> real-time BGP routing data</div>
           </div>` : ""}
-          ${kevs.length ? `<div class="panel" style="margin-bottom:1rem">
-            <b>Known-exploited flaws (CISA KEV)</b>
-            <ul style="margin:.4rem 0 0;padding-left:1.2rem">
-              ${kevs.map((c) => `<li><a href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener">${esc(c)}</a></li>`).join("")}
-            </ul>
+          ${vulns.length ? `<div class="panel" style="margin-bottom:1rem">
+            <b>CISA Known Exploited Vulnerabilities — ${vulns.length} attributed to this vendor</b>
+            <table style="width:100%;margin-top:.6rem;font-size:12px"><thead><tr>
+              <th>CVE</th><th>Product</th><th>EPSS 30d</th><th>Ransomware</th>
+            </tr></thead><tbody>
+              ${vulns.map((f) => `<tr>
+                <td><a href="https://nvd.nist.gov/vuln/detail/${esc(f.cve)}" target="_blank" rel="noopener">${esc(f.cve)}</a></td>
+                <td>${esc((f.vendor || "") + " " + (f.product || ""))}</td>
+                <td class="num">${f.epss != null ? pct(f.epss, 1) : "—"}</td>
+                <td>${f.ransomware_use ? '<span class="tag">Yes</span>' : "—"}</td>
+              </tr>`).join("")}
+            </tbody></table>
+            <div class="fineprint" style="margin-top:.4rem">Source: CISA KEV · FIRST EPSS</div>
           </div>` : ""}
+          ${breachList.length ? `<div class="panel" style="margin-bottom:1rem">
+            <b>Data Breach History — ${breachList.length} breach${breachList.length > 1 ? "es" : ""} · ${compact(breaches.total_records ?? 0)} records exposed</b>
+            <table style="width:100%;margin-top:.6rem;font-size:12px"><thead><tr>
+              <th>Breach</th><th>Date</th><th class="num">Accounts</th><th>Data types</th>
+            </tr></thead><tbody>
+              ${breachList.slice(0, 10).map((b) => `<tr>
+                <td>${esc(b.title || b.name || b.domain || "")}</td>
+                <td>${esc(b.breach_date ? day(b.breach_date) : "—")}</td>
+                <td class="num">${compact(b.accounts || b.pwn_count || 0)}</td>
+                <td class="fineprint">${(b.data_classes || []).slice(0, 3).map(esc).join(", ")}</td>
+              </tr>`).join("")}
+            </tbody></table>
+            <div class="fineprint" style="margin-top:.4rem">Source: <a href="https://haveibeenpwned.com" target="_blank" rel="noopener">Have I Been Pwned</a> (CC BY 4.0)</div>
+          </div>` : (d.breaches?.total === 0 ? `<div class="panel" style="margin-bottom:1rem"><p style="color:#2f7a4f;margin:0">✓ No corporate breaches found in HIBP catalog for this company.</p></div>` : "")}
           ${subdomains.length ? `<div class="panel">
-            <b>Attack surface — certificate-transparency subdomains (${subdomains.length})</b>
-            <div style="margin-top:.4rem;font-family:monospace;font-size:.8rem;line-height:1.7">
-              ${subdomains.slice(0, 30).map((s) => esc(s)).join("<br>")}
-              ${subdomains.length > 30 ? `<br><span class="fineprint">…and ${subdomains.length - 30} more</span>` : ""}
+            <b>Attack Surface — ${subdomains.length} live subdomains via Certificate Transparency</b>
+            <div style="margin-top:.5rem;font-family:var(--mono);font-size:.78rem;line-height:1.9;columns:2;column-gap:1rem">
+              ${subdomains.slice(0, 40).map((s) => `<div>${esc(s)}</div>`).join("")}
+              ${subdomains.length > 40 ? `<div class="fineprint" style="column-span:all">…and ${subdomains.length - 40} more subdomains</div>` : ""}
             </div>
+            <div class="fineprint" style="margin-top:.4rem">Source: <a href="https://crt.sh" target="_blank" rel="noopener">crt.sh</a> Certificate Transparency logs (live query)</div>
           </div>` : ""}`;
       })
-      .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
+      .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 200))}</p>`; });
   }
 
   form.addEventListener("submit", (e) => { e.preventDefault(); runTerminal(qInput?.value.trim()); });
@@ -1266,33 +1298,45 @@ loaders.check = async () => {};  // user-driven
   const ipInput = form?.querySelector("input");
   if (!form) return;
 
-  const TIER_COL = { CLEAN: "#2f7a4f", LOW: "#3d7ab5", MEDIUM: "#d4a017", HIGH: "#e8710a", CRITICAL: "#b42318" };
+  const TIER_COL = { HEALTHY: "#2f7a4f", CLEAN: "#2f7a4f", ELEVATED: "#d4a017", MEDIUM: "#d4a017", LOW: "#3d7ab5", HIGH: "#e8710a", CRITICAL: "#b42318" };
 
   function runFootprint(ip) {
     if (!ip) return;
     const box = $("#footprint-results");
-    box.innerHTML = '<p class="muted">Pulling footprint…</p>';
+    box.innerHTML = '<p class="muted">Pulling live network & tripwire footprint…</p>';
     api(`/v1/terminal/footprint?ip=${encodeURIComponent(ip)}`)
       .then((d) => {
-        const tier = d.threat_tier ?? "UNKNOWN";
+        const tier = d.threat_tier ?? d.threat_status?.level ?? "UNKNOWN";
         const col = TIER_COL[tier] ?? "#888";
         const net = d.network ?? {};
-        const cables = (d.subsea_cables ?? []).slice(0, 5);
+        const cables = (d.subsea_cables ?? []).slice(0, 8);
         box.innerHTML = `
-          <div class="panel" style="margin-bottom:1rem">
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
-              <span style="font-size:1.5rem;font-weight:700;color:${col}">${esc(tier)}</span>
-              <div><b>${esc(ip)}</b><br><span class="fineprint">${esc(net.network ?? "")}${net.asn ? ` · AS${net.asn}` : ""}</span></div>
+          <div class="panel" style="margin-bottom:1rem;border-left:5px solid ${col}">
+            <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.75rem">
+              <span style="font-size:2.2rem;font-weight:700;color:${col};line-height:1">${esc(tier)}</span>
+              <div>
+                <b style="font-size:1.1rem;font-family:var(--mono)">${esc(ip)}</b>${net.hostname ? `<span class="fineprint" style="margin-left:.6rem">${esc(net.hostname)}</span>` : ""}<br>
+                <span class="fineprint">${esc(net.network ?? "")}${net.asn ? ` · <a href="https://bgpview.io/asn/${esc(net.asn)}" target="_blank" rel="noopener">AS${net.asn}</a>` : ""}</span>
+              </div>
             </div>
+            ${d.threat_status?.summary ? `<p style="margin:.4rem 0 .7rem;font-size:13px;color:var(--ink)">${esc(d.threat_status.summary)}</p>` : ""}
             <div class="facts" style="margin-top:.5rem">
               <div><b>Country</b>${esc(net.country ?? "—")}</div>
-              <div><b>Type</b>${esc(net.type ?? "—")}</div>
-              ${d.is_tor ? '<div><b>Tor exit</b>yes</div>' : ""}
-              ${d.is_malware ? `<div><b>Malware flag</b><span class="tag">yes — ${esc(d.malware_threat ?? "")}</span></div>` : ""}
-              ${d.is_criminal_network ? '<div><b>Criminal network</b><span class="tag">Spamhaus</span></div>' : ""}
+              <div><b>Network type</b>${esc(net.type ?? "—")}</div>
+              ${net.cloud_provider ? `<div><b>Cloud provider</b><span class="tag" style="background:#7dd3fc22;color:var(--accent)">${esc(net.cloud_provider)}</span></div>` : ""}
+              ${d.is_tor ? '<div><b>Tor exit</b><span class="tag" style="background:#e8710a22;color:#e8710a">yes</span></div>' : ""}
+              ${d.is_malware ? `<div><b>Malware threat</b><span class="tag" style="background:#b4231822;color:#b42318">yes — ${esc(d.malware_threat || "malware C2")}</span></div>` : ""}
+              ${d.is_criminal_network ? '<div><b>Criminal network</b><span class="tag" style="background:#b4231822;color:#b42318">Spamhaus DROP</span></div>' : ""}
             </div>
+            <div class="fineprint" style="margin-top:.6rem;color:var(--dim)">Sources: ${esc(d.sources ?? "iptoasn · DB-IP · abuse.ch ThreatFox · Spamhaus DROP · Tor Project")}</div>
           </div>
-          ${cables.length ? `<div class="panel"><b>Nearby subsea cables</b><ul style="margin:.4rem 0 0;padding-left:1.2rem">${cables.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>` : ""}`;
+          ${cables.length ? `<div class="panel">
+            <b>Undersea Fiber Landings (${net.country || ""}) — ${cables.length} Subsea Cables Connected</b>
+            <ul style="margin:.5rem 0 0;padding-left:1.4rem;line-height:1.7;font-size:13px">
+              ${cables.map((c) => `<li>${esc(c)}</li>`).join("")}
+            </ul>
+            <div class="fineprint" style="margin-top:.4rem">Source: TeleGeography Submarine Cable Map</div>
+          </div>` : ""}`;
       })
       .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
   }
@@ -1315,24 +1359,34 @@ loaders.shield = async () => {};  // user-driven
   function runShield(domain) {
     if (!domain) return;
     const box = $("#shield-results");
-    box.innerHTML = '<p class="muted">Checking domain…</p>';
+    box.innerHTML = '<p class="muted">Inspecting domain entropy & threat feed sinkhole status…</p>';
     api(`/v1/shield/check?domain=${encodeURIComponent(domain)}`)
       .then((d) => {
-        const verdict = d.verdict ?? "UNKNOWN";
+        const verdict = d.verdict ?? (d.status === "BLOCKED" ? "BLOCK" : "ALLOW");
         const col = verdict === "ALLOW" ? "#2f7a4f" : "#b42318";
         const ips = (d.resolved_ips ?? []).slice(0, 8);
         box.innerHTML = `
-          <div class="panel">
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
-              <span style="font-size:1.5rem;font-weight:700;color:${col}">${esc(verdict)}</span>
-              <div><b>${esc(domain)}</b></div>
+          <div class="panel" style="border-left:5px solid ${col}">
+            <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.75rem">
+              <span style="font-size:2rem;font-weight:700;color:${col}">${esc(verdict)}</span>
+              <div>
+                <b style="font-size:1.1rem;font-family:var(--mono)">${esc(domain)}</b><br>
+                <span class="fineprint">${esc(d.action === "SINKHOLED" ? "Sinkholed to 0.0.0.0" : "Resolution allowed")}</span>
+              </div>
             </div>
+            <p style="margin:.4rem 0 .7rem;font-size:13px;color:var(--ink)">${esc(d.reason ?? "")}</p>
             <div class="facts">
-              <div><b>Entropy</b>${d.entropy != null ? d.entropy.toFixed(3) : "—"}</div>
-              ${d.dga_reason ? `<div><b>DGA signal</b>${esc(d.dga_reason)}</div>` : ""}
-              ${d.bad_ip_hits?.length ? `<div><b>Bad IPs</b>${d.bad_ip_hits.map(esc).join(", ")}</div>` : ""}
+              <div><b>Shannon entropy</b>${d.entropy != null ? d.entropy.toFixed(3) : "—"} ${d.entropy > 3.65 ? '<span class="tag" style="background:#b4231822;color:#b42318">High DGA pattern</span>' : '<span class="tag" style="background:#2f7a4f22;color:#2f7a4f">Normal</span>'}</div>
+              ${d.dga_reason ? `<div><b>DGA analysis</b>${esc(d.dga_reason)}</div>` : ""}
+              ${d.bad_ip_hits?.length ? `<div><b>Flagged IPs</b><span class="tag" style="background:#b4231822;color:#b42318">${d.bad_ip_hits.map(esc).join(", ")}</span></div>` : ""}
             </div>
-            ${ips.length ? `<div style="margin-top:.75rem"><b>Resolved IPs</b><div style="font-family:monospace;font-size:.85rem;margin-top:.3rem;line-height:1.8">${ips.map(esc).join("<br>")}</div></div>` : ""}
+            ${ips.length && ips[0] !== "NXDOMAIN" ? `
+              <div style="margin-top:.75rem">
+                <b>Resolved IP Addresses (${ips.length})</b>
+                <div style="font-family:var(--mono);font-size:.85rem;margin-top:.3rem;line-height:1.8">
+                  ${ips.map(esc).join("<br>")}
+                </div>
+              </div>` : (ips[0] === "NXDOMAIN" ? `<div class="fineprint" style="margin-top:.5rem;color:var(--dim)">DNS status: NXDOMAIN (Non-Existent Domain)</div>` : "")}
           </div>`;
       })
       .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
