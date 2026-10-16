@@ -81,8 +81,8 @@ def sources() -> str:
         for f in feeds["feeds"]
     ]
     rows += [
-        f"| {s['name']} | {s['licence']} | static ({s['period']}) | trains and tests the login models |"
-        for s in feeds["static"]
+        f"| {s['name']} | {s['licence']} | static ({s['period']}) | {s.get('used_for', '')} |"
+        for s in feeds.get("static", [])
     ]
     return (
         "| Source | Licence / terms | Refreshed | Used for |\n|---|---|---|---|\n"

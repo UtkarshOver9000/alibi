@@ -122,3 +122,13 @@ Items from the Alibi 1.0 plan (148 items), newest last.
 - Add keyboard shortcuts and a "?" list of them (1.0 #21)
 - Add the wire: a ticker of the newest real events along the bottom (1.0 #22)
 - Give every point on the globe its IP address
+
+## 1.0.0 — Platform Transition (Phase 1)
+- Stripped legacy RBA login dataset and 2020 Norwegian login models.
+- Decommissioned impossible-travel and account takeover heuristics.
+- Shifted architecture to 100% real 2026 threat intelligence pipelines.
+- Implemented Tech Bloomberg Terminal (`/v1/terminal/company`) with corporate ASN, KEV flaws, and breach aggregation.
+- Implemented Live Visitor Footprint & Tripwire diagnostic (`/v1/terminal/footprint`).
+- Implemented Active Protective DNS Shield (`/v1/shield/check`) with Shannon entropy DGA botnet detection.
+- Streamlined engine to export 2026 ThreatFox network-risk machine learning model (ROC-AUC 0.964).
+- Cleaned test suite and verified 100% test coverage for all active modules.
