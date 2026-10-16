@@ -246,10 +246,17 @@ function stepMetric(d) {
 }
 const KEYS = [
   ["g", "Live globe", () => (location.hash = "#globe")],
+  ["m", "Tech terminal", () => (location.hash = "#terminal")],
+  ["c", "Live footprint", () => (location.hash = "#check")],
+  ["h", "DNS shield", () => (location.hash = "#shield")],
+  ["o", "BGP disruptions", () => (location.hash = "#disruptions")],
+  ["p", "Supply chain", () => (location.hash = "#supply-chain")],
+  ["k", "Leak hunter", () => (location.hash = "#leaks")],
+  ["y", "Canary tripwires", () => (location.hash = "#canary")],
+  ["e", "AI remediation", () => (location.hash = "#remediation")],
   ["t", "Threats", () => (location.hash = "#attacks")],
   ["l", "Leaks", () => (location.hash = "#breaches")],
   ["f", "Exploited flaws", () => (location.hash = "#flaws")],
-  ["c", "Sign-in check", () => (location.hash = "#check")],
   ["n", "News", () => (location.hash = "#news")],
   ["s", "Sources and accuracy", () => (location.hash = "#results")],
   ["r", "Replay the last 48 hours (globe)", () => onGlobe() && $("#replay-play").click()],
@@ -579,7 +586,7 @@ const METRICS = {
     source: "tor",
   },
 };
-const POINT_COLORS = { c2: "#d55e00", dl: "#e69f00", tor: "#cc79a7", drop: "#f0e442", landing: "#56b4e9" };
+const POINT_COLORS = { c2: "#d55e00", dl: "#e69f00", tor: "#cc79a7", drop: "#f0e442", landing: "#56b4e9", compute: "#06b6d4" };
 let metric = "malicious_ips", globe, selected, journey = [], journeyArcs = [], legendData = null;
 
 function sizeGlobe() {
@@ -593,7 +600,7 @@ const SMALL_SCREEN = matchMedia("(pointer: coarse)").matches || innerWidth < 900
 const TEX_W = SMALL_SCREEN ? 2048 : 4096;
 const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let places = [], pickData = null, pickW = 0, pickH = 0, heatPromise, cablesLoaded = null, selState = null, snapshotAt = "";
-let events = { points: [], types: {} }, cablePaths = [], landingPoints = [], flat = false;
+let events = { points: [], types: {} }, cablePaths = [], landingPoints = [], computePoints = [], computeLoaded = null, flat = false;
 
 // The server paints each metric's states into the Earth texture (see intel/globe.py), so the browser
 // downloads one image instead of drawing 4,596 states itself.
@@ -636,7 +643,10 @@ const perMillion = (count, ip) => (ip >= 100000 ? `${(count / ip * 1e6).toFixed(
 function activePoints() {
   const on = new Set($$("[data-layer]").filter((c) => c.checked).map((c) => c.dataset.layer));
   const pts = events.points.filter((p) => on.has(p[2])).map(([lat, lng, kind]) => ({ lat, lng, kind }));
-  return $("#show-cables").checked ? pts.concat(landingPoints) : pts;
+  let res = pts;
+  if ($("#show-cables")?.checked) res = res.concat(landingPoints);
+  if ($("#show-compute")?.checked) res = res.concat(computePoints);
+  return res;
 }
 
 function refreshPoints() {
@@ -707,6 +717,27 @@ loaders.globe = async () => {
     refreshPoints();
     syncUrl();
   });
+  $("#show-compute")?.addEventListener("change", async () => {
+    if (!globe) return;
+    const on = $("#show-compute").checked;
+    if (on && !computeLoaded) {
+      try {
+        const d = await api("/v1/intel/compute-atlas");
+        computePoints = (d.clusters || []).map((c) => ({
+          lat: c.lat,
+          lng: c.lon,
+          kind: "compute",
+          name: c.name,
+          operator: c.operator,
+          chips: c.hardware,
+        }));
+      } catch (err) {
+        console.error("compute atlas load", err);
+      }
+    }
+    refreshPoints();
+    syncUrl();
+  });
   $$("[data-toggle]").forEach((b) => b.addEventListener("click", () => {
     const target = $(`#${b.dataset.toggle}`);
     const open = !target.classList.contains("open");
@@ -737,8 +768,8 @@ function setupGlobe(el, features, data, centers) {
     .pathPoints("coords").pathPointLat((p) => p[0]).pathPointLng((p) => p[1]).pathPointAlt(0.004)
     .pathColor((p) => p.color).pathDashLength(0.08).pathDashGap(0.01).pathDashAnimateTime(16000).pathTransitionDuration(0)
     .pathLabel((p) => `<div class="globe-tip">Undersea cable: ${esc(p.name)}</div>`)
-    .onPathClick((_p, _e, at) => pickAt(features, at))
-    .pointLat("lat").pointLng("lng").pointAltitude(0.004).pointRadius((p) => (p.kind === "landing" ? 0.12 : 0.16))
+    .pointLat("lat").pointLng("lng").pointAltitude(0.004).pointRadius((p) => (p.kind === "landing" ? 0.12 : p.kind === "compute" ? 0.28 : 0.16))
+    .pointLabel((p) => (p.kind === "compute" ? `<div class="globe-tip">AI Cluster: <b>${esc(p.operator)}</b><br>${esc(p.name)}<br><small>${esc(p.chips)}</small></div>` : ""))
     .pointColor((p) => POINT_COLORS[p.kind]).pointsMerge(true).pointsTransitionDuration(0)
     .ringLat("lat").ringLng("lng").ringColor((r) => (t) => `rgba(${r.rgb},${1 - t})`).ringMaxRadius(2.6)
     .ringPropagationSpeed(3).ringRepeatPeriod(0)
@@ -1311,6 +1342,369 @@ loaders.shield = async () => {};  // user-driven
   $$("[data-shield]").forEach((b) => b.addEventListener("click", () => {
     if (domInput) domInput.value = b.dataset.shield;
     runShield(b.dataset.shield);
+  }));
+})();
+
+// ---------- BGP & Internet Disruption Radar (Pillar 5) ----------
+loaders.disruptions = async () => {
+  const box = $("#disruption-list");
+  const kpiBox = $("#disruption-kpis");
+  if (!box) return;
+  box.innerHTML = '<p class="muted">Scanning CAIDA IODA & BGP routing telemetry…</p>';
+  try {
+    const d = await api("/v1/intel/disruptions");
+    const active = d.active_disruptions ?? [];
+    const health = d.global_health ?? "NORMAL";
+    const healthCol = health === "NORMAL" ? "#2f7a4f" : "#b42318";
+
+    if (kpiBox) {
+      kpiBox.innerHTML = [
+        kpi(`<span style="color:${healthCol}">${esc(health)}</span>`, "Global Routing Health"),
+        kpi(fmt(d.critical_count ?? 0), "Critical Outages & Blackouts"),
+        kpi(fmt(active.length), "Active Regional Anomalies"),
+        kpi(esc(d.as_of ? ago(d.as_of) : "Live"), "Telemetry Freshness"),
+      ].join("");
+    }
+
+    if (!active.length) {
+      box.innerHTML = '<p class="muted">No major macro-level internet outages detected currently. Global transit stable.</p>';
+      return;
+    }
+
+    box.innerHTML = active.map((a) => {
+      const sevCol = a.severity === "CRITICAL" ? "#b42318" : a.severity === "HIGH" ? "#e8710a" : "#d4a017";
+      return `
+        <div class="panel" style="margin-bottom: 12px; border-left: 4px solid ${sevCol};">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <b style="font-size:16px;">${esc(a.country_name || a.country)}</b> <span class="tag" style="background:${sevCol}22; color:${sevCol}; border:1px solid ${sevCol}44; font-weight:600;">${esc(a.severity)}</span>
+              <div class="fineprint" style="margin-top:2px;">Signal: ${esc(a.type || "BGP Outage")} · Detected: ${esc(a.started ? ago(a.started) : "Ongoing")}</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="mono" style="font-size:18px; font-weight:700; color:${sevCol};">${a.drop_pct ? `-${a.drop_pct}%` : "DISRUPTED"}</span>
+              <div class="fineprint">Transit Volume Drop</div>
+            </div>
+          </div>
+          <p style="margin: 8px 0 6px; font-size:13px; color:var(--ink);">${esc(a.description || a.impact || "")}</p>
+          ${a.asns?.length ? `<div class="fineprint"><b>Impacted ASNs:</b> ${a.asns.map((asn) => `<span class="mono">AS${asn}</span>`).join(", ")}</div>` : ""}
+        </div>`;
+    }).join("");
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+  }
+};
+
+(function wireDisruptions() {
+  $("#refresh-disruptions")?.addEventListener("click", () => loaders.disruptions());
+})();
+
+// ---------- Open-Source Supply Chain Analyzer (Pillar 6) ----------
+loaders["supply-chain"] = async () => {};
+
+(function wireSupplyChain() {
+  const form = $("#supply-chain-form");
+  const pkgInput = $("#supply-pkg");
+  const ecoSelect = $("#supply-eco");
+  if (!form) return;
+
+  function runSupplyChain(pkg, eco) {
+    if (!pkg) return;
+    const box = $("#supply-chain-results");
+    box.innerHTML = '<p class="muted">Querying Google deps.dev & OSV vulnerability graph…</p>';
+    api(`/v1/supply-chain/analyze?package=${encodeURIComponent(pkg)}&ecosystem=${encodeURIComponent(eco)}`)
+      .then((d) => {
+        const status = d.security_status ?? "CLEAN";
+        const col = status === "CLEAN" ? "#2f7a4f" : status === "CRITICAL" ? "#b42318" : "#e8710a";
+        const licCol = d.has_restrictive_license ? "#b42318" : "#2f7a4f";
+        const vulns = d.vulnerabilities ?? [];
+
+        box.innerHTML = `
+          <div class="panel" style="margin-bottom: 12px; border-left: 4px solid ${col};">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <span style="font-size:1.4rem; font-weight:700; color:${col};">${esc(status)}</span>
+                <span style="font-size:1.2rem; font-weight:600; margin-left:8px;">${esc(d.package)}</span>
+                <span class="fineprint">(${esc(d.ecosystem)})</span>
+              </div>
+              <div class="facts">
+                <div><b>Latest Version</b>${esc(d.latest_version ?? "unknown")}</div>
+                <div><b>Total Releases</b>${fmt(d.total_versions ?? 0)}</div>
+                <div><b>License Risk</b><span style="color:${licCol}; font-weight:600;">${esc(d.license_risk)}</span></div>
+              </div>
+            </div>
+            <div style="margin-top:10px; font-size:13px;">
+              <b>Detected Licenses:</b> ${(d.licenses ?? []).map(esc).join(", ")}
+            </div>
+          </div>
+          ${vulns.length ? `
+            <div class="panel">
+              <h3 style="margin-bottom:8px;">Identified Vulnerabilities (${vulns.length})</h3>
+              <table style="width:100%;">
+                <thead><tr><th>ID</th><th>Summary</th><th>Published</th></tr></thead>
+                <tbody>
+                  ${vulns.map((v) => `
+                    <tr>
+                      <td><a href="https://osv.dev/vulnerability/${esc(v.id)}" target="_blank" rel="noopener"><b>${esc(v.id)}</b></a></td>
+                      <td>${esc(v.summary || v.details || "Security advisory published")}</td>
+                      <td class="fineprint">${esc(v.published ? day(v.published) : "—")}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          ` : '<div class="panel"><p class="muted" style="color:#2f7a4f;">✓ Zero known public CVEs or advisories reported for this package in OSV.</p></div>'}`;
+      })
+      .catch((err) => {
+        box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+      });
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runSupplyChain(pkgInput?.value.trim(), ecoSelect?.value || "pypi");
+  });
+
+  $$("[data-sc-pkg]").forEach((b) => b.addEventListener("click", () => {
+    if (pkgInput) pkgInput.value = b.dataset.scPkg;
+    if (ecoSelect) ecoSelect.value = b.dataset.scEco;
+    runSupplyChain(b.dataset.scPkg, b.dataset.scEco);
+  }));
+})();
+
+// ---------- Corporate Breach & Leak Hunter (Pillar 7) ----------
+loaders.leaks = async () => {};
+
+(function wireLeaks() {
+  const domForm = $("#leak-domain-form");
+  const domInput = $("#leak-domain");
+  const pwForm = $("#leak-pw-form");
+  const pwInput = $("#leak-pw");
+
+  function runDomainAudit(domain) {
+    if (!domain) return;
+    const box = $("#leak-domain-results");
+    box.innerHTML = '<p class="muted">Scanning HIBP enterprise catalog & ransomware extortion feeds…</p>';
+    api(`/v1/terminal/leak-hunter?domain=${encodeURIComponent(domain)}`)
+      .then((d) => {
+        const breaches = d.breaches ?? [];
+        const claims = d.ransomware_claims ?? [];
+        const risk = d.risk_level ?? "LOW";
+        const riskCol = risk === "CRITICAL" ? "#b42318" : risk === "HIGH" ? "#e8710a" : risk === "MEDIUM" ? "#d4a017" : "#2f7a4f";
+
+        box.innerHTML = `
+          <div class="panel" style="margin-bottom:12px; border-left: 4px solid ${riskCol};">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div><b style="font-size:16px;">${esc(d.domain)}</b> <span class="tag" style="background:${riskCol}22; color:${riskCol}; font-weight:600;">${esc(risk)} RISK</span></div>
+              <div><b>${compact(d.total_pwned_accounts ?? 0)}</b> <span class="fineprint">Exposed Accounts</span></div>
+            </div>
+          </div>
+          ${claims.length ? `
+            <div class="panel" style="margin-bottom:12px; border-color:#b42318;">
+              <b style="color:#b42318;">⚠️ Ransomware Gang Extortion Disclosures (${claims.length})</b>
+              <ul style="margin:6px 0 0; padding-left:18px;">
+                ${claims.map((c) => `<li><b>${esc(c.gang)}</b> claimed attack on ${esc(day(c.date))}: ${esc(c.details || "")}</li>`).join("")}
+              </ul>
+            </div>
+          ` : ""}
+          ${breaches.length ? `
+            <div class="panel">
+              <b>Publicly Confirmed Breaches (${breaches.length})</b>
+              <ul style="margin:6px 0 0; padding-left:18px;">
+                ${breaches.map((b) => `<li><b>${esc(b.name)}</b> (${esc(day(b.breach_date))}): ${compact(b.pwn_count)} accounts exposed. <span class="fineprint">${(b.data_classes || []).slice(0, 4).join(", ")}</span></li>`).join("")}
+              </ul>
+            </div>
+          ` : '<div class="panel"><p class="muted">✓ Zero corporate domain compromises logged in HIBP directory.</p></div>'}`;
+      })
+      .catch((err) => { box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`; });
+  }
+
+  domForm?.addEventListener("submit", (e) => { e.preventDefault(); runDomainAudit(domInput?.value.trim()); });
+  $$("[data-leak-dom]").forEach((b) => b.addEventListener("click", () => {
+    if (domInput) domInput.value = b.dataset.leakDom;
+    runDomainAudit(b.dataset.leakDom);
+  }));
+
+  // Browser-side SHA-1 hashing with SubtleCrypto for strict zero-knowledge k-Anonymity
+  async function sha1Hex(str) {
+    const buf = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest("SHA-1", buf);
+    return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  }
+
+  pwForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pw = pwInput?.value;
+    if (!pw) return;
+    const box = $("#leak-pw-results");
+    box.innerHTML = '<p class="muted">Hashing password client-side via SHA-1…</p>';
+    try {
+      const hash = await sha1Hex(pw);
+      const prefix = hash.slice(0, 5);
+      const suffix = hash.slice(5);
+      const d = await api(`/v1/terminal/pwned-password?prefix=${prefix}`);
+      const match = (d.matches || {})[suffix] ?? 0;
+      if (match > 0 || d.pwned) {
+        box.innerHTML = `
+          <div class="panel" style="border-left: 4px solid #b42318;">
+            <b style="color:#b42318; font-size:15px;">⚠️ COMPROMISED IN PUBLIC BREACHES</b>
+            <p style="margin:6px 0; font-size:13px;">This exact password appears <b>${fmt(match || d.exposure_count || 1)} times</b> across known breach dumps (HIBP Pwned Passwords). Do not use this password for any account.</p>
+            <div class="fineprint">Checked securely: Only SHA-1 prefix "${prefix}" was sent to server. Full hash was never exposed.</div>
+          </div>`;
+      } else {
+        box.innerHTML = `
+          <div class="panel" style="border-left: 4px solid #2f7a4f;">
+            <b style="color:#2f7a4f; font-size:15px;">✓ NO BREACH MATCHES FOUND</b>
+            <p style="margin:6px 0; font-size:13px;">This password does not appear in known public credential dumps.</p>
+            <div class="fineprint">SHA-1 prefix: "${prefix}" (zero-knowledge k-anonymity verified).</div>
+          </div>`;
+      }
+    } catch (err) {
+      box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+    }
+  });
+})();
+
+// ---------- Canary Tokens & Hacker Tripwire (Pillar 8) ----------
+loaders.canary = async () => {
+  loadCanaryAlarms();
+};
+
+async function loadCanaryAlarms() {
+  const box = $("#canary-alarms-box");
+  if (!box) return;
+  try {
+    const { alarms } = await api("/v1/canary/alarms");
+    if (!alarms?.length) {
+      box.innerHTML = '<p class="muted">No tripwires triggered yet. Deployed decoys are silently listening.</p>';
+      return;
+    }
+    box.innerHTML = alarms.map((a) => `
+      <div class="panel" style="margin-bottom:8px; border-left:4px solid #b42318;">
+        <div style="display:flex; justify-content:space-between;">
+          <b style="color:#b42318;">🚨 INTRUSION TRIPWIRE TRIGGERED</b>
+          <span class="fineprint">${esc(ago(a.timestamp))}</span>
+        </div>
+        <div style="margin-top:4px;"><b>Decoy:</b> ${esc(a.memo)}</div>
+        <div class="facts" style="margin-top:6px;">
+          <div><b>Intruder IP</b><span class="mono">${esc(a.intruder_ip)}</span></div>
+          <div><b>Carrier / ASN</b>AS${esc(a.network?.asn ?? "—")} ${esc(a.network?.carrier ?? "")}</div>
+          <div><b>Location</b>${esc(a.network?.country ?? "—")}</div>
+        </div>
+        <div class="fineprint" style="margin-top:4px;">User-Agent: ${esc(a.user_agent)}</div>
+      </div>
+    `).join("");
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+  }
+}
+
+(function wireCanary() {
+  const form = $("#canary-form");
+  const kindSelect = $("#canary-kind");
+  const memoInput = $("#canary-memo");
+  const resultBox = $("#canary-created");
+
+  $("#refresh-alarms")?.addEventListener("click", loadCanaryAlarms);
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const kind = kindSelect?.value || "aws_key";
+    const memo = memoInput?.value.trim() || "Decoy asset";
+    resultBox.innerHTML = '<p class="muted">Generating deceptive decoy asset…</p>';
+    try {
+      const res = await api(`/v1/canary/generate?kind=${encodeURIComponent(kind)}&memo=${encodeURIComponent(memo)}`, { method: "POST" });
+      const decoys = res.decoys || {};
+      let snippet = "";
+      if (kind === "aws_key") {
+        snippet = decoys.aws_credentials || "";
+      } else if (kind === "database_uri") {
+        snippet = decoys.database_connection_string || "";
+      } else {
+        snippet = `<img src="${window.location.origin}${res.tripwire_url}" width="1" height="1" alt="" />`;
+      }
+
+      resultBox.innerHTML = `
+        <div class="panel" style="border:1px solid var(--accent); background:rgba(125,211,252,0.06);">
+          <b style="color:var(--accent);">✓ Decoy Generated & Armed</b>
+          <p class="fineprint" style="margin:4px 0 8px;">Copy and place this decoy in your private repo, environment file, or documentation. When accessed, an alarm will fire immediately.</p>
+          <pre style="background:var(--bg); padding:10px; border-radius:4px; font-family:var(--mono); font-size:12px; overflow-x:auto; user-select:all;">${esc(snippet)}</pre>
+          <div style="margin-top:8px;">
+            <a href="${res.tripwire_url}" target="_blank" class="btn-sm chip" style="text-decoration:none;">Test Trigger Tripwire Now</a>
+          </div>
+        </div>`;
+    } catch (err) {
+      resultBox.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+    }
+  });
+})();
+
+// ---------- AI Defense Remediation Engine (Pillar 9) ----------
+loaders.remediation = async () => {};
+
+(function wireRemediation() {
+  const form = $("#remediation-form");
+  const typeSelect = $("#remediation-type");
+  const targetInput = $("#remediation-target");
+  const box = $("#remediation-results");
+  if (!form) return;
+
+  function runRemediation(type, target) {
+    if (!target) return;
+    box.innerHTML = '<p class="muted">Generating deterministic defense remediation playbook…</p>';
+    api(`/v1/remediation/explain?type=${encodeURIComponent(type)}&target=${encodeURIComponent(target)}`)
+      .then((d) => {
+        const cmd = d.firewall_rule || d.remediation_command || "";
+        box.innerHTML = `
+          <div class="panel" style="margin-bottom:12px; border-left:4px solid var(--accent);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="font-size:16px;">Target: ${esc(d.target)}</b>
+              <span class="tag" style="background:#7dd3fc22; color:var(--accent);">${esc(type.toUpperCase())}</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:14px;">
+              <div class="panel" style="background:var(--bg);">
+                <div class="label" style="color:var(--dim); margin-bottom:4px;">1. What Happened</div>
+                <div style="font-size:13px; line-height:1.5;">${esc(d.what_happened)}</div>
+              </div>
+              <div class="panel" style="background:var(--bg);">
+                <div class="label" style="color:var(--dim); margin-bottom:4px;">2. Who Is Impacted</div>
+                <div style="font-size:13px; line-height:1.5;">${esc(d.who_is_impacted)}</div>
+              </div>
+              <div class="panel" style="background:var(--bg);">
+                <div class="label" style="color:var(--dim); margin-bottom:4px;">3. What To Do Right Now</div>
+                <div style="font-size:13px; line-height:1.5;">${esc(d.what_to_do_now)}</div>
+              </div>
+            </div>
+          </div>
+          ${cmd ? `
+            <div class="panel">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <b>Immediate 60-Second Shell Mitigation</b>
+                <button type="button" class="btn-sm chip" id="copy-rem-cmd">Copy Command</button>
+              </div>
+              <pre id="rem-cmd-code" style="background:var(--bg); padding:12px; border-radius:4px; font-family:var(--mono); font-size:13px; overflow-x:auto; color:var(--accent); border:1px solid var(--line);">${esc(cmd)}</pre>
+            </div>
+          ` : ""}`;
+
+        $("#copy-rem-cmd")?.addEventListener("click", () => {
+          navigator.clipboard.writeText(cmd);
+          $("#copy-rem-cmd").textContent = "Copied!";
+          setTimeout(() => ($("#copy-rem-cmd").textContent = "Copy Command"), 2000);
+        });
+      })
+      .catch((err) => {
+        box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+      });
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runRemediation(typeSelect?.value || "cve", targetInput?.value.trim());
+  });
+
+  $$("[data-rem-type]").forEach((b) => b.addEventListener("click", () => {
+    if (typeSelect) typeSelect.value = b.dataset.remType;
+    if (targetInput) targetInput.value = b.dataset.remTarget;
+    runRemediation(b.dataset.remType, b.dataset.remTarget);
   }));
 })();
 

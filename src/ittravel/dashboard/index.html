@@ -37,6 +37,11 @@
   <a href="#terminal" data-tab="terminal" aria-label="Tech Terminal"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-radar"/></svg><span class="lbl">Terminal</span></a>
   <a href="#check" data-tab="check" aria-label="Live Footprint"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg><span class="lbl">Footprint</span></a>
   <a href="#shield" data-tab="shield" aria-label="DNS Shield"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Shield</span></a>
+  <a href="#disruptions" data-tab="disruptions" aria-label="BGP Disruptions"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-wifi-off"/></svg><span class="lbl">Outages</span></a>
+  <a href="#supply-chain" data-tab="supply-chain" aria-label="Supply Chain"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-cpu"/></svg><span class="lbl">Packages</span></a>
+  <a href="#leaks" data-tab="leaks" aria-label="Leak Hunter"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-venetian-mask"/></svg><span class="lbl">Leak Hunter</span></a>
+  <a href="#canary" data-tab="canary" aria-label="Canary Tripwires"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bell"/></svg><span class="lbl">Tripwires</span></a>
+  <a href="#remediation" data-tab="remediation" aria-label="AI Remediation"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bot"/></svg><span class="lbl">Fix Engine</span></a>
   <a href="#attacks" data-tab="attacks" aria-label="Threats"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-biohazard"/></svg><span class="lbl">Threats</span><b class="count" data-badge="attacks" hidden></b></a>
   <a href="#breaches" data-tab="breaches" aria-label="Leaks"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-database-zap"/></svg><span class="lbl">Leaks</span><b class="count" data-badge="breaches" hidden></b></a>
   <a href="#flaws" data-tab="flaws" aria-label="Exploited flaws"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bug"/></svg><span class="lbl">Exploited flaws</span><b class="count" data-badge="flaws" hidden></b></a>
@@ -86,6 +91,7 @@
             <label><input type="checkbox" data-layer="tor"><i class="sw tor"></i>Tor exit relays <span class="n" data-count="tor"></span></label>
             <label><input type="checkbox" data-layer="drop"><i class="sw drop"></i>Criminal networks (Spamhaus) <span class="n" data-count="drop"></span></label>
             <label><input type="checkbox" id="show-cables"><i class="sw cable"></i>Undersea cables</label>
+            <label><input type="checkbox" id="show-compute"><i class="sw compute" style="background:#06b6d4;"></i>AI & Cloud Compute Hubs</label>
           </div>
         </div>
         <div class="group legend" id="legend"></div>
@@ -254,6 +260,142 @@
     <div id="shield-results" aria-live="polite"></div>
   </section>
 
+  <section id="tab-disruptions" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Planetary BGP & Internet Disruption Radar</h2>
+      <p class="sub">Global macro internet blackouts, BGP routing anomalies, submarine cable severances, and government-directed shutdowns via CAIDA IODA & RIPE RIS telemetry.</p>
+    </div>
+    <div class="kpis" id="disruption-kpis"></div>
+    <div class="panel" style="margin-bottom: 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0;">Active Disruption Hotspots</h3>
+        <button class="btn-sm chip" id="refresh-disruptions">Refresh Live Telemetry</button>
+      </div>
+      <div id="disruption-list" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="tab-supply-chain" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Open-Source Supply Chain Analyzer</h2>
+      <p class="sub">Deep dependency risk, open-source vulnerability mapping (OSV.dev), and copyleft licensing compliance (deps.dev).</p>
+    </div>
+    <div class="panel form" style="margin-bottom: 16px;">
+      <form id="supply-chain-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="supply-pkg" placeholder="Package name (e.g. requests, express, log4j, torch)..." style="flex: 2; min-width: 200px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
+        <select id="supply-eco" style="flex: 1; min-width: 130px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--sans);">
+          <option value="pypi">PyPI (Python)</option>
+          <option value="npm">npm (JavaScript)</option>
+          <option value="go">Go Modules</option>
+          <option value="cargo">Cargo (Rust)</option>
+          <option value="maven">Maven (Java)</option>
+        </select>
+        <button type="submit" class="btn primary" style="padding: 10px 20px;">Analyze Package</button>
+      </form>
+      <div class="chips" style="margin-top: 10px;">
+        <button type="button" class="btn-sm chip" data-sc-pkg="fastapi" data-sc-eco="pypi">fastapi (Python)</button>
+        <button type="button" class="btn-sm chip" data-sc-pkg="lodash" data-sc-eco="npm">lodash (npm)</button>
+        <button type="button" class="btn-sm chip" data-sc-pkg="requests" data-sc-eco="pypi">requests (Python)</button>
+        <button type="button" class="btn-sm chip" data-sc-pkg="express" data-sc-eco="npm">express (npm)</button>
+        <button type="button" class="btn-sm chip" data-sc-pkg="tokio" data-sc-eco="cargo">tokio (Rust)</button>
+      </div>
+    </div>
+    <div id="supply-chain-results" aria-live="polite"></div>
+  </section>
+
+  <section id="tab-leaks" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Corporate Breach & Credential Leak Hunter</h2>
+      <p class="sub">Audit corporate domain breaches, ransomware extortion victim disclosures, and verify password exposures using zero-knowledge k-Anonymity (SHA-1 prefix).</p>
+    </div>
+    <div class="grid2">
+      <div class="panel form">
+        <h3>Domain Exposure Audit</h3>
+        <p class="muted" style="margin-bottom: 12px;">Query HIBP enterprise catalog and RansomLook gang leak sites for corporate domain compromise.</p>
+        <form id="leak-domain-form" style="display: flex; gap: 8px;">
+          <input type="text" id="leak-domain" placeholder="Domain (e.g. acme.com, adobe.com)..." style="flex: 1; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
+          <button type="submit" class="btn primary" style="padding: 10px 16px;">Audit</button>
+        </form>
+        <div class="chips" style="margin-top: 8px;">
+          <button type="button" class="btn-sm chip" data-leak-dom="adobe.com">adobe.com</button>
+          <button type="button" class="btn-sm chip" data-leak-dom="dropbox.com">dropbox.com</button>
+          <button type="button" class="btn-sm chip" data-leak-dom="canva.com">canva.com</button>
+        </div>
+        <div id="leak-domain-results" style="margin-top: 14px;"></div>
+      </div>
+      <div class="panel form">
+        <h3>k-Anonymity Password Check</h3>
+        <p class="muted" style="margin-bottom: 12px;">Tests if a password is in HIBP database. Computes SHA-1 hash client-side in browser; only transmits 5-char prefix. Never sends plain password.</p>
+        <form id="leak-pw-form" style="display: flex; gap: 8px;">
+          <input type="password" id="leak-pw" placeholder="Test password..." style="flex: 1; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
+          <button type="submit" class="btn" style="padding: 10px 16px;">Check Hash</button>
+        </form>
+        <div id="leak-pw-results" style="margin-top: 14px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-canary" class="tab page" hidden>
+    <div class="page-head">
+      <h2>Canary Tokens & Hacker Tripwire Generator</h2>
+      <p class="sub">Plant deceptive decoy assets (fake AWS keys, database URIs, web tracking beacons) in internal source code, wiki pages, and cloud storage. Get alerted with intruder IP, ASN, and user-agent the second an adversary probes them.</p>
+    </div>
+    <div class="grid2">
+      <div class="panel form">
+        <h3>Generate Decoy Asset</h3>
+        <form id="canary-form" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+            <span class="muted">Decoy Type</span>
+            <select id="canary-kind" style="padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink);">
+              <option value="aws_key">AWS Credentials (.aws/credentials file)</option>
+              <option value="database_uri">Postgres Database Connection String</option>
+              <option value="web_beacon">1x1 Web Tracking Pixel GIF</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+            <span class="muted">Memo / Location Label</span>
+            <input type="text" id="canary-memo" placeholder="e.g. Prod AWS credentials in internal repo" value="Decoy asset in git repo" style="padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink);" required />
+          </label>
+          <button type="submit" class="btn primary" style="align-self: flex-start; padding: 10px 20px;">Deploy Tripwire</button>
+        </form>
+        <div id="canary-created" style="margin-top: 14px;"></div>
+      </div>
+      <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 style="margin: 0;">Live Intrusion Alarms</h3>
+          <button class="btn-sm chip" id="refresh-alarms">Refresh</button>
+        </div>
+        <div id="canary-alarms-box" style="max-height: 400px; overflow-y: auto;">
+          <p class="muted">No tripwires triggered yet. Generated tokens are active and waiting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-remediation" class="tab page" hidden>
+    <div class="page-head">
+      <h2>AI Plain-English Defense Remediation Engine</h2>
+      <p class="sub">Deterministic 3-bullet executive cards and 60-second copy-paste shell commands for critical CVEs, malicious IPs, and DGA botnets.</p>
+    </div>
+    <div class="panel form" style="margin-bottom: 16px;">
+      <form id="remediation-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <select id="remediation-type" style="padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--sans);">
+          <option value="cve">CVE Vulnerability</option>
+          <option value="ip">Malicious IP / C2</option>
+          <option value="dga">DGA Botnet Domain</option>
+        </select>
+        <input type="text" id="remediation-target" placeholder="Enter target (e.g. CVE-2024-3400, 185.220.101.5, xq7b9kz1m0w8p2r4j6f.biz)..." style="flex: 2; min-width: 250px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
+        <button type="submit" class="btn primary" style="padding: 10px 20px;">Generate Remediation</button>
+      </form>
+      <div class="chips" style="margin-top: 10px;">
+        <button type="button" class="btn-sm chip" data-rem-type="cve" data-rem-target="CVE-2024-3400">CVE-2024-3400 (Palo Alto GlobalProtect)</button>
+        <button type="button" class="btn-sm chip" data-rem-type="cve" data-rem-target="CVE-2021-44228">CVE-2021-44228 (Log4Shell)</button>
+        <button type="button" class="btn-sm chip" data-rem-type="ip" data-rem-target="185.220.101.5">185.220.101.5 (Tor Exit / C2)</button>
+        <button type="button" class="btn-sm chip" data-rem-type="dga" data-rem-target="c8v2m9x1q4w7p0l3j6z.info">c8v2m9x1q4w7p0l3j6z.info (DGA Botnet)</button>
+      </div>
+    </div>
+    <div id="remediation-results" aria-live="polite"></div>
+  </section>
 
   <section id="tab-news" class="tab page" hidden>
     <div class="page-head"><h2>News</h2><p class="sub">Security headlines and videos from public feeds, cached for 30 minutes. Each item links to its source.</p></div>
