@@ -32,31 +32,35 @@ def to_csv(limit: int = 1000) -> str:
     indicators = _get_indicators(limit)
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "indicator",
-        "type",
-        "threat",
-        "malware_family",
-        "source",
-        "first_seen",
-        "asn",
-        "network",
-        "country",
-        "online",
-    ])
+    writer.writerow(
+        [
+            "indicator",
+            "type",
+            "threat",
+            "malware_family",
+            "source",
+            "first_seen",
+            "asn",
+            "network",
+            "country",
+            "online",
+        ]
+    )
     for ip, data in indicators:
-        writer.writerow([
-            ip,
-            "ipv4-addr",
-            data.get("what", "Malware server"),
-            data.get("malware", "Unknown"),
-            data.get("source", "abuse.ch"),
-            data.get("seen", ""),
-            data.get("asn", ""),
-            data.get("network", ""),
-            data.get("country", ""),
-            "true" if data.get("online") else "false",
-        ])
+        writer.writerow(
+            [
+                ip,
+                "ipv4-addr",
+                data.get("what", "Malware server"),
+                data.get("malware", "Unknown"),
+                data.get("source", "abuse.ch"),
+                data.get("seen", ""),
+                data.get("asn", ""),
+                data.get("network", ""),
+                data.get("country", ""),
+                "true" if data.get("online") else "false",
+            ]
+        )
     return output.getvalue()
 
 
@@ -79,17 +83,19 @@ def to_misp(limit: int = 100) -> dict[str, Any]:
     attributes = []
     for ip, data in indicators:
         attr_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{ip}.alibi.threat"))
-        attributes.append({
-            "uuid": attr_uuid,
-            "type": "ip-dst",
-            "category": "Network activity",
-            "to_ids": True,
-            "value": ip,
-            "comment": (
-                f"{data.get('what', 'Malware node')} - {data.get('malware', '')} ({data.get('source', 'abuse.ch')})"
-            ),
-            "timestamp": str(data.get("t", int(datetime.now(UTC).timestamp()))),
-        })
+        attributes.append(
+            {
+                "uuid": attr_uuid,
+                "type": "ip-dst",
+                "category": "Network activity",
+                "to_ids": True,
+                "value": ip,
+                "comment": (
+                    f"{data.get('what', 'Malware node')} - {data.get('malware', '')} ({data.get('source', 'abuse.ch')})"
+                ),
+                "timestamp": str(data.get("t", int(datetime.now(UTC).timestamp()))),
+            }
+        )
 
     return {
         "Event": {
@@ -127,7 +133,7 @@ def to_nftables(limit: int = 1000) -> str:
     m = meta()
     elements = ",\n        ".join(ip for ip, _ in indicators)
     return f"""# ALIBI Linux nftables Threat Denylist
-# Generated: {m.get('fetched_at', '2026')}
+# Generated: {m.get("fetched_at", "2026")}
 # Drop-in usage: nft -f alibi_denylist.nft
 
 table inet filter {{
@@ -161,9 +167,9 @@ def to_suricata(limit: int = 250) -> str:
         malware = data.get("malware", "Unknown")
         what = data.get("what", "C2 Server")
         rule = (
-            f'alert ip $EXTERNAL_NET any -> $HOME_NET any ('
+            f"alert ip $EXTERNAL_NET any -> $HOME_NET any ("
             f'msg:"ALIBI Hostile Node Detected [{ip}] [{malware} {what}]"; '
-            f'ip.src == {ip}; classtype:trojan-activity; sid:{sid}; rev:1;)'
+            f"ip.src == {ip}; classtype:trojan-activity; sid:{sid}; rev:1;)"
         )
         rules.append(rule)
     rules.append("")

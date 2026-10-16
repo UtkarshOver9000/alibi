@@ -18,6 +18,7 @@ from .. import __version__
 from ..intel import service
 from .bodylimit import BodyLimitMiddleware
 from .ratelimit import RateLimitMiddleware
+from .routes import defense as defense_routes
 from .routes import export as export_routes
 from .routes import globe as globe_routes
 from .routes import health as health_routes
@@ -141,5 +142,13 @@ async def dashboard():
     return HTMLResponse("<h1>Alibi API</h1><p>See <a href='/docs'>/docs</a></p>")
 
 
-for module in (intel_routes, globe_routes, terminal_routes, shield_routes, export_routes, health_routes):
+for module in (
+    intel_routes,
+    globe_routes,
+    terminal_routes,
+    shield_routes,
+    defense_routes,
+    export_routes,
+    health_routes,
+):
     app.include_router(module.router)

@@ -194,4 +194,3 @@ def test_export_blocklist_and_firewall_rules():
     sur = client.get("/v1/intel/export/suricata?limit=10")
     assert sur.status_code == 200
     assert "alert ip $EXTERNAL_NET" in sur.text
-
