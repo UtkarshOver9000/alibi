@@ -69,7 +69,7 @@ def flagged(rate: np.ndarray, servers: np.ndarray, size: np.ndarray, share: floa
     order = np.argsort(-rate, kind="stable")
     space = np.cumsum(size[order]) / size.sum()
     k = int(np.searchsorted(space, share)) + 1
-    caught = servers[order[:k]].sum() / max(servers.sum(), 1)
+    caught = servers[order[:k]].sum() / max(int(servers.sum()), 1)
     return {"networks": k, "recall": round(float(caught), 4), "lift": round(float(caught / space[k - 1]), 1)}
 
 
