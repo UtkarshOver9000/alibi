@@ -139,16 +139,16 @@ ALIBI ships with a production-grade machine learning model (`netrisk_model.jobli
 ## Live Numbers
 
 <!-- numbers:start -->
-Numbers from the snapshot of **10 October 2026** (the live app shows the current ones):
+Numbers from the snapshot of **17 October 2026** (the live app shows the current ones):
 
 | Module | Today |
 |---|---|
-| Breaches | 1,024 breaches, 16.29 billion accounts; 104 breaches and 479.6 million accounts in the last 12 months |
-| Attacks | 8,913 malware and botnet servers; 7,242 threat indicators in 48 hours; 431 criminal networks; 215 ransomware victims (3 October 2026 to 10 October 2026) |
-| Exploited flaws | 1,739 flaws; 36 added in the last 30 days; 361 used by ransomware; highest exploit chance CVE-2021-26086 at 100.0% |
-| Live globe | 4,596 states and provinces, 733 undersea cables, websites confirmed blocked in 67 countries |
+| Breaches | 1,026 breaches, 16.29 billion accounts; 106 breaches and 480.5 million accounts in the last 12 months |
+| Attacks | 9,240 malware and botnet servers; 7,848 threat indicators in 48 hours; 442 criminal networks; 328 ransomware victims (10 October 2026 to 17 October 2026) |
+| Exploited flaws | 1,748 flaws; 35 added in the last 30 days; 361 used by ransomware; highest exploit chance CVE-2025-53770 at 100.0% |
+| Live globe | 4,596 states and provinces, 732 undersea cables, websites confirmed blocked in 70 countries |
 
-**A finding worth knowing:** only 11% of the malware servers sit on hosting or VPN networks, about the same as those networks' 11% share of all addresses; 49% are home routers, cameras and other devices hijacked by botnets such as Mozi and Mirai. Blocking data centers alone misses most of them.
+**A finding worth knowing:** only 11% of the malware servers sit on hosting or VPN networks, about the same as those networks' 11% share of all addresses; 42% are home routers, cameras and other devices hijacked by botnets such as Mozi and Mirai. Blocking data centers alone misses most of them.
 <!-- numbers:end -->
 
 ---
