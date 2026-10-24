@@ -13,6 +13,12 @@ def test_black_october_overview():
     assert data["metrics"]["year_level_catastrophes"] >= 10
     assert data["metrics"]["lowest_private_key_value"] == 4
     assert len(data["incidents"]) == 27
+    for inc in data["incidents"]:
+        assert "cluster" in inc
+        assert inc["cluster"] in ("crypto", "runtime", "cloud", "ai", "infra")
+        assert "excuse_vs_reality" in inc
+        assert "cloudflare_defense" in inc
+        assert "prevention_guide" in inc
 
 
 def test_black_october_incident_autopsy():
@@ -25,6 +31,9 @@ def test_black_october_incident_autopsy():
     assert "Key = 4" in data["name"]
     assert "technical_mechanism" in data
     assert "how_it_happened" in data
+    assert "excuse_vs_reality" in data
+    assert "cloudflare_defense" in data
+    assert "prevention_guide" in data
 
     # Test PHP2Shell forensic autopsy
     resp2 = client.get("/v1/black-october/incident/php2shell")
