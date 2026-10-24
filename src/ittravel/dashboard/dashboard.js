@@ -573,6 +573,12 @@ async function situation() {
 
 // ---------- live globe ----------
 const METRICS = {
+  composite_threat: {
+    state: "m",
+    title: "God's Eye Composite Threat Index",
+    explain: "ALIBI's composite planetary cyber threat score (0–100) combining malware server density, public DNS abuse, censorship block pages, hosting/VPN footprint, and Tor exit relays per country. Higher = more planetary cyber threat activity. Source: abuse.ch, OONI, TeleGeography, Spamhaus.",
+    source: "composite",
+  },
   malicious_ips: {
     state: "m",
     title: "Malware and botnet servers",
@@ -607,7 +613,7 @@ const METRICS = {
   },
 };
 const POINT_COLORS = { c2: "#d55e00", dl: "#e69f00", tor: "#cc79a7", drop: "#f0e442", landing: "#56b4e9", compute: "#06b6d4" };
-let metric = "malicious_ips", globe, selected, journey = [], journeyArcs = [], legendData = null;
+let metric = "composite_threat", globe, selected, journey = [], journeyArcs = [], legendData = null;
 
 function sizeGlobe() {
   const el = $("#globe");
@@ -2354,6 +2360,22 @@ function initNeuralNetwork(incidents) {
     }
   });
 
+  // Touch support for mobile & tablet devices
+  canvas.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const mx = t.clientX - rect.left;
+      const my = t.clientY - rect.top;
+      const hit = getNodeAt(mx, my);
+      if (hit) {
+        selectedNode = hit;
+        if (hit.isCore) openCoreOverviewDossier();
+        else openResearchInspector(hit.data);
+      }
+    }
+  }, { passive: true });
+
   // Wire cluster filter buttons
   $$("#neural-filter-chips button").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -2375,18 +2397,19 @@ function initNeuralNetwork(incidents) {
 }
 
 // ---------- Docked Research Inspector & Exploit Simulation ----------
-function closeResearchInspector() {
+function closeResearchInspector(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
   const insp = $("#neural-inspector");
   if (!insp) return;
   insp.classList.remove("active");
-  setTimeout(() => {
-    insp.hidden = true;
-  }, 260);
+  insp.hidden = true;
+  insp.style.display = "none";
   if (simInterval) {
     clearInterval(simInterval);
     simInterval = null;
   }
 }
+window.closeResearchInspector = closeResearchInspector;
 
 // Wire bulletproof close triggers
 $("#inspector-close-top")?.addEventListener("click", closeResearchInspector);
@@ -2401,6 +2424,7 @@ function openCoreOverviewDossier() {
   if (!insp || !body) return;
 
   insp.hidden = false;
+  insp.style.display = "flex";
   requestAnimationFrame(() => insp.classList.add("active"));
   title.textContent = "Catastrophe Dossier: Black October 2026 Overview";
 
@@ -2425,7 +2449,7 @@ function openCoreOverviewDossier() {
       </ul>
     </div>
     <div style="margin-top:16px; text-align:center;">
-      <button type="button" class="btn" id="inspector-close-bottom" style="width:100%; justify-content:center;">✕ Close Dossier (Esc)</button>
+      <button type="button" class="btn" id="inspector-close-bottom" onclick="closeResearchInspector(event)" style="width:100%; justify-content:center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fff; font-weight: 700;">✕ Close Dossier (Esc)</button>
     </div>
   `;
 
@@ -2440,6 +2464,7 @@ function openResearchInspector(inc) {
 
   activeIncident = inc;
   insp.hidden = false;
+  insp.style.display = "flex";
   requestAnimationFrame(() => insp.classList.add("active"));
   title.textContent = `Forensic Research: ${inc.name}`;
 
@@ -2529,7 +2554,7 @@ function openResearchInspector(inc) {
 
     <!-- Bottom Close Button -->
     <div style="margin-top: 16px; text-align: center;">
-      <button type="button" class="btn" id="inspector-close-bottom" style="width: 100%; justify-content: center;">✕ Close Research Dossier (Esc)</button>
+      <button type="button" class="btn" id="inspector-close-bottom" onclick="closeResearchInspector(event)" style="width: 100%; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fff; font-weight: 700; padding: 10px;">✕ Close Research Dossier (Esc)</button>
     </div>
   `;
 
