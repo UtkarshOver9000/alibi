@@ -1,19 +1,51 @@
 {
  "meta": {
   "weeks": [
-   "2026-05-11",
-   "2026-10-12"
+   "2026-05-18",
+   "2026-10-19"
   ],
-  "networks": 79175
+  "networks": 79325
  },
  "top": [
   {
    "asn": 209373,
    "percentile": 100.0,
-   "servers_last_4_weeks": 43,
+   "servers_last_4_weeks": 42,
    "addresses": 1024,
    "hosting": false,
    "network": "COM4-ASN-2"
+  },
+  {
+   "asn": 219502,
+   "percentile": 100.0,
+   "servers_last_4_weeks": 30,
+   "addresses": 1024,
+   "hosting": false,
+   "network": "STORMCLOUD-AS - Storm Industries LLC"
+  },
+  {
+   "asn": 403005,
+   "percentile": 100.0,
+   "servers_last_4_weeks": 45,
+   "addresses": 2303,
+   "hosting": false,
+   "network": "BLATANTHOST - Blatant"
+  },
+  {
+   "asn": 214961,
+   "percentile": 100.0,
+   "servers_last_4_weeks": 24,
+   "addresses": 1792,
+   "hosting": false,
+   "network": "STELLARGROUPSAS"
+  },
+  {
+   "asn": 197769,
+   "percentile": 100.0,
+   "servers_last_4_weeks": 28,
+   "addresses": 2047,
+   "hosting": false,
+   "network": "VPSDEDICATED-AS - VPS Dedicated LLC"
   },
   {
    "asn": 152485,
@@ -24,84 +56,44 @@
    "network": "HOSTER-AS-IN Hosterdaddy Private Limited"
   },
   {
-   "asn": 403005,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 44,
-   "addresses": 2303,
-   "hosting": false,
-   "network": "BLATANTHOST - Blatant"
-  },
-  {
-   "asn": 219502,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 29,
-   "addresses": 1280,
-   "hosting": false,
-   "network": "STORMCLOUD-AS - Storm Industries LLC"
-  },
-  {
-   "asn": 399979,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 8,
-   "addresses": 256,
-   "hosting": false,
-   "network": "AS-493NETWORKING"
-  },
-  {
-   "asn": 219067,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 6,
-   "addresses": 256,
-   "hosting": false,
-   "network": "CHIARA-AS - Chiara Conti"
-  },
-  {
-   "asn": 214961,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 20,
-   "addresses": 1792,
-   "hosting": false,
-   "network": "STELLARGROUPSAS"
-  },
-  {
-   "asn": 197769,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 27,
-   "addresses": 2047,
-   "hosting": false,
-   "network": "VPSDEDICATED-AS - VPS Dedicated LLC"
-  },
-  {
-   "asn": 214351,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 12,
-   "addresses": 1024,
-   "hosting": false,
-   "network": "FEMOIT"
-  },
-  {
-   "asn": 200051,
-   "percentile": 100.0,
-   "servers_last_4_weeks": 10,
-   "addresses": 1024,
-   "hosting": false,
-   "network": "ASRIZKI"
-  },
-  {
    "asn": 202412,
    "percentile": 100.0,
-   "servers_last_4_weeks": 42,
+   "servers_last_4_weeks": 50,
    "addresses": 6144,
    "hosting": false,
    "network": "OMEGATECH-AS"
   },
   {
-   "asn": 401626,
-   "percentile": 99.999,
-   "servers_last_4_weeks": 10,
+   "asn": 399979,
+   "percentile": 100.0,
+   "servers_last_4_weeks": 8,
+   "addresses": 512,
+   "hosting": false,
+   "network": "AS-493NETWORKING"
+  },
+  {
+   "asn": 214351,
+   "percentile": 100.0,
+   "servers_last_4_weeks": 8,
    "addresses": 1024,
    "hosting": false,
-   "network": "NETIFACE-TORONTO"
+   "network": "FEMOIT"
+  },
+  {
+   "asn": 44382,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 57,
+   "addresses": 3584,
+   "hosting": false,
+   "network": "WHITELABEL"
+  },
+  {
+   "asn": 219067,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 8,
+   "addresses": 512,
+   "hosting": false,
+   "network": "CHIARA-AS - Chiara Conti"
   },
   {
    "asn": 64107,
@@ -112,20 +104,12 @@
    "network": "RACK SPHERE HOSTING S.A."
   },
   {
-   "asn": 44382,
+   "asn": 215925,
    "percentile": 99.999,
-   "servers_last_4_weeks": 42,
-   "addresses": 3584,
+   "servers_last_4_weeks": 4,
+   "addresses": 768,
    "hosting": false,
-   "network": "WHITELABEL"
-  },
-  {
-   "asn": 132359,
-   "percentile": 99.999,
-   "servers_last_4_weeks": 3,
-   "addresses": 256,
-   "hosting": false,
-   "network": "MSROBITRADERS-AS-AP MS ROBI TRADERS"
+   "network": "VPSVAULTHOST"
   },
   {
    "asn": 197170,
@@ -136,20 +120,60 @@
    "network": "TECHTIES-AS - TechTies Inc."
   },
   {
-   "asn": 401739,
+   "asn": 210846,
    "percentile": 99.999,
-   "servers_last_4_weeks": 3,
-   "addresses": 512,
+   "servers_last_4_weeks": 1,
+   "addresses": 256,
    "hosting": false,
-   "network": "REDLUFF-NET01"
+   "network": "DEDISPOT-WEB-SOLUTION"
   },
   {
-   "asn": 200593,
+   "asn": 218970,
    "percentile": 99.999,
-   "servers_last_4_weeks": 3,
-   "addresses": 768,
+   "servers_last_4_weeks": 2,
+   "addresses": 256,
    "hosting": false,
-   "network": "PROSPERO-AS"
+   "network": "CHOMIK-AS - Amin NezhadKahnoji"
+  },
+  {
+   "asn": 132359,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 1,
+   "addresses": 256,
+   "hosting": false,
+   "network": "MSROBITRADERS-AS-AP MS ROBI TRADERS"
+  },
+  {
+   "asn": 213790,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 6,
+   "addresses": 1024,
+   "hosting": false,
+   "network": "LIMITEDNETWORK-AS"
+  },
+  {
+   "asn": 48874,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 17,
+   "addresses": 1280,
+   "hosting": false,
+   "network": "HOSTMAZE HOSTMAZE"
+  },
+  {
+   "asn": 203557,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 8,
+   "addresses": 1280,
+   "hosting": false,
+   "network": "DATACLUB-NL"
+  },
+  {
+   "asn": 401626,
+   "percentile": 99.999,
+   "servers_last_4_weeks": 7,
+   "addresses": 1024,
+   "hosting": false,
+   "network": "NETIFACE-TORONTO"
   },
   {
    "asn": 211138,
@@ -160,12 +184,12 @@
    "network": "PRIVATEHOSTING-NET"
   },
   {
-   "asn": 214209,
+   "asn": 200051,
    "percentile": 99.999,
    "servers_last_4_weeks": 7,
-   "addresses": 1024,
+   "addresses": 1280,
    "hosting": false,
-   "network": "INTERNET-MAGNATE"
+   "network": "ASRIZKI"
   },
   {
    "asn": 198134,
@@ -176,36 +200,12 @@
    "network": "GETWIFI-AS"
   },
   {
-   "asn": 215925,
+   "asn": 401739,
    "percentile": 99.999,
-   "servers_last_4_weeks": 4,
-   "addresses": 768,
+   "servers_last_4_weeks": 3,
+   "addresses": 512,
    "hosting": false,
-   "network": "VPSVAULTHOST"
-  },
-  {
-   "asn": 48874,
-   "percentile": 99.999,
-   "servers_last_4_weeks": 11,
-   "addresses": 1280,
-   "hosting": false,
-   "network": "HOSTMAZE HOSTMAZE"
-  },
-  {
-   "asn": 198953,
-   "percentile": 99.999,
-   "servers_last_4_weeks": 1,
-   "addresses": 768,
-   "hosting": true,
-   "network": "PROTON66"
-  },
-  {
-   "asn": 203557,
-   "percentile": 99.999,
-   "servers_last_4_weeks": 5,
-   "addresses": 1280,
-   "hosting": false,
-   "network": "DATACLUB-NL"
+   "network": "REDLUFF-NET01"
   }
  ]
 }
