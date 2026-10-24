@@ -777,6 +777,32 @@ loaders.globe = async () => {
   if (new URLSearchParams(location.search).has("tour")) tour();
 };
 
+
+// ---------- Planetary Telemetry: Real Global Cyber Attack Telemetry Arcs ----------
+const GLOBAL_ATTACK_ARCS = [
+  // 1. South Asia Ground Zero (eMudhra Key=4 TLS Hijack & SBI Banking Blitz)
+  { startLat: 55.7558, startLng: 37.6173, endLat: 12.9716, endLng: 77.5946, color: ["rgba(239, 68, 68, 0.85)", "rgba(56, 189, 248, 0.85)"], label: "eMudhra Key=4 TLS Hijack Probe: Moscow -> Bengaluru" },
+  { startLat: 22.5431, startLng: 114.0579, endLat: 18.9220, endLng: 72.8347, color: ["rgba(239, 68, 68, 0.85)", "rgba(245, 158, 11, 0.85)"], label: "SBI Gateway Scanning Blitz: Shenzhen -> Mumbai" },
+  { startLat: 44.4323, startLng: 26.1063, endLat: 12.9716, endLng: 77.5946, color: ["rgba(239, 68, 68, 0.85)", "rgba(56, 189, 248, 0.85)"], label: "CA Cert Forgery Probe: Bucharest -> Bengaluru" },
+
+  // 2. PHP2Shell Core Zend Engine RCE Fleet
+  { startLat: 52.3676, startLng: 4.9041, endLat: 50.1109, endLng: 8.6821, color: ["rgba(239, 68, 68, 0.85)", "rgba(52, 211, 153, 0.85)"], label: "PHP2Shell Web Fleet Probe: Amsterdam -> Frankfurt" },
+  { startLat: 38.8951, startLng: -77.0364, endLat: 50.1109, endLng: 8.6821, color: ["rgba(245, 158, 11, 0.85)", "rgba(52, 211, 153, 0.85)"], label: "Zend Engine Scan Sweep: Virginia -> Frankfurt" },
+
+  // 3. East Asia: Zeabur PaaS Container Escape & GMO Internet Onamae Registrar Breach
+  { startLat: 37.5665, startLng: 126.9780, endLat: 25.0330, endLng: 121.5654, color: ["rgba(239, 68, 68, 0.85)", "rgba(96, 165, 250, 0.85)"], label: "Zeabur PaaS Tenant Escape: Seoul -> Taipei" },
+  { startLat: 31.2304, startLng: 121.4737, endLat: 35.6762, endLng: 139.6503, color: ["rgba(239, 68, 68, 0.85)", "rgba(251, 113, 133, 0.85)"], label: "GMO Onamae DNS Hijacking: Shanghai -> Tokyo" },
+
+  // 4. North America: LiteLLM & Cairn AI Proxy Key Exfiltration
+  { startLat: 38.8951, startLng: -77.0364, endLat: 37.4419, endLng: -122.1430, color: ["rgba(239, 68, 68, 0.85)", "rgba(192, 132, 252, 0.85)"], label: "LiteLLM API Proxy Key Extraction: Ashburn -> Palo Alto" },
+  { startLat: 51.5074, startLng: -0.1278, endLat: 40.7128, endLng: -74.0060, color: ["rgba(245, 158, 11, 0.85)", "rgba(192, 132, 252, 0.85)"], label: "Cairn AI Prompt Hijack: London -> New York" },
+
+  // 5. Critical Infrastructure & Supply Chain
+  { startLat: 50.4501, startLng: 30.5234, endLat: 52.4287, endLng: 4.8143, color: ["rgba(239, 68, 68, 0.85)", "rgba(251, 113, 133, 0.85)"], label: "Ahold Delhaize Ransomware Vector: Kyiv -> Zaandam" },
+  { startLat: 39.0392, startLng: 125.7625, endLat: 37.7749, endLng: -122.4194, color: ["rgba(239, 68, 68, 0.85)", "rgba(251, 113, 133, 0.85)"], label: "DPRK Lazarus Supply Chain Infiltration: Pyongyang -> Silicon Valley" },
+  { startLat: 55.7558, startLng: 37.6173, endLat: 37.7749, endLng: -122.4194, color: ["rgba(239, 68, 68, 0.85)", "rgba(96, 165, 250, 0.85)"], label: "GitLab Unauth CI/CD Pipeline RCE: Moscow -> San Francisco" }
+];
+
 function setupGlobe(el, features, data, centers) {
   globe
     .globeImageUrl(texUrl(metric))
@@ -793,7 +819,7 @@ function setupGlobe(el, features, data, centers) {
     .pointColor((p) => POINT_COLORS[p.kind]).pointsMerge(true).pointsTransitionDuration(0)
     .ringLat("lat").ringLng("lng").ringColor((r) => (t) => `rgba(${r.rgb},${1 - t})`).ringMaxRadius(2.6)
     .ringPropagationSpeed(3).ringRepeatPeriod(0)
-    .arcsData([]).arcColor("color").arcStroke(0.8).arcDashLength(0.5).arcDashGap(0.15).arcDashAnimateTime(1600)
+    .arcsData(GLOBAL_ATTACK_ARCS).arcColor("color").arcStroke(0.8).arcDashLength(0.5).arcDashGap(0.15).arcDashAnimateTime(1600)
     .arcAltitudeAutoScale(0.45).arcLabel((a) => `<div class="globe-tip">${esc(a.label)}</div>`)
     .labelsData([]).labelLat("lat").labelLng("lng").labelText("text").labelSize(1.1).labelDotRadius(0.45)
     .labelColor(() => "#ffffff").labelResolution(2);
@@ -892,31 +918,51 @@ async function tour() {
   $("#tour-btn").innerHTML = `${ico("x")}<span>Stop tour</span>`;
   globe.controls().autoRotate = false;
   try {
-    const lg = await api("/v1/intel/globe/malicious_ips/legend");
     const act = await api("/v1/intel/activity");
-    if (metric !== "malicious_ips") $('[data-metric="malicious_ips"]').click();
     const o = await api("/v1/intel/overview");
-    caption("Today", `${fmt(o.malicious_ips)} malware and botnet servers tracked; ${fmt(act.new_today)} reported since 00:00 UTC.`);
-    globe.pointOfView({ lat: 20, lng: 40, altitude: 2.2 }, 1500);
-    await pause(4000);
-    for (const top of lg.top.filter((x) => x.lat != null).slice(0, 3)) {
-      if (!touring) return;
-      globe.pointOfView({ lat: top.lat, lng: top.lng, altitude: 0.9 }, 2200);
-      caption("Hotspot", `<b>${esc(top.name)}</b>: ${top.value.toFixed(2)} malware servers per 1M addresses (${fmt(top.count)} servers).`);
-      await pause(4500);
-    }
+
+    // Stop 1: Global Planetary God's Eye Overview
+    caption("Planetary Radar", `Tracking <b>${fmt(o.malicious_ips)}</b> malware servers and <b>${fmt(act.new_today)}</b> new detections today across 195 nations.`);
+    globe.pointOfView({ lat: 20, lng: 30, altitude: 2.2 }, 1500);
+    await pause(3800);
     if (!touring) return;
-    globe.pointOfView({ lat: 25, lng: 60, altitude: 2.3 }, 1800);
-    caption("Replay", "The last 48 hours, each malware server shown where and when it was reported.");
-    await pause(1800);
-    startReplay(act, 14);
-    await pause(15500);
+
+    // Stop 2: South Asia Cyber Epicenter (Bengaluru & Mumbai)
+    globe.pointOfView({ lat: 15.5, lng: 76.5, altitude: 0.95 }, 2200);
+    caption("Ground Zero: South Asia", "<b>Bengaluru & Mumbai</b>: eMudhra CA key=4 entropy collapse & SBI banking gateway scanning blitz across 40 nations.");
+    await pause(5000);
     if (!touring) return;
-    journey = ["IN", "GB"];
-    renderJourney();
-    caption("Sign-in check", "One account signs in from India, then from the UK 45 minutes later.");
-    await runJourney();
+
+    // Stop 3: East Asia Cloud & Infrastructure (Taipei & Tokyo)
+    globe.pointOfView({ lat: 30, lng: 130, altitude: 1.05 }, 2200);
+    caption("Ground Zero: East Asia", "<b>Taipei & Tokyo</b>: Zeabur PaaS multi-tenant container escape (321K developers) & GMO Internet / Onamae DNS registrar breach.");
+    await pause(5000);
+    if (!touring) return;
+
+    // Stop 4: European Financial & Web Fleet (Frankfurt, Paris, Netherlands)
+    globe.pointOfView({ lat: 50.5, lng: 7.5, altitude: 0.9 }, 2200);
+    caption("Ground Zero: Europe", "<b>Frankfurt & Amsterdam</b>: PHP2Shell Zend Engine core RCE across web fleet & Ahold Delhaize retail distribution ransomware disruption.");
+    await pause(5000);
+    if (!touring) return;
+
+    // Stop 5: North American Perimeter (Silicon Valley & Washington DC)
+    globe.pointOfView({ lat: 38, lng: -98, altitude: 1.15 }, 2200);
+    caption("Ground Zero: North America", "<b>Silicon Valley & East Coast</b>: LiteLLM & Cairn AI proxy key exfiltrations, GitLab CI/CD RCE, and California PII exposure.");
+    await pause(5000);
+    if (!touring) return;
+
+    // Stop 6: Subsea Fiber Chokepoints
+    globe.pointOfView({ lat: 26, lng: -38, altitude: 1.6 }, 2200);
+    caption("Global Subsea Infrastructure", "Monitoring 420+ undersea fiber cables carrying 99% of transcontinental internet data.");
     await pause(4500);
+    if (!touring) return;
+
+    // Stop 7: Live 48-Hour Botnet Ingestion Replay
+    globe.pointOfView({ lat: 22, lng: 40, altitude: 2.1 }, 1800);
+    caption("Live 48h Ingestion", "Streaming live server detections from abuse.ch, CISA KEV, and Spamhaus DROP.");
+    await pause(1500);
+    startReplay(act, 14);
+    await pause(15000);
   } finally {
     stopTour();
   }
@@ -998,7 +1044,24 @@ async function selectCountry(f, at) {
   const topStates = places.filter((s) => s.c === c.a2 && s[key] > 0).sort((a, b) => b[key] - a[key]).slice(0, 6);
   heatPromise ??= api("/v1/intel/heat"); // city lists load only when a country is opened
   const spots = (await heatPromise).places?.[c.a2]?.[key === "d" ? "dns" : "malware"] || [];
+  const countryBo = (warroomIncidents || []).filter((i) => i.geo && i.geo.country === c.a2);
+  const boBadgeHtml = countryBo.length ? `
+    <div class="bo-country-alert" style="margin: 10px 0; padding: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <b style="color: #ef4444; font-size: 11.5px; letter-spacing: 0.06em;">🔴 BLACK OCTOBER EPICENTER (${countryBo.length})</b>
+        <span class="mono" style="font-size: 10px; color: #cbd5e1;">CRISIS INTEL</span>
+      </div>
+      ${countryBo.map((inc) => `
+        <div style="margin-top: 6px; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
+          <a href="#warroom" class="bo-country-link" data-incident-id="${esc(inc.id)}" style="color: #38bdf8; font-weight: 600; text-decoration: none;">⚡ ${esc(inc.name)}</a>
+          <div style="color: var(--muted); font-size: 11px;">${esc(inc.target)} · CVSS ${inc.cvss}</div>
+        </div>
+      `).join("")}
+    </div>
+  ` : "";
+
   $("#country-panel").innerHTML = `<h3>Inspector <span class="meta">${esc(c.a2)}</span></h3>
+    ${boBadgeHtml}
     ${selState ? `<div class="place"><b>${esc(selState.n)}</b> <span class="muted">${esc(selState.t)}</span><br>
       ${fmt(selState.m)} malware servers · ${fmt(selState.d)} public DNS servers
       <br><span class="muted">${perMillion(selState[key], selState.ip)} (${label})</span>
@@ -1013,6 +1076,15 @@ async function selectCountry(f, at) {
     ${spots.length ? `<p class="fineprint"><b>Top cities:</b> ${spots.slice(0, 6).map(([city, n]) => `${esc(city)} ${fmt(n)}`).join(" · ")}</p>` : ""}
     <p class="fineprint" id="country-nets">Looking up networks…</p>
     <button class="btn" id="add-journey" ${journey.length >= 3 ? "disabled" : ""}>Add to journey</button>`;
+    $$(".bo-country-link").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const incId = link.dataset.incidentId;
+      show("warroom");
+      const inc = (warroomIncidents || []).find((i) => i.id === incId);
+      if (inc) openResearchInspector(inc);
+    });
+  });
   $("#btn-state-dossier")?.addEventListener("click", () => {
     if (selState) openStateDossier(selState.i);
   });
@@ -1856,254 +1928,629 @@ let warroomIncidents = [];
 let activeIncident = null;
 let simStep = 0;
 let simInterval = null;
+let neuralState = null;
 
 loaders.warroom = async () => {
   try {
     const data = await api("/v1/black-october/overview");
     warroomIncidents = data.incidents || [];
-    renderWarroomCards(warroomIncidents);
+    initNeuralNetwork(warroomIncidents);
   } catch (err) {
     console.error("War room loader failed:", err);
   }
 };
 
-function renderWarroomCards(incidents) {
-  const grid = $("#warroom-incidents-grid");
-  if (!grid) return;
-  if (!incidents.length) {
-    grid.innerHTML = '<p class="muted">No incidents matching the selected filter.</p>';
-    return;
+// Refresh button
+$("#refresh-warroom")?.addEventListener("click", () => loaders.warroom());
+
+// ---------- Interactive Neural Network Nodal Constellation Canvas ----------
+function initNeuralNetwork(incidents) {
+  const canvas = $("#neural-canvas");
+  const wrap = $("#warroom-canvas-wrap");
+  const tip = $("#neural-tooltip");
+  if (!canvas || !wrap) return;
+
+  const ctx = canvas.getContext("2d");
+  let width = 0, height = 0, dpr = 1;
+  let animFrame = null;
+  let activeCluster = "all";
+  let hoveredNode = null;
+  let selectedNode = null;
+  let isDragging = false;
+  let dragNode = null;
+  let startX = 0, startY = 0;
+  let offsetX = 0, offsetY = 0;
+
+  function resize() {
+    const rect = wrap.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height || 600;
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    layoutNodes();
   }
 
-  grid.innerHTML = incidents.map((inc) => {
-    const tierClass = inc.tier === "year_level" ? "tier-year" : inc.tier === "critical_infra" ? "tier-critical" : "tier-month";
-    const tierLabel = inc.tier === "year_level" ? "YEAR-LEVEL 0-DAY" : inc.tier === "critical_infra" ? "CRITICAL INFRASTRUCTURE" : "MONTH-LEVEL INCIDENT";
-    const tierColor = inc.tier === "year_level" ? "#ef4444" : inc.tier === "critical_infra" ? "#a855f7" : "#f59e0b";
-    const cvss = inc.cvss || 8.0;
-    const cvssCol = cvss >= 9.5 ? "#ef4444" : cvss >= 8.5 ? "#f97316" : "#f59e0b";
+  // Color mappings per semantic cluster
+  const CLUSTER_CONFIG = {
+    crypto: { color: "#38bdf8", name: "CRYPTO & TRUST", angleBase: -Math.PI / 2 },
+    runtime: { color: "#34d399", name: "CORE RUNTIMES", angleBase: -Math.PI / 10 },
+    cloud: { color: "#60a5fa", name: "CLOUD & PAAS", angleBase: (3 * Math.PI) / 10 },
+    ai: { color: "#c084fc", name: "AI AGENTS", angleBase: (7 * Math.PI) / 10 },
+    infra: { color: "#fb7185", name: "CRITICAL INFRA", angleBase: (11 * Math.PI) / 10 }
+  };
 
-    return `
-      <div class="warroom-card ${tierClass}">
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <span style="font: 700 11px var(--hud); color: ${tierColor}; letter-spacing: 0.08em;">${tierLabel}</span>
-            <span class="mono" style="background: ${cvssCol}22; color: ${cvssCol}; border: 1px solid ${cvssCol}44; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700;">CVSS ${cvss.toFixed(1)}</span>
-          </div>
-          <h4 style="margin: 8px 0 4px; font-size: 16px; color: var(--ink); line-height: 1.3;">${esc(inc.name)}</h4>
-          <div style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
-            <b>Target:</b> ${esc(inc.target)} ${inc.cve ? `· <span class="mono" style="color:var(--accent);">${esc(inc.cve)}</span>` : ""}
-          </div>
-          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; line-height: 1.45;">
-            ${esc(inc.summary)}
-          </p>
-        </div>
-        <div style="border-top: 1px solid var(--line); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-          <span class="fineprint">${esc(inc.geo?.location || "Global Fleet")}</span>
-          <button type="button" class="btn-sm chip btn-autopsy" data-autopsy-id="${esc(inc.id)}" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #fff; font-weight: 600;">
-            ⚡ Exploit Autopsy & Sim
-          </button>
-        </div>
-      </div>
-    `;
-  }).join("");
+  let nodes = [];
+  let links = [];
+  let pulses = [];
 
-  $$(".btn-autopsy").forEach((b) => b.addEventListener("click", () => openAutopsyModal(b.dataset.autopsyId)));
-}
+  function layoutNodes() {
+    const cx = width / 2;
+    const cy = height / 2;
+    const minDim = Math.min(width, height);
+    const radiusScale = minDim > 700 ? 1 : minDim / 700;
 
-// Filter chips
-(function wireWarroomFilters() {
-  $$("#warroom-filter-chips button").forEach((btn) => {
+    // Central core node
+    const coreNode = {
+      id: "core",
+      name: "BLACK OCTOBER 2026",
+      sub: "27 Coordinated Catastrophes",
+      isCore: true,
+      x: cx,
+      y: cy,
+      baseX: cx,
+      baseY: cy,
+      radius: Math.max(34 * radiusScale, 26),
+      color: "#ef4444",
+      cluster: "core",
+      cvss: 10.0,
+      phase: 0
+    };
+
+    nodes = [coreNode];
+    links = [];
+    pulses = [];
+
+    // Group incidents by cluster
+    const clusters = { crypto: [], runtime: [], cloud: [], ai: [], infra: [] };
+    incidents.forEach((inc) => {
+      const c = inc.cluster || "infra";
+      if (!clusters[c]) clusters[c] = [];
+      clusters[c].push(inc);
+    });
+
+    // Position each incident node in concentric orbital sectors
+    Object.keys(clusters).forEach((cKey) => {
+      const cfg = CLUSTER_CONFIG[cKey] || { color: "#94a3b8", angleBase: 0 };
+      const list = clusters[cKey];
+      const count = list.length;
+      if (!count) return;
+
+      const sectorSpread = 0.58; // angular width in radians
+      const angleStep = count > 1 ? sectorSpread / (count - 1) : 0;
+      const startAngle = cfg.angleBase - sectorSpread / 2;
+
+      list.forEach((inc, idx) => {
+        const angle = count === 1 ? cfg.angleBase : startAngle + idx * angleStep;
+        // Distribute distance across 2 orbital tiers (inner & outer)
+        const tierDist = (idx % 2 === 0 ? 175 : 245) * radiusScale;
+        const nx = cx + Math.cos(angle) * tierDist;
+        const ny = cy + Math.sin(angle) * tierDist;
+
+        const node = {
+          id: inc.id,
+          name: inc.name,
+          data: inc,
+          isCore: false,
+          x: nx,
+          y: ny,
+          baseX: nx,
+          baseY: ny,
+          radius: Math.max((11 + ((inc.cvss || 8) - 7) * 2.2) * radiusScale, 9),
+          color: cfg.color,
+          cluster: cKey,
+          cvss: inc.cvss || 8.0,
+          tier: inc.tier,
+          cve: inc.cve,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.8 + Math.random() * 0.4
+        };
+
+        nodes.push(node);
+
+        // Core synaptic connection link
+        const link = { source: coreNode, target: node, color: cfg.color };
+        links.push(link);
+
+        // Connect adjacent nodes in same cluster
+        if (idx > 0) {
+          links.push({ source: nodes[nodes.length - 2], target: node, color: cfg.color, isClusterLink: true });
+        }
+      });
+    });
+
+    // Initialize 24 synaptic pulses
+    pulses = [];
+    for (let i = 0; i < 24; i++) {
+      const l = links[Math.floor(Math.random() * links.length)];
+      pulses.push({
+        link: l,
+        t: Math.random(),
+        speed: 0.004 + Math.random() * 0.005,
+        color: l.color
+      });
+    }
+  }
+
+  resize();
+  window.addEventListener("resize", resize);
+
+  // Synaptic pulse animation loop
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+
+    const now = performance.now();
+
+    // 1. Draw synaptic lines
+    links.forEach((l) => {
+      const s = l.source;
+      const t = l.target;
+      const isDimmed = activeCluster !== "all" && (t.cluster !== activeCluster && !t.isCore);
+      const isHighlighted = (hoveredNode && (hoveredNode === s || hoveredNode === t)) || (selectedNode && (selectedNode === s || selectedNode === t));
+
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(t.x, t.y);
+
+      if (isHighlighted) {
+        ctx.strokeStyle = l.color;
+        ctx.lineWidth = 2.2;
+        ctx.globalAlpha = 0.85;
+      } else if (l.isClusterLink) {
+        ctx.strokeStyle = l.color;
+        ctx.lineWidth = 1.0;
+        ctx.globalAlpha = isDimmed ? 0.05 : 0.22;
+      } else {
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.16)";
+        ctx.lineWidth = 1.2;
+        ctx.globalAlpha = isDimmed ? 0.04 : 0.2;
+      }
+      ctx.stroke();
+    });
+
+    // 2. Draw animated synaptic electrical pulses
+    pulses.forEach((p) => {
+      p.t += p.speed;
+      if (p.t > 1) {
+        p.t = 0;
+        p.link = links[Math.floor(Math.random() * links.length)];
+        p.color = p.link.color;
+      }
+      const s = p.link.source;
+      const t = p.link.target;
+      const px = s.x + (t.x - s.x) * p.t;
+      const py = s.y + (t.y - s.y) * p.t;
+
+      const isDimmed = activeCluster !== "all" && (t.cluster !== activeCluster && !t.isCore);
+      if (!isDimmed) {
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    });
+
+    // 3. Draw nodes
+    nodes.forEach((n) => {
+      // Gentle natural breathing oscillation
+      if (!n.isCore && !isDragging) {
+        n.x = n.baseX + Math.sin(now * 0.0015 * n.speed + n.phase) * 4;
+        n.y = n.baseY + Math.cos(now * 0.0012 * n.speed + n.phase) * 4;
+      }
+
+      const isDimmed = activeCluster !== "all" && (n.cluster !== activeCluster && !n.isCore);
+      const isHov = hoveredNode === n;
+      const isSel = selectedNode === n;
+
+      ctx.globalAlpha = isDimmed ? 0.18 : 1.0;
+
+      // Outer glow / halo ring
+      if (n.isCore) {
+        const pulseR = n.radius + 6 + Math.sin(now * 0.003) * 4;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.4)";
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, pulseR + 6, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.15)";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      } else if (isHov || isSel) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius + 6, 0, Math.PI * 2);
+        ctx.strokeStyle = n.color;
+        ctx.lineWidth = 2.4;
+        ctx.shadowColor = n.color;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      // Base circle
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      ctx.fillStyle = n.isCore ? "rgba(239, 68, 68, 0.25)" : "rgba(15, 23, 42, 0.85)";
+      ctx.fill();
+
+      ctx.strokeStyle = n.color;
+      ctx.lineWidth = n.isCore ? 3 : isHov || isSel ? 2.5 : 1.8;
+      ctx.stroke();
+
+      // Inner glowing core
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.isCore ? 6 : 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = n.isCore ? "#ffffff" : n.color;
+      ctx.fill();
+
+      // Labels
+      if (n.isCore) {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "700 11.5px 'Chakra Petch', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("BLACK OCTOBER", n.x, n.y + 42);
+        ctx.fillStyle = "#ef4444";
+        ctx.font = "700 9.5px 'Plex Mono', monospace";
+        ctx.fillText("27 CRITICAL CATSTROPHES", n.x, n.y + 54);
+      } else if (!isDimmed || isHov) {
+        ctx.fillStyle = isHov || isSel ? "#ffffff" : "#cbd5e1";
+        ctx.font = isHov || isSel ? "600 11px 'Plex Sans', sans-serif" : "500 10px 'Plex Sans', sans-serif";
+        ctx.textAlign = "center";
+        const shortName = n.name.length > 22 ? n.name.slice(0, 20) + "…" : n.name;
+        ctx.fillText(shortName, n.x, n.y + n.radius + 12);
+      }
+    });
+
+    ctx.restore();
+    animFrame = requestAnimationFrame(draw);
+  }
+
+  animFrame = requestAnimationFrame(draw);
+
+  // Mouse / Pointer Interaction
+  function getNodeAt(mx, my) {
+    const rx = mx - offsetX;
+    const ry = my - offsetY;
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i];
+      const dx = rx - n.x;
+      const dy = ry - n.y;
+      if (dx * dx + dy * dy <= (n.radius + 7) * (n.radius + 7)) {
+        return n;
+      }
+    }
+    return null;
+  }
+
+  canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    if (isDragging) {
+      if (dragNode) {
+        dragNode.baseX = mx - offsetX;
+        dragNode.baseY = my - offsetY;
+        dragNode.x = dragNode.baseX;
+        dragNode.y = dragNode.baseY;
+      } else {
+        offsetX += e.clientX - startX;
+        offsetY += e.clientY - startY;
+        startX = e.clientX;
+        startY = e.clientY;
+      }
+      return;
+    }
+
+    const hit = getNodeAt(mx, my);
+    if (hit !== hoveredNode) {
+      hoveredNode = hit;
+      if (hit) {
+        canvas.style.cursor = "pointer";
+        if (hit.isCore) {
+          tip.hidden = false;
+          tip.style.left = `${Math.min(mx + 15, width - 290)}px`;
+          tip.style.top = `${Math.min(my + 15, height - 120)}px`;
+          tip.innerHTML = `
+            <div style="font-weight: 700; color: #ef4444; font-size: 13px;">BLACK OCTOBER 2026</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 3px;">27 Coordinated Catastrophes across PKI, Core Language Runtimes, Cloud PaaS, AI Agents, and Critical Infra.</div>
+            <div style="margin-top: 6px; font-size: 10.5px; color: #38bdf8; font-weight: 600;">Click to view catastrophe overview dossier</div>
+          `;
+        } else {
+          const cfg = CLUSTER_CONFIG[hit.cluster] || { name: "INCIDENT", color: "#38bdf8" };
+          tip.hidden = false;
+          tip.style.left = `${Math.min(mx + 15, width - 310)}px`;
+          tip.style.top = `${Math.min(my + 15, height - 140)}px`;
+          tip.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; gap: 8px;">
+              <b style="font-size: 13px; color: #fff;">${esc(hit.name)}</b>
+              <span class="mono" style="background: ${hit.color}22; color: ${hit.color}; border: 1px solid ${hit.color}44; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 700;">CVSS ${hit.cvss.toFixed(1)}</span>
+            </div>
+            <div style="font-size: 11px; color: ${hit.color}; margin: 3px 0 5px; font-weight: 600;">
+              ${cfg.name} ${hit.cve ? `· <span class="mono">${esc(hit.cve)}</span>` : ""}
+            </div>
+            <div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.35;">${esc(hit.data.summary.slice(0, 115))}…</div>
+            <div style="margin-top: 6px; font-size: 10.5px; color: #38bdf8; font-weight: 600;">⚡ Touch to open complete research dossier & sim ▶</div>
+          `;
+        }
+      } else {
+        canvas.style.cursor = "grab";
+        tip.hidden = true;
+      }
+    } else if (hit) {
+      tip.style.left = `${Math.min(mx + 15, width - 310)}px`;
+      tip.style.top = `${Math.min(my + 15, height - 140)}px`;
+    }
+  });
+
+  canvas.addEventListener("mouseleave", () => {
+    hoveredNode = null;
+    tip.hidden = true;
+    isDragging = false;
+  });
+
+  canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    startX = e.clientX;
+    startY = e.clientY;
+    const hit = getNodeAt(mx, my);
+    if (hit) {
+      dragNode = hit;
+      isDragging = true;
+    } else {
+      dragNode = null;
+      isDragging = true;
+      canvas.style.cursor = "grabbing";
+    }
+  });
+
+  window.addEventListener("mouseup", (e) => {
+    if (!isDragging) return;
+    const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+    isDragging = false;
+    dragNode = null;
+    canvas.style.cursor = hoveredNode ? "pointer" : "grab";
+
+    // If mouse didn't drag far, treat as click
+    if (dist < 6) {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const hit = getNodeAt(mx, my);
+      if (hit) {
+        selectedNode = hit;
+        if (hit.isCore) {
+          openCoreOverviewDossier();
+        } else {
+          openResearchInspector(hit.data);
+        }
+      } else {
+        // Click on empty canvas closes inspector
+        closeResearchInspector();
+      }
+    }
+  });
+
+  // Wire cluster filter buttons
+  $$("#neural-filter-chips button").forEach((btn) => {
     btn.addEventListener("click", () => {
-      $$("#warroom-filter-chips button").forEach((b) => b.classList.remove("on"));
+      $$("#neural-filter-chips button").forEach((b) => b.classList.remove("on"));
       btn.classList.add("on");
-      const tier = btn.dataset.tier;
-      if (tier === "all") renderWarroomCards(warroomIncidents);
-      else renderWarroomCards(warroomIncidents.filter((i) => i.tier === tier));
+      activeCluster = btn.dataset.cluster || "all";
     });
   });
 
-  $("#refresh-warroom")?.addEventListener("click", () => loaders.warroom());
-})();
+  neuralState = {
+    selectNode: (id) => {
+      const n = nodes.find((x) => x.id === id);
+      if (n) {
+        selectedNode = n;
+        openResearchInspector(n.data);
+      }
+    }
+  };
+}
 
-// 1-Click Black October Stack Auditor Form
-(function wireWarroomAuditor() {
-  const form = $("#warroom-audit-form");
-  const targetInput = $("#warroom-audit-target");
-  const typeSelect = $("#warroom-audit-type");
-  const box = $("#warroom-audit-results");
-  if (!form) return;
-
-  function runAudit(target, type) {
-    if (!target) return;
-    box.innerHTML = '<p class="muted">Scanning live against revoked eMudhra CAs, PHP2Shell web runtimes, and vulnerable dependencies…</p>';
-    api(`/v1/black-october/audit?target=${encodeURIComponent(target)}&target_type=${encodeURIComponent(type)}`)
-      .then((d) => {
-        const score = d.black_october_risk_score ?? 0;
-        const col = score >= 50 ? "#ef4444" : score >= 20 ? "#f59e0b" : "#10b981";
-        const findings = d.findings || [];
-        const rems = d.recommended_remediations || [];
-
-        box.innerHTML = `
-          <div class="panel" style="border-left: 4px solid ${col}; margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div>
-                <span style="font-size: 18px; font-weight: 700; color: ${col};">${esc(d.overall_verdict)}</span>
-                <span style="font-size: 15px; font-weight: 600; margin-left: 8px;">${esc(d.target)}</span>
-              </div>
-              <div class="facts">
-                <div><b>Risk Score</b><span class="mono" style="color: ${col}; font-weight: 700;">${score} / 100</span></div>
-                <div><b>Critical Findings</b><span class="mono">${d.critical_count ?? 0}</span></div>
-              </div>
-            </div>
-            
-            <div style="margin-top: 14px;">
-              <b style="font-size: 13px; color: var(--ink);">Audit Findings & Vector Breakdown:</b>
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-                ${findings.map((f) => {
-                  const sCol = f.severity === "CRITICAL" ? "#ef4444" : f.severity === "HIGH" ? "#f97316" : f.severity === "CLEAN" ? "#10b981" : "#7dd3fc";
-                  return `
-                    <div style="background: var(--bg); padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line);">
-                      <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <b style="font-size: 13px;">${esc(f.vector)}</b>
-                        <span class="tag" style="background: ${sCol}22; color: ${sCol}; font-weight: 600;">${esc(f.severity)}</span>
-                      </div>
-                      <div style="font-size: 12.5px; color: var(--muted); margin-top: 4px;">${esc(f.detail)}</div>
-                    </div>
-                  `;
-                }).join("")}
-              </div>
-            </div>
-
-            ${rems.length ? `
-              <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);">
-                <b style="color: var(--accent); font-size: 13px;">Recommended Immediate Remediation:</b>
-                <ul style="margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted);">
-                  ${rems.map((r) => `<li>${esc(r)}</li>`).join("")}
-                </ul>
-              </div>
-            ` : ""}
-          </div>
-        `;
-      })
-      .catch((err) => {
-        box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
-      });
-  }
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    runAudit(targetInput?.value.trim(), typeSelect?.value || "domain");
-  });
-
-  $$("[data-audit-target]").forEach((b) => b.addEventListener("click", () => {
-    if (targetInput) targetInput.value = b.dataset.auditTarget;
-    if (typeSelect) typeSelect.value = b.dataset.auditType;
-    runAudit(b.dataset.auditTarget, b.dataset.auditType);
-  }));
-})();
-
-// ---------- Interactive Exploit Autopsy & Simulation Engine ----------
-async function openAutopsyModal(incidentId) {
-  const modal = $("#autopsy-modal");
-  const body = $("#autopsy-modal-body");
-  const title = $("#autopsy-modal-title");
-  if (!modal || !body) return;
-
-  modal.hidden = false;
-  body.innerHTML = '<p class="muted">Fetching forensic telemetry and assembling attack simulation…</p>';
-  simStep = 0;
-  if (simInterval) clearInterval(simInterval);
-
-  try {
-    const inc = await api(`/v1/black-october/incident/${encodeURIComponent(incidentId)}`);
-    activeIncident = inc;
-    title.innerHTML = `⚡ Forensic Autopsy: ${esc(inc.name)}`;
-    renderAutopsyContent(inc);
-  } catch (err) {
-    body.innerHTML = `<p class="muted">Failed to load autopsy: ${esc(err.message)}</p>`;
+// ---------- Docked Research Inspector & Exploit Simulation ----------
+function closeResearchInspector() {
+  const insp = $("#neural-inspector");
+  if (!insp) return;
+  insp.classList.remove("active");
+  setTimeout(() => {
+    insp.hidden = true;
+  }, 260);
+  if (simInterval) {
+    clearInterval(simInterval);
+    simInterval = null;
   }
 }
 
-$("#autopsy-modal-close")?.addEventListener("click", () => {
-  $("#autopsy-modal").hidden = true;
-  if (simInterval) clearInterval(simInterval);
+// Wire bulletproof close triggers
+$("#inspector-close-top")?.addEventListener("click", closeResearchInspector);
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeResearchInspector();
 });
 
-function renderAutopsyContent(inc) {
-  const body = $("#autopsy-modal-body");
-  if (!body) return;
+function openCoreOverviewDossier() {
+  const insp = $("#neural-inspector");
+  const title = $("#inspector-title");
+  const body = $("#inspector-body");
+  if (!insp || !body) return;
 
-  const isPhp = inc.id === "php2shell";
-  const isEmudhra = inc.id === "emudhra";
-  const isLitellm = inc.id === "litellm" || inc.id === "cairn-ai";
+  insp.hidden = false;
+  requestAnimationFrame(() => insp.classList.add("active"));
+  title.textContent = "Catastrophe Dossier: Black October 2026 Overview";
 
   body.innerHTML = `
-    <!-- Top Metadata Grid -->
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);">
-      <div>
-        <span class="mono" style="color: var(--accent); font-weight: 700;">${esc(inc.cve || "0-DAY IN THE WILD")}</span> ·
-        <span style="color: var(--muted);">${esc(inc.date)}</span>
-      </div>
-      <div>
-        <span class="tag" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700;">CVSS ${esc((inc.cvss || 8).toFixed(1))} CRITICAL</span>
-      </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--line);">
+      <span class="pulse-badge" style="background:#ef4444; font-size:10px;">GLOBAL CRISIS</span>
+      <span class="mono" style="color:var(--muted); font-size:12px;">October 21–24, 2026</span>
     </div>
-
-    <!-- Visual Attack Simulation Box -->
-    <div class="panel" style="background: #090d16; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; animation: live-pulse 1.6s infinite;"></span>
-          <b style="color: #fff; font-size: 14px; letter-spacing: 0.05em;">INTERACTIVE EXPLOIT SIMULATION</b>
-        </div>
-        <div style="display: flex; gap: 6px;">
-          <button type="button" class="btn-sm chip" id="sim-prev-btn">◀ Previous</button>
-          <button type="button" class="btn-sm chip" id="sim-play-btn" style="background: #3b82f6; color: #fff; border-color: #3b82f6;">▶ Auto-Play</button>
-          <button type="button" class="btn-sm chip" id="sim-next-btn">Next Step ▶</button>
-        </div>
-      </div>
-
-      <!-- Simulation Display Area -->
-      <div id="sim-stage" style="min-height: 220px; font-family: var(--mono); font-size: 13px;"></div>
+    <div class="dossier-card danger">
+      <h4 style="margin:0 0 6px; color:#ef4444;">The 48-Hour Cascade</h4>
+      <p style="margin:0; font-size:13px; line-height:1.5;">
+        Within a 48-hour window, 27 critical zero-day vulnerabilities, cryptographic CA key collapses, and multi-tenant cloud escapes erupted simultaneously across public infrastructure.
+      </p>
     </div>
-
-    <!-- 5-Step Forensic Timeline -->
-    <div class="panel" style="margin-bottom: 20px;">
-      <h4 style="margin: 0 0 10px; color: var(--ink);">Forensic Chronology: How the Attack Unfolded</h4>
-      <pre style="background: var(--bg); padding: 14px; border-radius: 6px; font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; color: var(--ink); border: 1px solid var(--line);">${esc(inc.how_it_happened)}</pre>
+    <div class="dossier-card accent">
+      <h4 style="margin:0 0 6px; color:var(--accent);">Ecosystem Blast Radius</h4>
+      <ul style="margin:0; padding-left:18px; font-size:12.5px; line-height:1.6; color:#cbd5e1;">
+        <li><b>eMudhra CA Failure:</b> 8 intermediate certificates generated with 384-bit private keys having 47 zeroed bytes (one key was 4).</li>
+        <li><b>PHP2Shell (CVE-2026-109618):</b> Zend Engine memory corruption in out-of-memory longjmp() stack unwinding affecting ~75% of web servers.</li>
+        <li><b>Zeabur PaaS:</b> 321,810 developer environments exposed via kernel cgroup multi-tenant container escape.</li>
+        <li><b>AI Agent Compromise:</b> LiteLLM proxy unauthenticated credential dumps & Cairn AI prompt injection shell hijack.</li>
+      </ul>
     </div>
-
-    <!-- Technical Mechanism & Mathematical Flaw -->
-    <div class="panel" style="margin-bottom: 20px; border-left: 4px solid var(--accent);">
-      <h4 style="margin: 0 0 6px; color: var(--accent);">Technical Mechanism & Cryptographic / Architectural Flaw</h4>
-      <p style="margin: 0; font-size: 13.5px; color: var(--ink); line-height: 1.5;">${esc(inc.technical_mechanism)}</p>
-      <div style="margin-top: 8px; font-size: 13px; color: var(--muted);"><b>Blast Radius & Impact:</b> ${esc(inc.impact)}</div>
-    </div>
-
-    <!-- 60-Second Instant Shell Remediation -->
-    <div class="panel" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <b style="color: #10b981; font-size: 14px;">⚡ 60-Second Emergency Shell Mitigation Command</b>
-        <button type="button" class="btn-sm chip" id="copy-autopsy-cmd" style="background: #10b981; color: #000; font-weight: 700; border: none;">Copy Command</button>
-      </div>
-      <pre id="autopsy-cmd-code" style="background: #020617; padding: 12px; border-radius: 6px; font-family: var(--mono); font-size: 12.5px; color: #38bdf8; overflow-x: auto; border: 1px solid #1e293b;">${esc(inc.mitigation)}</pre>
-      ${inc.waf_rule ? `
-        <div style="margin-top: 10px;">
-          <b style="color: #f59e0b; font-size: 12.5px;">WAF / ModSecurity Mitigation Rule:</b>
-          <pre style="background: #020617; padding: 10px; border-radius: 4px; font-family: var(--mono); font-size: 11.5px; color: #f59e0b; overflow-x: auto; margin-top: 4px; border: 1px solid #1e293b;">${esc(inc.waf_rule)}</pre>
-        </div>
-      ` : ""}
+    <div style="margin-top:16px; text-align:center;">
+      <button type="button" class="btn" id="inspector-close-bottom" style="width:100%; justify-content:center;">✕ Close Dossier (Esc)</button>
     </div>
   `;
 
-  // Attach copy button
+  $("#inspector-close-bottom")?.addEventListener("click", closeResearchInspector);
+}
+
+function openResearchInspector(inc) {
+  const insp = $("#neural-inspector");
+  const title = $("#inspector-title");
+  const body = $("#inspector-body");
+  if (!insp || !body) return;
+
+  activeIncident = inc;
+  insp.hidden = false;
+  requestAnimationFrame(() => insp.classList.add("active"));
+  title.textContent = `Forensic Research: ${inc.name}`;
+
+  const cvss = inc.cvss || 8.0;
+  const cvssCol = cvss >= 9.5 ? "#ef4444" : cvss >= 8.5 ? "#f97316" : "#f59e0b";
+  const clusterCol = inc.cluster === "crypto" ? "#38bdf8" : inc.cluster === "runtime" ? "#34d399" : inc.cluster === "cloud" ? "#60a5fa" : inc.cluster === "ai" ? "#c084fc" : "#fb7185";
+
+  body.innerHTML = `
+    <!-- Top Metadata Header -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--line);">
+      <div>
+        <span class="tag" style="background: ${clusterCol}22; color: ${clusterCol}; font-weight: 700; border: 1px solid ${clusterCol}44;">${(inc.cluster || "INCIDENT").toUpperCase()}</span>
+        <span class="mono" style="color:var(--accent); margin-left:6px; font-weight:700;">${esc(inc.cve || "0-DAY IN WILD")}</span>
+      </div>
+      <div>
+        <span class="mono" style="background: ${cvssCol}22; color: ${cvssCol}; border: 1px solid ${cvssCol}44; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">CVSS ${cvss.toFixed(1)} CRITICAL</span>
+      </div>
+    </div>
+
+    <!-- Target & Summary -->
+    <div style="margin-bottom: 14px;">
+      <div style="font-size: 12px; color: var(--dim);"><b>Target:</b> ${esc(inc.target)} · <b>Location:</b> ${esc(inc.geo?.location || "Global Web Fleet")}</div>
+      <p style="font-size: 13px; color: var(--ink); margin: 6px 0 0; line-height: 1.5;">${esc(inc.summary)}</p>
+    </div>
+
+    <!-- The Reality vs The Excuses (From User's Reels & Disclosures) -->
+    <div class="dossier-card danger" style="background: rgba(239, 68, 68, 0.05);">
+      <h4 style="margin:0 0 6px; color:#ef4444; font-size:13px; display:flex; align-items:center; gap:6px;">
+        <span>⚠️</span> THE REALITY VS COMPANY DEFLECTIONS & EXCUSES
+      </h4>
+      <pre style="margin:0; font-family:var(--sans); font-size:12.5px; line-height:1.55; color:#fecaca; white-space:pre-wrap;">${esc(inc.excuse_vs_reality || inc.how_it_happened)}</pre>
+    </div>
+
+    <!-- How Cloudflare & Modern Platforms Prevented This -->
+    <div class="dossier-card accent" style="background: rgba(56, 189, 248, 0.05); margin-top: 12px;">
+      <h4 style="margin:0 0 6px; color:#38bdf8; font-size:13px; display:flex; align-items:center; gap:6px;">
+        <span>🛡️</span> HOW CLOUDFLARE & MODERN PLATFORMS SHIELDED THE NET
+      </h4>
+      <pre style="margin:0; font-family:var(--sans); font-size:12.5px; line-height:1.55; color:#bae6fd; white-space:pre-wrap;">${esc(inc.cloudflare_defense || "Cloudflare WAF Managed Rules and Zero Trust WARP edge filtering inspect and block malicious signatures before traffic hits customer origin infrastructure.")}</pre>
+    </div>
+
+    <!-- Actionable Developer Prevention Guide -->
+    <div class="dossier-card warning" style="background: rgba(245, 158, 11, 0.05); margin-top: 12px;">
+      <h4 style="margin:0 0 6px; color:#f59e0b; font-size:13px; display:flex; align-items:center; gap:6px;">
+        <span>📋</span> ACTIONABLE DEVELOPER & DEVOPS PREVENTION GUIDE
+      </h4>
+      <pre style="margin:0; font-family:var(--sans); font-size:12.5px; line-height:1.55; color:#fde68a; white-space:pre-wrap;">${esc(inc.prevention_guide || "1. Upgrade immediately to latest patched upstream runtime releases.\n2. Enforce edge WAF protection with rate limiting.\n3. Audit dependencies using ALIBI.")}</pre>
+    </div>
+
+    <!-- Interactive Exploit Simulation Box -->
+    <div class="panel" style="background: #080c14; border: 1px solid #1e293b; border-radius: 6px; padding: 14px; margin-top: 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; animation:live-pulse 1.6s infinite;"></span>
+          <b style="color:#fff; font-size:12.5px;">INTERACTIVE EXPLOIT SIMULATION</b>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button type="button" class="btn-sm chip" id="sim-prev-btn" style="padding:2px 8px; font-size:11px;">◀ Prev</button>
+          <button type="button" class="btn-sm chip" id="sim-play-btn" style="padding:2px 8px; font-size:11px; background:#3b82f6; color:#fff; border-color:#3b82f6;">▶ Auto-Play</button>
+          <button type="button" class="btn-sm chip" id="sim-next-btn" style="padding:2px 8px; font-size:11px;">Next ▶</button>
+        </div>
+      </div>
+      <div id="sim-stage" style="min-height: 190px;"></div>
+    </div>
+
+    <!-- 60-Second Instant Shell Remediation -->
+    <div class="dossier-card success" style="background: rgba(16, 185, 129, 0.05); margin-top: 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <b style="color:#10b981; font-size:13px;">⚡ 60-Second Emergency Shell Remediation</b>
+        <button type="button" class="btn-sm chip btn-copy" id="copy-autopsy-cmd" style="position:static; background:#10b981; color:#000; font-weight:700; border:none; padding:3px 10px;">Copy Command</button>
+      </div>
+      <div class="code-block-wrap">
+        <pre id="autopsy-cmd-code">${esc(inc.mitigation)}</pre>
+      </div>
+      ${inc.waf_rule ? `
+        <div style="margin-top: 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b style="color:#f59e0b; font-size:11.5px;">WAF / ModSecurity Mitigation Rule:</b>
+            <button type="button" class="btn-sm chip btn-copy" id="copy-waf-cmd" style="position:static; background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; font-size:10px;">Copy WAF</button>
+          </div>
+          <div class="code-block-wrap" style="margin-top:4px;">
+            <pre style="color:#f59e0b; font-size:11px;">${esc(inc.waf_rule)}</pre>
+          </div>
+        </div>
+      ` : ""}
+    </div>
+
+    <!-- Bottom Close Button -->
+    <div style="margin-top: 16px; text-align: center;">
+      <button type="button" class="btn" id="inspector-close-bottom" style="width: 100%; justify-content: center;">✕ Close Research Dossier (Esc)</button>
+    </div>
+  `;
+
+  // Attach copy listeners
   $("#copy-autopsy-cmd")?.addEventListener("click", () => {
     navigator.clipboard.writeText(inc.mitigation);
-    $("#copy-autopsy-cmd").textContent = "Copied!";
-    setTimeout(() => ($("#copy-autopsy-cmd").textContent = "Copy Command"), 2000);
+    const b = $("#copy-autopsy-cmd");
+    b.textContent = "Copied!";
+    setTimeout(() => (b.textContent = "Copy Command"), 2000);
   });
 
-  // Wire simulation controls
+  $("#copy-waf-cmd")?.addEventListener("click", () => {
+    if (inc.waf_rule) navigator.clipboard.writeText(inc.waf_rule);
+    const b = $("#copy-waf-cmd");
+    b.textContent = "Copied!";
+    setTimeout(() => (b.textContent = "Copy WAF"), 2000);
+  });
+
+  $("#inspector-close-bottom")?.addEventListener("click", closeResearchInspector);
+
+  // Setup simulation
   setupSimulation(inc);
 }
 
@@ -2116,8 +2563,7 @@ function setupSimulation(inc) {
         title: "STEP 1: Inbound Malicious HTTP Request",
         badge: "ATTACKER INGESTION",
         desc: "Attacker transmits deeply nested multipart/form-data boundary structures over standard HTTP POST.",
-        diagram: `
-┌──────────────────┐               ┌─────────────────────────────────────┐
+        diagram: `┌──────────────────┐               ┌─────────────────────────────────────┐
 │  Attacker IP     │ ────────────> │  Target Web Server (Apache/Nginx)   │
 │  [185.220.101.5] │  HTTP POST    │  mod_php / php-fpm (Zend Engine)    │
 └──────────────────┘               └─────────────────────────────────────┘
@@ -2128,8 +2574,7 @@ Header Nesting: 10,000+ recursive boundary wrappers packed with binary offsets.`
         title: "STEP 2: Zend Engine Heap Memory Exhaustion (OOM)",
         badge: "RESOURCE COLLAPSE",
         desc: "The Zend memory manager attempts to allocate consecutive internal buffers, hitting the memory ceiling.",
-        diagram: `
-Zend Allocator Heap:
+        diagram: `Zend Allocator Heap:
 [■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■] 100%
 >>> OUT OF MEMORY (OOM) ERROR TRIGGERED <<<
 Zend initiates emergency unwinding via: zend_error_noreturn(E_ERROR, "Allowed memory size exhausted");`
@@ -2138,8 +2583,7 @@ Zend initiates emergency unwinding via: zend_error_noreturn(E_ERROR, "Allowed me
         title: "STEP 3: The Flawed longjmp() Stack Unwinding",
         badge: "CRITICAL VULNERABILITY",
         desc: "longjmp() skips normal cleanup routines, leaving active frame execution pointers dangling in stack memory.",
-        diagram: `
-Call Stack:
+        diagram: `Call Stack:
 | [0x7ffe4200]  main()
 | [0x7ffe41a0]  php_execute_script()
 | [0x7ffe4100]  multipart_buffer_read()
@@ -2150,18 +2594,16 @@ Call Stack:
         title: "STEP 4: Instruction Pointer Overwrite",
         badge: "ARBITRARY WRITE",
         desc: "Subsequent memory allocation reuse overwrites the dangling pointer with attacker-controlled shellcode address.",
-        diagram: `
-Memory Register State:
+        diagram: `Memory Register State:
 %rax : 0x000000000000003b  (sys_execve syscall)
 %rdi : 0x00007ffe40801000  ("/bin/sh")
 %rip : [0x7ffe4080] ──────> OVERWRITTEN WITH ATTACKER SHELLCODE ADDRESS!`
       },
       {
-        title: "STEP 5: Web Shell Execution & Arbitrary Command Control",
+        title: "STEP 5: Web Shell Execution & Remote Arbitrary Code Execution",
         badge: "SYSTEM COMPROMISE",
         desc: "Kernel executes /bin/sh under web server UID (www-data/nginx). Unauthenticated remote code execution achieved.",
-        diagram: `
-[SUCCESSFUL REMOTE CODE EXECUTION]
+        diagram: `[SUCCESSFUL REMOTE CODE EXECUTION]
 $ id
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 $ uname -a
@@ -2175,11 +2617,10 @@ www-data:x:33:33:www-data:/var/www:/bin/sh`
   } else if (inc.id === "emudhra") {
     steps = [
       {
-        title: "STEP 1: The Cryptographic Key Ceremony",
+        title: "STEP 1: The Cryptographic Key Ceremony Specification",
         badge: "EXPECTED SPECIFICATION",
         desc: "A globally trusted Certificate Authority must generate a 384-bit ECDSA/ECC key with 116 digits of random noise.",
-        diagram: `
-Elliptic Curve secp384r1 (NIST P-384):
+        diagram: `Elliptic Curve secp384r1 (NIST P-384):
 Private Key Space: 2^384 possible combinations
 = 394,020,061,963,997,239,422,943,059,200,788,829,760,184,105,773,890,359... (116 decimal digits)
 Brute-force duration with planetary supercomputers: > 14 Billion Years.`
@@ -2188,8 +2629,7 @@ Brute-force duration with planetary supercomputers: > 14 Billion Years.`
         title: "STEP 2: The Scripting & Entropy Truncation Bug",
         badge: "FATAL BUG",
         desc: "Automated bash/HSM key ceremony wrapper zeroed out all but the lowest single byte of the random seed.",
-        diagram: `
-Expected 48-byte buffer:
+        diagram: `Expected 48-byte buffer:
 [F8 3A 9C 21 B4 07 E3 89 ... 48 RANDOM BYTES ...]
 
 ACTUAL BUFFER RECORDED:
@@ -2200,8 +2640,7 @@ Entropy collapsed from 384 bits to 8 bits: k ∈ [0, 255]!`
         title: "STEP 3: 15-Millisecond Brute-Force Verification",
         badge: "INSTANT CRACK",
         desc: "Researchers looped k from 0 to 255 computing public point Q = k * G until matching public certificate.",
-        diagram: `
-Brute-Force Counter:
+        diagram: `Brute-Force Counter:
 k = 0 ... FAIL
 k = 1 ... FAIL
 k = 2 ... FAIL
@@ -2214,8 +2653,7 @@ All 8 Intermediate Private Keys recovered: [4, 56, 66, 115, 155, 156, 230, 237]!
         title: "STEP 4: Forged Certificate Minting (Man-in-the-Middle)",
         badge: "GLOBAL TRUST HIJACK",
         desc: "Armed with private key k=4, an attacker mints valid SSL certificates for ANY website on earth.",
-        diagram: `
-Attacker Certificate Signer:
+        diagram: `Attacker Certificate Signer:
 Target Domain: google.com / sbi.co.in / whitehouse.gov
 Issuer: eMudhra Sub-CA (signed with private key: 4)
 Validation Status:
@@ -2223,6 +2661,19 @@ Validation Status:
   ✓ Apple Safari: VALID & TRUSTED
   ✓ Windows Edge: VALID & TRUSTED
 Adversary performs transparent Man-in-the-Middle TLS decryption worldwide!`
+      },
+      {
+        title: "STEP 5: The Pathetic Defense vs Cloudflare Reality",
+        badge: "DEFENSE & FALLOUT",
+        desc: "eMudhra claimed it was an isolated internal test script anomaly; Cloudflare blocked intermediate cert serials at edge.",
+        diagram: `THE PATHETIC DEFLECTION:
+"eMudhra claimed this was merely an isolated testing script anomaly..."
+THE CLOUDFLARE SHIELD:
+1. Cloudflare Anycast edge deployed immediate X.509 serial blocking within hours.
+2. Zero Trust WARP dropped all connections to eMudhra intermediate chains.
+CRITICAL WARNING:
+Non-browser clients (Docker, curl, Python requests) do NOT do online OCSP!
+They remained vulnerable until ca-certificates packages were updated.`
       }
     ];
   } else {
@@ -2231,28 +2682,25 @@ Adversary performs transparent Man-in-the-Middle TLS decryption worldwide!`
         title: "STEP 1: Perimeter Reconnaissance & Target Discovery",
         badge: "PHASE 1",
         desc: `Adversary targets exposed surfaces of ${inc.target}.`,
-        diagram: `
-Target: ${inc.target}
+        diagram: `Target: ${inc.target}
 CVE / Advisory: ${inc.cve || "Unauthenticated 0-Day"}
-Vector: ${inc.technical_mechanism}`
+Mechanism: ${inc.technical_mechanism}`
       },
       {
         title: "STEP 2: Vulnerability Exploitation & Boundary Penetration",
         badge: "PHASE 2",
         desc: "Attacker executes specialized payload to breach security boundaries.",
-        diagram: `
-Execution Flow:
+        diagram: `Execution Flow:
 ${inc.how_it_happened}`
       },
       {
-        title: "STEP 3: Impact & Ecosystem Blast Radius",
+        title: "STEP 3: Impact & Blast Radius Remediation",
         badge: "PHASE 3",
         desc: "Lateral movement and exfiltration executed across target infrastructure.",
-        diagram: `
-Severity: CVSS ${inc.cvss} CRITICAL
+        diagram: `Severity: CVSS ${inc.cvss} CRITICAL
 Impact: ${inc.impact}
-Recommended Action:
-${inc.mitigation}`
+Cloudflare / Edge Defense:
+${inc.cloudflare_defense ? inc.cloudflare_defense.slice(0, 180) + '...' : 'WAF Managed Rules deploy immediate perimeter inspection.'}`
       }
     ];
   }
@@ -2263,15 +2711,15 @@ ${inc.mitigation}`
     if (!stage || !s) return;
 
     stage.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <b style="color: #38bdf8; font-size: 14px;">${esc(s.title)}</b>
-        <span class="tag" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">${esc(s.badge)}</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <b style="color:#38bdf8; font-size:13px;">${esc(s.title)}</b>
+        <span class="tag" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; font-weight:700; font-size:10px;">${esc(s.badge)}</span>
       </div>
-      <p style="color: var(--muted); margin: 0 0 10px; font-size: 13px;">${esc(s.desc)}</p>
-      <pre style="background: #020617; padding: 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; color: #a5f3fc; overflow-x: auto; border: 1px solid #1e293b;">${esc(s.diagram)}</pre>
-      <div style="display: flex; gap: 4px; margin-top: 10px;">
+      <p style="color:var(--muted); margin:0 0 8px; font-size:12px; line-height:1.4;">${esc(s.desc)}</p>
+      <pre style="background:#020617; padding:10px; border-radius:4px; font-size:11.5px; line-height:1.45; color:#a5f3fc; overflow-x:auto; border:1px solid #1e293b; margin:0;">${esc(s.diagram)}</pre>
+      <div style="display:flex; gap:4px; margin-top:8px;">
         ${steps.map((_, i) => `
-          <div style="flex: 1; height: 4px; border-radius: 2px; background: ${i <= idx ? '#38bdf8' : '#334155'}; transition: background 0.2s;"></div>
+          <div style="flex:1; height:3px; border-radius:2px; background:${i <= idx ? '#38bdf8' : '#334155'}; transition:background 0.2s;"></div>
         `).join("")}
       </div>
     `;
@@ -2315,6 +2763,93 @@ ${inc.mitigation}`
   });
 }
 
+// ---------- 1-Click Black October Stack Auditor Form ----------
+(function wireWarroomAuditor() {
+  const form = $("#warroom-audit-form");
+  const targetInput = $("#warroom-audit-target");
+  const typeSelect = $("#warroom-audit-type");
+  const box = $("#warroom-audit-results");
+  if (!form) return;
+
+  function runAudit(target, type) {
+    if (!target) return;
+    if (targetInput) {
+      targetInput.value = target;
+      targetInput.setCustomValidity("");
+    }
+    if (typeSelect) {
+      typeSelect.value = type;
+    }
+    box.innerHTML = '<p class="muted">Scanning live against revoked eMudhra CAs, PHP2Shell web runtimes, and vulnerable dependencies…</p>';
+    api(`/v1/black-october/audit?target=${encodeURIComponent(target)}&target_type=${encodeURIComponent(type)}`)
+      .then((d) => {
+        const score = d.black_october_risk_score ?? 0;
+        const col = score >= 50 ? "#ef4444" : score >= 20 ? "#f59e0b" : "#10b981";
+        const findings = d.findings || [];
+        const rems = d.recommended_remediations || [];
+
+        box.innerHTML = `
+          <div class="panel" style="border-left: 4px solid ${col}; margin-bottom: 12px; background: rgba(15, 23, 42, 0.65);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <span style="font-size: 17px; font-weight: 700; color: ${col};">${esc(d.overall_verdict)}</span>
+                <span style="font-size: 14.5px; font-weight: 600; margin-left: 8px; color: #fff;">${esc(d.target)}</span>
+              </div>
+              <div class="facts">
+                <div><b>Risk Score</b><span class="mono" style="color: ${col}; font-weight: 700;">${score} / 100</span></div>
+                <div><b>Critical Findings</b><span class="mono">${d.critical_count ?? 0}</span></div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px;">
+              <b style="font-size: 13px; color: var(--ink);">Audit Findings & Vector Breakdown:</b>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                ${findings.map((f) => {
+                  const sCol = f.severity === "CRITICAL" ? "#ef4444" : f.severity === "HIGH" ? "#f97316" : f.severity === "CLEAN" ? "#10b981" : "#7dd3fc";
+                  return `
+                    <div style="background: var(--bg); padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line);">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <b style="font-size: 13px; color: #fff;">${esc(f.vector)}</b>
+                        <span class="tag" style="background: ${sCol}22; color: ${sCol}; font-weight: 600;">${esc(f.severity)}</span>
+                      </div>
+                      <div style="font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.4;">${esc(f.detail)}</div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+
+            ${rems.length ? `
+              <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);">
+                <b style="color: var(--accent); font-size: 13px;">Recommended Immediate Remediation:</b>
+                <ul style="margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; color: #cbd5e1; line-height: 1.5;">
+                  ${rems.map((r) => `<li>${esc(r)}</li>`).join("")}
+                </ul>
+              </div>
+            ` : ""}
+          </div>
+        `;
+      })
+      .catch((err) => {
+        box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+      });
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runAudit(targetInput?.value.trim(), typeSelect?.value || "domain");
+  });
+
+  $$("[data-audit-target]").forEach((b) => {
+    b.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = b.dataset.auditTarget;
+      const type = b.dataset.auditType || "domain";
+      runAudit(target, type);
+    });
+  });
+})();
 
 show(location.hash.slice(1) || "globe");
 startWorld();
