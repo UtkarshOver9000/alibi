@@ -17,7 +17,7 @@
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
 <link rel="stylesheet" href="/static/vendor/leaflet.css">
-<link rel="stylesheet" href="/static/dashboard.css?v=18">
+<link rel="stylesheet" href="/static/dashboard.css?v=20">
 </head>
 <body>
 <header class="topbar">
@@ -80,7 +80,8 @@
         <div class="group">
           <div class="label">Colour states by</div>
           <div class="radio-list" id="metric-chips">
-            <button data-metric="malicious_ips" class="on">Malware servers / 1M IPs</button>
+            <button data-metric="composite_threat" class="on" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #ef4444; font-weight: 700;">🌐 God's Eye Composite Threat</button>
+            <button data-metric="malicious_ips">Malware servers / 1M IPs</button>
             <button data-metric="dns_resolvers">Public DNS servers / 1M IPs</button>
             <button data-metric="confirmed_blocks">Websites blocked (country)</button>
             <button data-metric="hosting_ipv4">Hosting / VPN addresses (country)</button>
@@ -277,7 +278,7 @@
             <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; flex-shrink: 0;"></span>
             <h3 id="inspector-title" style="margin: 0; font-size: 14.5px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Forensic Research Dossier</h3>
           </div>
-          <button type="button" class="btn-sm chip" id="inspector-close-top" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #fff; cursor: pointer; padding: 4px 10px; font-weight: 700;" title="Close Inspector (Esc)">✕ Close</button>
+          <button type="button" class="btn-sm chip" id="inspector-close-top" onclick="closeResearchInspector(event)" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.5); color: #fff; cursor: pointer; padding: 6px 14px; border-radius: 4px; font-weight: 700; font-size: 13px; z-index: 100;" title="Close Inspector (Esc)">✕ Close</button>
         </div>
         <div class="neural-inspector-body" id="inspector-body">
           <p class="muted">Select any node on the constellation to view deep forensic research.</p>
@@ -619,10 +620,8 @@
     </div>
   </div>
 </div>
-<script src="/static/dashboard.js?v=18"></script>
+<script src="/static/dashboard.js?v=20"></script>
 
-
-</div>
 
 </body>
 </html>
