@@ -31,6 +31,11 @@ MIN_ADDRESSES = 100_000  # a state needs this many IPv4 addresses before a per-m
 SIZES = (2048, 4096)
 
 METRICS = {
+    "composite_threat": {
+        "level": "state",
+        "field": "m",
+        "unit": "God's Eye Composite Threat Index (0–100 score)",
+    },
     "malicious_ips": {"level": "state", "field": "m", "unit": "malware servers per million IP addresses"},
     "dns_resolvers": {"level": "state", "field": "d", "unit": "public DNS servers per million IP addresses"},
     "confirmed_blocks": {
@@ -52,6 +57,28 @@ def _rgb(hex_color: str) -> tuple[int, int, int]:
 def state_values(metric: str) -> list[float | None]:
     m = METRICS[metric]
     states, countries = _load("states.json"), _load("countries.json")
+    if metric == "composite_threat":
+        out: list[float | None] = []
+        for s in states:
+            ip = s.get("ip", 0)
+            if ip < MIN_ADDRESSES:
+                out.append(None)
+                continue
+            m_rate = (s.get("m", 0) / ip) * 1e6
+            d_rate = (s.get("d", 0) / ip) * 1e6
+            c = countries.get(s["c"], {})
+            c_blocks = c.get("confirmed_blocks", 0)
+            c_host = c.get("hosting_ipv4", 0)
+            c_tor = c.get("tor_exits", 0)
+            score = (
+                min(m_rate * 0.45, 45.0)
+                + min(d_rate * 0.08, 20.0)
+                + min(c_blocks / 100.0, 15.0)
+                + min(c_host / 50000.0, 10.0)
+                + min(c_tor / 20.0, 10.0)
+            )
+            out.append(round(min(score, 100.0), 2))
+        return out
     if m["level"] == "state":
         return [s[m["field"]] / s["ip"] * 1e6 if s.get("ip", 0) >= MIN_ADDRESSES else None for s in states]
     out = []
@@ -236,9 +263,26 @@ def ranks(metric: str) -> dict[str, list]:
     """country -> [rank, value, how many countries are ranked]. State-level metrics are rated per million
     addresses over the whole country, counting only countries with at least MIN_ADDRESSES addresses."""
     m = METRICS[metric]
-    if m["level"] == "state":
+    if metric == "composite_threat":
         count: Counter = Counter()
         addresses: Counter = Counter()
+        for s in _load("states.json"):
+            count[s["c"]] += s.get("m", 0)
+            addresses[s["c"]] += s.get("ip", 0)
+        countries = _load("countries.json")
+        values = {}
+        for cc in addresses:
+            if addresses[cc] >= MIN_ADDRESSES:
+                m_rate = count[cc] / addresses[cc] * 1e6
+                c = countries.get(cc, {})
+                c_blocks = c.get("confirmed_blocks", 0)
+                c_host = c.get("hosting_ipv4", 0)
+                c_tor = c.get("tor_exits", 0)
+                score = min(100.0, (m_rate * 0.45) + min(c_blocks / 100.0, 20.0) + min(c_host / 50000.0, 15.0) + min(c_tor / 20.0, 15.0))
+                values[cc] = round(score, 2)
+    elif m["level"] == "state":
+        count = Counter()
+        addresses = Counter()
         for s in _load("states.json"):
             count[s["c"]] += s.get(m["field"], 0)
             addresses[s["c"]] += s.get("ip", 0)
