@@ -18,6 +18,7 @@ from .. import __version__
 from ..intel import service
 from .bodylimit import BodyLimitMiddleware
 from .ratelimit import RateLimitMiddleware
+from .routes import black_october as black_october_routes
 from .routes import defense as defense_routes
 from .routes import export as export_routes
 from .routes import globe as globe_routes
@@ -151,6 +152,7 @@ for module in (
     globe_routes,
     terminal_routes,
     shield_routes,
+    black_october_routes,
     defense_routes,
     taxii_routes,
     metrics_routes,

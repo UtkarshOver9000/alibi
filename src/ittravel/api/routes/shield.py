@@ -67,4 +67,3 @@ async def doh_query_post(request: Request) -> Response:
         return Response(content=b"Empty DNS message body", status_code=400)
     resp_bytes, _ = handle_wire_query(body)
     return Response(content=resp_bytes, media_type="application/dns-message")
-

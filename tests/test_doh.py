@@ -49,11 +49,7 @@ def test_doh_wire_format_post():
 
 
 def test_doh_wire_format_get_base64url():
-    query = (
-        b"\xaa\xbb\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00"
-        b"\x06google\x03com\x00"
-        b"\x00\x01\x00\x01"
-    )
+    query = b"\xaa\xbb\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x06google\x03com\x00\x00\x01\x00\x01"
     dns_b64 = base64.urlsafe_b64encode(query).decode().rstrip("=")
     resp = client.get(f"/dns-query?dns={dns_b64}")
     assert resp.status_code == 200
@@ -62,11 +58,7 @@ def test_doh_wire_format_get_base64url():
 
 
 def test_doh_helper_functions():
-    query = (
-        b"\x43\x21\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00"
-        b"\x07example\x03org\x00"
-        b"\x00\x01\x00\x01"
-    )
+    query = b"\x43\x21\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07example\x03org\x00\x00\x01\x00\x01"
     domain, q_end = parse_dns_qname(query, 12)
     assert domain == "example.org"
     resp = build_dns_response(query, sinkhole=True)

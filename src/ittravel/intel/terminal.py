@@ -25,6 +25,7 @@ _UA = "Alibi-Bloomberg/1.0 (+https://github.com/UtkarshOver9000/alibi)"
 # BGPView – free, no key, returns real ASN data for any org name
 # ---------------------------------------------------------------------------
 
+
 def _bgpview_search(query: str) -> list[dict[str, Any]]:
     """Search BGPView for ASNs matching an organisation name."""
     if os.getenv("ALIBI_OFFLINE"):
@@ -36,12 +37,14 @@ def _bgpview_search(query: str) -> list[dict[str, Any]]:
             data = json.loads(r.read().decode("utf-8", errors="replace"))
             asns = []
             for a in data.get("data", {}).get("asns", [])[:12]:
-                asns.append({
-                    "asn": a.get("asn"),
-                    "network": a.get("name", ""),
-                    "country": a.get("country_code", ""),
-                    "description": a.get("description", ""),
-                })
+                asns.append(
+                    {
+                        "asn": a.get("asn"),
+                        "network": a.get("name", ""),
+                        "country": a.get("country_code", ""),
+                        "description": a.get("description", ""),
+                    }
+                )
             return asns
     except Exception:
         return []
@@ -74,6 +77,7 @@ def _bgpview_asn_detail(asn: int) -> dict[str, Any]:
 # Certificate Transparency – crt.sh (no key needed)
 # ---------------------------------------------------------------------------
 
+
 def fetch_crtsh_subdomains(domain: str, max_results: int = 40) -> list[str]:
     """Enumerate live subdomains via CT logs (crt.sh). Works for any domain."""
     if os.getenv("ALIBI_OFFLINE"):
@@ -100,6 +104,7 @@ def fetch_crtsh_subdomains(domain: str, max_results: int = 40) -> list[str]:
 # ---------------------------------------------------------------------------
 # NVD / MITRE CVE lookup – no key needed for basic CVE data
 # ---------------------------------------------------------------------------
+
 
 def _fetch_nvd_cve(cve_id: str) -> dict[str, Any] | None:
     """Fetch basic CVE description from NVD API 2.0 (no key for low-rate queries)."""
@@ -136,6 +141,7 @@ def _fetch_nvd_cve(cve_id: str) -> dict[str, Any] | None:
 # ---------------------------------------------------------------------------
 # Main company_dossier – works for ANY query
 # ---------------------------------------------------------------------------
+
 
 def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
     """
@@ -312,6 +318,7 @@ def company_dossier(query: str, limit: int = 25) -> dict[str, Any]:
 # live_footprint – returns fields the JS dashboard expects
 # ---------------------------------------------------------------------------
 
+
 def live_footprint(client_ip: str) -> dict[str, Any]:
     """
     Real-time digital footprint for ANY IP address.
@@ -406,7 +413,6 @@ def live_footprint(client_ip: str) -> dict[str, Any]:
         "nearest_subsea_landing": cables_data[0] if cables_data and not subsea_cables else None,
         "as_of": meta().get("fetched_at"),
         "sources": (
-            "iptoasn · DB-IP · abuse.ch ThreatFox · abuse.ch Feodo · "
-            "Spamhaus DROP · Tor Project · TeleGeography"
+            "iptoasn · DB-IP · abuse.ch ThreatFox · abuse.ch Feodo · Spamhaus DROP · Tor Project · TeleGeography"
         ),
     }

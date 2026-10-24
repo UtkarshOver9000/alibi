@@ -17,7 +17,7 @@
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
 <link rel="stylesheet" href="/static/vendor/leaflet.css">
-<link rel="stylesheet" href="/static/dashboard.css?v=15">
+<link rel="stylesheet" href="/static/dashboard.css?v=16">
 </head>
 <body>
 <header class="topbar">
@@ -33,21 +33,15 @@
   <button class="hbtn" id="open-help" type="button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-keyboard"/></svg></button>
 </header>
 <nav class="rail" aria-label="Modules">
-  <a href="#globe" data-tab="globe" aria-label="Live globe"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-globe"/></svg><span class="lbl">Live globe</span></a>
-  <a href="#terminal" data-tab="terminal" aria-label="Tech Terminal"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-radar"/></svg><span class="lbl">Terminal</span></a>
-  <a href="#check" data-tab="check" aria-label="Live Footprint"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg><span class="lbl">Footprint</span></a>
-  <a href="#shield" data-tab="shield" aria-label="DNS Shield"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Shield</span></a>
-  <a href="#disruptions" data-tab="disruptions" aria-label="BGP Disruptions"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-wifi-off"/></svg><span class="lbl">Outages</span></a>
-  <a href="#supply-chain" data-tab="supply-chain" aria-label="Supply Chain"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-cpu"/></svg><span class="lbl">Packages</span></a>
-  <a href="#leaks" data-tab="leaks" aria-label="Leak Hunter"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-venetian-mask"/></svg><span class="lbl">Leak Hunter</span></a>
-  <a href="#canary" data-tab="canary" aria-label="Canary Tripwires"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bell"/></svg><span class="lbl">Tripwires</span></a>
-  <a href="#remediation" data-tab="remediation" aria-label="AI Remediation"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bot"/></svg><span class="lbl">Fix Engine</span></a>
-  <a href="#attacks" data-tab="attacks" aria-label="Threats"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-biohazard"/></svg><span class="lbl">Threats</span><b class="count" data-badge="attacks" hidden></b></a>
-  <a href="#breaches" data-tab="breaches" aria-label="Leaks"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-database-zap"/></svg><span class="lbl">Leaks</span><b class="count" data-badge="breaches" hidden></b></a>
-  <a href="#flaws" data-tab="flaws" aria-label="Exploited flaws"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bug"/></svg><span class="lbl">Exploited flaws</span><b class="count" data-badge="flaws" hidden></b></a>
-  <span class="sep" aria-hidden="true"></span>
-  <a href="#news" data-tab="news" aria-label="News"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-newspaper"/></svg><span class="lbl">News</span></a>
-  <a href="#results" data-tab="results" aria-label="Sources and accuracy"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-scale"/></svg><span class="lbl">Sources</span></a>
+  <a href="#warroom" data-tab="warroom" aria-label="Black October Crisis War Room" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3);">
+    <svg class="ico" aria-hidden="true" style="color: #ef4444;"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>
+    <span class="lbl" style="color: #ef4444; font-weight: 700;">Crisis Room</span>
+    <b class="count pulse-badge" style="display:inline-block; margin-top:2px;">27</b>
+  </a>
+  <a href="#globe" data-tab="globe" aria-label="Planetary Radar"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-globe"/></svg><span class="lbl">Radar</span></a>
+  <a href="#terminal" data-tab="terminal" aria-label="Tech Bloomberg Terminal"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-radar"/></svg><span class="lbl">Terminal</span></a>
+  <a href="#shield" data-tab="shield" aria-label="Defense Shield & Tripwires"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Defense</span></a>
+  <a href="#flaws" data-tab="flaws" aria-label="Global Threat Intel & Feeds"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-scale"/></svg><span class="lbl">Intel</span></a>
 </nav>
 <div class="world" id="world">
   <div id="globe"></div>
@@ -141,7 +135,14 @@
   </section>
 
   <section id="tab-breaches" class="tab page" hidden>
-    <div class="page-head"><h2>Breaches</h2>
+    <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#flaws" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bug"/></svg>Exploited Flaws (KEV)</a>
+      <a href="#attacks" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>Threats & Malware C2</a>
+      <a href="#breaches" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-database-zap"/></svg>Major Breaches (HIBP)</a>
+      <a href="#news" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-newspaper"/></svg>Security News</a>
+      <a href="#results" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-scale"/></svg>Model & Accuracy</a>
+    </div><h2>Breaches</h2>
       <p class="sub">Every breach published by <a href="https://haveibeenpwned.com" target="_blank" rel="noopener">Have I Been Pwned</a>. The method is read from HIBP's own write-up.</p></div>
     <div class="kpis" id="breach-kpis"></div>
     <div class="grid2">
@@ -159,7 +160,14 @@
   </section>
 
   <section id="tab-attacks" class="tab page" hidden>
-    <div class="page-head"><h2>Attacks</h2>
+    <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#flaws" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bug"/></svg>Exploited Flaws (KEV)</a>
+      <a href="#attacks" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>Threats & Malware C2</a>
+      <a href="#breaches" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-database-zap"/></svg>Major Breaches (HIBP)</a>
+      <a href="#news" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-newspaper"/></svg>Security News</a>
+      <a href="#results" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-scale"/></svg>Model & Accuracy</a>
+    </div><h2>Attacks</h2>
       <p class="sub">Malware and botnet servers, criminal networks and ransomware leak-site activity, from researchers' public feeds.</p></div>
     <div class="kpis" id="attack-kpis"></div>
     <div class="panel callout" id="attack-insight"></div>
@@ -181,7 +189,14 @@
   </section>
 
   <section id="tab-flaws" class="tab page" hidden>
-    <div class="page-head"><h2>Exploited flaws</h2>
+    <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#flaws" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-bug"/></svg>Exploited Flaws (KEV)</a>
+      <a href="#attacks" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>Threats & Malware C2</a>
+      <a href="#breaches" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-database-zap"/></svg>Major Breaches (HIBP)</a>
+      <a href="#news" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-newspaper"/></svg>Security News</a>
+      <a href="#results" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-scale"/></svg>Model & Accuracy</a>
+    </div><h2>Exploited flaws</h2>
       <p class="sub">CISA's catalogue of flaws exploited in real attacks, with FIRST EPSS exploitation probabilities.</p></div>
     <div class="kpis" id="flaw-kpis"></div>
     <div class="panel"><h3>Patch these first</h3>
@@ -199,8 +214,83 @@
     <p class="fineprint">Sources: CISA Known Exploited Vulnerabilities catalog (US government public data); <a href="https://www.first.org/epss/" target="_blank" rel="noopener">FIRST EPSS</a>, scored daily.</p>
   </section>
 
+  
+  <section id="tab-warroom" class="tab page" hidden>
+    <div class="page-head" style="border-bottom: 2px solid #ef4444; padding-bottom: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <span class="tag" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700; font-size: 13px; letter-spacing: 0.05em;">🔴 GLOBAL CYBER CRISIS · LIVE WAR ROOM</span>
+          <h2 style="margin: 8px 0 4px; font-size: 26px; color: #fff;">Black October 2026: The 27-Incident Catastrophe</h2>
+          <p class="sub" style="margin: 0; max-width: 800px;">
+            48 hours. 27 simultaneous critical infrastructure breaches and cryptographic failures.
+            From eMudhra's intermediate CA private key collapse (key = 4) to PHP2Shell core runtime RCE, Zeabur cloud shutdown, and LiteLLM/Cairn AI agent takeovers.
+          </p>
+        </div>
+        <div>
+          <button class="btn-sm chip" id="refresh-warroom" style="background: #1c1f26; border-color: #ef4444; color: #ef4444;">Refresh Telemetry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero KPI Grid -->
+    <div class="kpis" id="warroom-kpis" style="margin-top: 16px;">
+      <div class="kpi panel"><b class="mono" style="color: #ef4444;">27</b><span class="label">Major 0-Days in 48h</span></div>
+      <div class="kpi panel"><b class="mono" style="color: #f59e0b;">Key = 4</b><span class="label">eMudhra CA Brute-Forced (&le;255 tries)</span></div>
+      <div class="kpi panel"><b class="mono" style="color: #ef4444;">Tens of M</b><span class="label">Servers Vulnerable to PHP2Shell</span></div>
+      <div class="kpi panel"><b class="mono" style="color: #38bdf8;">321,810</b><span class="label">Accounts in Zeabur PaaS Shutdown</span></div>
+      <div class="kpi panel"><b class="mono" style="color: #a855f7;">26,739</b><span class="label">Servers Exposed in Onamae Breach</span></div>
+      <div class="kpi panel"><b class="mono" style="color: #10b981;">100% Real</b><span class="label">Verified 2026 Incident Autopsies</span></div>
+    </div>
+
+    <!-- 1-Click Black October Stack Auditor -->
+    <div class="panel form" style="margin: 20px 0; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.03);">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 10px;">
+        <div>
+          <h3 style="margin: 0; color: #fff;">1-Click Black October Stack Exposure Diagnostic</h3>
+          <p class="muted" style="margin: 4px 0 0; font-size: 13px;">
+            Audit any company domain, server IP, or software package live. Tests against revoked eMudhra intermediate CAs (crt.sh), unpatched PHP2Shell web runtimes, and vulnerable AI proxy gateway dependencies.
+          </p>
+        </div>
+      </div>
+      <form id="warroom-audit-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <select id="warroom-audit-type" style="padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--sans);">
+          <option value="domain">Domain (SSL/TLS & Web Server)</option>
+          <option value="package">Package / Ecosystem (PyPI, npm)</option>
+        </select>
+        <input type="text" id="warroom-audit-target" placeholder="Enter domain (e.g. sbi.co.in, litellm, zeabur.com, amazon.com)..." style="flex: 2; min-width: 250px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
+        <button type="submit" class="btn primary" style="padding: 10px 24px; background: #ef4444; border-color: #ef4444; color: #fff;">Audit Stack Exposure</button>
+      </form>
+      <div class="chips" style="margin-top: 10px;">
+        <button type="button" class="btn-sm chip" data-audit-target="sbi.co.in" data-audit-type="domain">sbi.co.in (State Bank of India)</button>
+        <button type="button" class="btn-sm chip" data-audit-target="zeabur.com" data-audit-type="domain">zeabur.com (Breached PaaS)</button>
+        <button type="button" class="btn-sm chip" data-audit-target="litellm" data-audit-type="package">litellm (AI Gateway Package)</button>
+        <button type="button" class="btn-sm chip" data-audit-target="google.com" data-audit-type="domain">google.com (Clean Baseline)</button>
+      </div>
+      <div id="warroom-audit-results" style="margin-top: 16px;"></div>
+    </div>
+
+    <!-- Incident Directory & Filter Tabs -->
+    <div class="panel" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+        <h3 style="margin: 0;">The 27 Incident Forensic Dossiers</h3>
+        <div class="chips small" id="warroom-filter-chips">
+          <button type="button" class="btn-sm chip on" data-tier="all">All Incidents (27)</button>
+          <button type="button" class="btn-sm chip" data-tier="year_level">Year-Level Catastrophes (10)</button>
+          <button type="button" class="btn-sm chip" data-tier="month_level">Month-Level Breaches (13)</button>
+          <button type="button" class="btn-sm chip" data-tier="critical_infra">Critical Infrastructure (4)</button>
+        </div>
+      </div>
+      <div id="warroom-incidents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px;"></div>
+    </div>
+  </section>
+
   <section id="tab-terminal" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#terminal" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-radar"/></svg>Company & ASN Footprint</a>
+      <a href="#supply-chain" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-cpu"/></svg>Package Supply Chain (OSV)</a>
+      <a href="#leaks" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-venetian-mask"/></svg>Breach & Leak Hunter</a>
+    </div>
       <h2>Tech Bloomberg Terminal</h2>
       <p class="sub">Open-source corporate attack surface & intelligence dossier. Aggregates BGP ASNs, Certificate Transparency subdomains, CISA KEV flaws, and HIBP breaches.</p>
     </div>
@@ -223,6 +313,12 @@
 
   <section id="tab-check" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#shield" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-shield-check"/></svg>Active DNS Shield</a>
+      <a href="#check" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg>Live IP Footprint</a>
+      <a href="#canary" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bell"/></svg>Canary Decoy Tripwires</a>
+      <a href="#remediation" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bot"/></svg>60s AI Remediation</a>
+    </div>
       <h2>Live Digital Footprint & Hacker Tripwire</h2>
       <p class="sub">Real-time network query for any IP or your live connection. Inspects carrier network, threat feeds, Spamhaus DROP blocks, and nearest submarine fiber landings.</p>
     </div>
@@ -242,6 +338,12 @@
 
   <section id="tab-shield" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#shield" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-shield-check"/></svg>Active DNS Shield</a>
+      <a href="#check" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg>Live IP Footprint</a>
+      <a href="#canary" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bell"/></svg>Canary Decoy Tripwires</a>
+      <a href="#remediation" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bot"/></svg>60s AI Remediation</a>
+    </div>
       <h2>Active Protective DNS Shield & DGA Detector</h2>
       <p class="sub">Domain Generation Algorithm (DGA) entropy detection and real-time malicious domain sinkholing.</p>
     </div>
@@ -277,6 +379,11 @@
 
   <section id="tab-supply-chain" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#terminal" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-radar"/></svg>Company & ASN Footprint</a>
+      <a href="#supply-chain" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-cpu"/></svg>Package Supply Chain (OSV)</a>
+      <a href="#leaks" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-venetian-mask"/></svg>Breach & Leak Hunter</a>
+    </div>
       <h2>Open-Source Supply Chain Analyzer</h2>
       <p class="sub">Deep dependency risk, open-source vulnerability mapping (OSV.dev), and copyleft licensing compliance (deps.dev).</p>
     </div>
@@ -305,6 +412,11 @@
 
   <section id="tab-leaks" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#terminal" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-radar"/></svg>Company & ASN Footprint</a>
+      <a href="#supply-chain" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-cpu"/></svg>Package Supply Chain (OSV)</a>
+      <a href="#leaks" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-venetian-mask"/></svg>Breach & Leak Hunter</a>
+    </div>
       <h2>Corporate Breach & Credential Leak Hunter</h2>
       <p class="sub">Audit corporate domain breaches, ransomware extortion victim disclosures, and verify password exposures using zero-knowledge k-Anonymity (SHA-1 prefix).</p>
     </div>
@@ -337,6 +449,12 @@
 
   <section id="tab-canary" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#shield" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-shield-check"/></svg>Active DNS Shield</a>
+      <a href="#check" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg>Live IP Footprint</a>
+      <a href="#canary" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-bell"/></svg>Canary Decoy Tripwires</a>
+      <a href="#remediation" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bot"/></svg>60s AI Remediation</a>
+    </div>
       <h2>Canary Tokens & Hacker Tripwire Generator</h2>
       <p class="sub">Plant deceptive decoy assets (fake AWS keys, database URIs, web tracking beacons) in internal source code, wiki pages, and cloud storage. Get alerted with intruder IP, ASN, and user-agent the second an adversary probes them.</p>
     </div>
@@ -374,6 +492,12 @@
 
   <section id="tab-remediation" class="tab page" hidden>
     <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#shield" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-shield-check"/></svg>Active DNS Shield</a>
+      <a href="#check" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg>Live IP Footprint</a>
+      <a href="#canary" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bell"/></svg>Canary Decoy Tripwires</a>
+      <a href="#remediation" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-bot"/></svg>60s AI Remediation</a>
+    </div>
       <h2>AI Plain-English Defense Remediation Engine</h2>
       <p class="sub">Deterministic 3-bullet executive cards and 60-second copy-paste shell commands for critical CVEs, malicious IPs, and DGA botnets.</p>
     </div>
@@ -398,7 +522,14 @@
   </section>
 
   <section id="tab-news" class="tab page" hidden>
-    <div class="page-head"><h2>News</h2><p class="sub">Security headlines and videos from public feeds, cached for 30 minutes. Each item links to its source.</p></div>
+    <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#flaws" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bug"/></svg>Exploited Flaws (KEV)</a>
+      <a href="#attacks" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>Threats & Malware C2</a>
+      <a href="#breaches" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-database-zap"/></svg>Major Breaches (HIBP)</a>
+      <a href="#news" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-newspaper"/></svg>Security News</a>
+      <a href="#results" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-scale"/></svg>Model & Accuracy</a>
+    </div><h2>News</h2><p class="sub">Security headlines and videos from public feeds, cached for 30 minutes. Each item links to its source.</p></div>
     <div class="grid2">
       <div class="panel"><h3>Headlines</h3><ul class="feed" id="news-list"></ul></div>
       <div class="panel"><h3>Videos</h3><ul class="feed" id="video-list"></ul></div>
@@ -406,7 +537,14 @@
   </section>
 
   <section id="tab-results" class="tab page" hidden>
-    <div class="page-head"><h2>Sources and accuracy</h2>
+    <div class="page-head">
+    <div class="pillar-subnav">
+      <a href="#flaws" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-bug"/></svg>Exploited Flaws (KEV)</a>
+      <a href="#attacks" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>Threats & Malware C2</a>
+      <a href="#breaches" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-database-zap"/></svg>Major Breaches (HIBP)</a>
+      <a href="#news" class="subnav-btn"><svg class="ico"><use href="/static/vendor/icons.svg#i-newspaper"/></svg>Security News</a>
+      <a href="#results" class="subnav-btn on"><svg class="ico"><use href="/static/vendor/icons.svg#i-scale"/></svg>Model & Accuracy</a>
+    </div><h2>Sources and accuracy</h2>
       <p class="sub">Threat data is downloaded on a schedule; the login models were trained once on 2020 to 2021 data. Both are stated plainly below.</p></div>
     <div class="kpis" id="model-kpis"></div>
     <div class="panel"><h3>Model results in plain words</h3><p id="model-plain"></p></div>
@@ -453,6 +591,19 @@
     </div>
   </div>
 </div>
-<script src="/static/dashboard.js?v=15"></script>
+<script src="/static/dashboard.js?v=16"></script>
+
+<div class="palette" id="autopsy-modal" hidden>
+  <div class="palette-box panel" role="dialog" aria-modal="true" aria-labelledby="autopsy-modal-title" style="max-width: 800px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line);">
+      <h3 id="autopsy-modal-title" style="margin: 0; font: 700 16px var(--hud); letter-spacing: 0.05em; color: #ef4444;">Incident Forensic Autopsy</h3>
+      <button class="link" id="autopsy-modal-close" type="button" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-x"/></svg></button>
+    </div>
+    <div id="autopsy-modal-body" style="padding: 20px; max-height: 75vh; overflow-y: auto;">
+      <p class="muted">Loading forensic telemetry...</p>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

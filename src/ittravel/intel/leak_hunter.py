@@ -55,23 +55,19 @@ def corporate_leak_audit(domain: str) -> dict[str, Any]:
         b_name = (b.get("name") or "").lower()
         b_title = (b.get("title") or "").lower()
         # Match full domain, keyword in domain, or keyword in company name
-        if (
-            clean == b_domain
-            or clean in b_domain
-            or needle in b_domain
-            or needle in b_name
-            or needle in b_title
-        ):
+        if clean == b_domain or clean in b_domain or needle in b_domain or needle in b_name or needle in b_title:
             count = int(b.get("pwn_count") or b.get("accounts") or 0)
-            matched.append({
-                "name": b.get("title") or b.get("name") or b_domain,
-                "domain": b.get("domain") or "",
-                "breach_date": b.get("breach_date") or b.get("date") or "",
-                "pwn_count": count,
-                "data_classes": b.get("data_classes") or [],
-                "verified": b.get("is_verified", True),
-                "description": (b.get("description") or "")[:200],
-            })
+            matched.append(
+                {
+                    "name": b.get("title") or b.get("name") or b_domain,
+                    "domain": b.get("domain") or "",
+                    "breach_date": b.get("breach_date") or b.get("date") or "",
+                    "pwn_count": count,
+                    "data_classes": b.get("data_classes") or [],
+                    "verified": b.get("is_verified", True),
+                    "description": (b.get("description") or "")[:200],
+                }
+            )
             total_accounts += count
             data_classes.update(b.get("data_classes") or [])
 
@@ -88,11 +84,13 @@ def corporate_leak_audit(domain: str) -> dict[str, Any]:
     for entry in (ransomware.get("recent_victims") or [])[:50]:
         victim = (entry.get("victim") or entry.get("name") or "").lower()
         if needle in victim or clean in victim:
-            recent_claims.append({
-                "gang": entry.get("group") or entry.get("gang") or "Unknown gang",
-                "date": entry.get("date") or entry.get("discovered") or "",
-                "details": entry.get("description") or entry.get("details") or "",
-            })
+            recent_claims.append(
+                {
+                    "gang": entry.get("group") or entry.get("gang") or "Unknown gang",
+                    "date": entry.get("date") or entry.get("discovered") or "",
+                    "details": entry.get("description") or entry.get("details") or "",
+                }
+            )
 
     # --- Risk level ---
     if matched and total_accounts > 10_000_000:

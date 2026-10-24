@@ -108,16 +108,36 @@ function applyUrlState() {
 }
 
 function show(hash) {
-  // "#check/travel" opens a tab and, for the sign-in check, runs that story
+  const RAIL_MAP = {
+    "warroom": "warroom",
+    "globe": "globe",
+    "disruptions": "globe",
+    "terminal": "terminal",
+    "supply-chain": "terminal",
+    "leaks": "terminal",
+    "shield": "shield",
+    "check": "shield",
+    "canary": "shield",
+    "remediation": "shield",
+    "flaws": "flaws",
+    "attacks": "flaws",
+    "breaches": "flaws",
+    "news": "flaws",
+    "results": "flaws"
+  };
+
   let [tab, story] = hash.split("?")[0].split("/");
-  if (tab === "home" || !$(`#tab-${tab}`)) tab = "globe"; // the old overview now lives on the globe
+  if (tab === "home" || !$(`#tab-${tab}`)) tab = "warroom"; // Black October is the landing crisis room
   $$(".tab").forEach((s) => (s.hidden = s.id !== `tab-${tab}`));
-  $$("nav a").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
+  
+  const railTab = RAIL_MAP[tab] || tab;
+  $$("nav a").forEach((a) => a.classList.toggle("on", a.dataset.tab === railTab));
+  
   if (!loaded.has(tab) && loaders[tab]) load(tab);
   document.body.classList.toggle("on-globe", tab === "globe");
   document.body.classList.toggle("on-sheet", tab !== "globe");
   if (tab === "globe" && globe) setTimeout(sizeGlobe, 50);
-  if (globe && !flat) tab === "globe" ? globe.resumeAnimation() : globe.pauseAnimation(); // a covered globe costs nothing
+  if (globe && !flat) tab === "globe" ? globe.resumeAnimation() : globe.pauseAnimation();
   window.scrollTo(0, 0);
   if (tab === "globe") [...route().params].length ? applyUrlState() : syncUrl();
 }
@@ -1829,6 +1849,472 @@ function startWorld() {
   if (SMALL_SCREEN || loaded.has("globe")) return;
   (window.requestIdleCallback || ((f) => setTimeout(f, 300)))(() => loaded.has("globe") || load("globe"));
 }
+
+
+// ---------- Black October 2026 Crisis War Room & Exploit Simulation Engine ----------
+let warroomIncidents = [];
+let activeIncident = null;
+let simStep = 0;
+let simInterval = null;
+
+loaders.warroom = async () => {
+  try {
+    const data = await api("/v1/black-october/overview");
+    warroomIncidents = data.incidents || [];
+    renderWarroomCards(warroomIncidents);
+  } catch (err) {
+    console.error("War room loader failed:", err);
+  }
+};
+
+function renderWarroomCards(incidents) {
+  const grid = $("#warroom-incidents-grid");
+  if (!grid) return;
+  if (!incidents.length) {
+    grid.innerHTML = '<p class="muted">No incidents matching the selected filter.</p>';
+    return;
+  }
+
+  grid.innerHTML = incidents.map((inc) => {
+    const tierClass = inc.tier === "year_level" ? "tier-year" : inc.tier === "critical_infra" ? "tier-critical" : "tier-month";
+    const tierLabel = inc.tier === "year_level" ? "YEAR-LEVEL 0-DAY" : inc.tier === "critical_infra" ? "CRITICAL INFRASTRUCTURE" : "MONTH-LEVEL INCIDENT";
+    const tierColor = inc.tier === "year_level" ? "#ef4444" : inc.tier === "critical_infra" ? "#a855f7" : "#f59e0b";
+    const cvss = inc.cvss || 8.0;
+    const cvssCol = cvss >= 9.5 ? "#ef4444" : cvss >= 8.5 ? "#f97316" : "#f59e0b";
+
+    return `
+      <div class="warroom-card ${tierClass}">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+            <span style="font: 700 11px var(--hud); color: ${tierColor}; letter-spacing: 0.08em;">${tierLabel}</span>
+            <span class="mono" style="background: ${cvssCol}22; color: ${cvssCol}; border: 1px solid ${cvssCol}44; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700;">CVSS ${cvss.toFixed(1)}</span>
+          </div>
+          <h4 style="margin: 8px 0 4px; font-size: 16px; color: var(--ink); line-height: 1.3;">${esc(inc.name)}</h4>
+          <div style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
+            <b>Target:</b> ${esc(inc.target)} ${inc.cve ? `· <span class="mono" style="color:var(--accent);">${esc(inc.cve)}</span>` : ""}
+          </div>
+          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; line-height: 1.45;">
+            ${esc(inc.summary)}
+          </p>
+        </div>
+        <div style="border-top: 1px solid var(--line); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span class="fineprint">${esc(inc.geo?.location || "Global Fleet")}</span>
+          <button type="button" class="btn-sm chip btn-autopsy" data-autopsy-id="${esc(inc.id)}" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #fff; font-weight: 600;">
+            ⚡ Exploit Autopsy & Sim
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  $$(".btn-autopsy").forEach((b) => b.addEventListener("click", () => openAutopsyModal(b.dataset.autopsyId)));
+}
+
+// Filter chips
+(function wireWarroomFilters() {
+  $$("#warroom-filter-chips button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      $$("#warroom-filter-chips button").forEach((b) => b.classList.remove("on"));
+      btn.classList.add("on");
+      const tier = btn.dataset.tier;
+      if (tier === "all") renderWarroomCards(warroomIncidents);
+      else renderWarroomCards(warroomIncidents.filter((i) => i.tier === tier));
+    });
+  });
+
+  $("#refresh-warroom")?.addEventListener("click", () => loaders.warroom());
+})();
+
+// 1-Click Black October Stack Auditor Form
+(function wireWarroomAuditor() {
+  const form = $("#warroom-audit-form");
+  const targetInput = $("#warroom-audit-target");
+  const typeSelect = $("#warroom-audit-type");
+  const box = $("#warroom-audit-results");
+  if (!form) return;
+
+  function runAudit(target, type) {
+    if (!target) return;
+    box.innerHTML = '<p class="muted">Scanning live against revoked eMudhra CAs, PHP2Shell web runtimes, and vulnerable dependencies…</p>';
+    api(`/v1/black-october/audit?target=${encodeURIComponent(target)}&target_type=${encodeURIComponent(type)}`)
+      .then((d) => {
+        const score = d.black_october_risk_score ?? 0;
+        const col = score >= 50 ? "#ef4444" : score >= 20 ? "#f59e0b" : "#10b981";
+        const findings = d.findings || [];
+        const rems = d.recommended_remediations || [];
+
+        box.innerHTML = `
+          <div class="panel" style="border-left: 4px solid ${col}; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <span style="font-size: 18px; font-weight: 700; color: ${col};">${esc(d.overall_verdict)}</span>
+                <span style="font-size: 15px; font-weight: 600; margin-left: 8px;">${esc(d.target)}</span>
+              </div>
+              <div class="facts">
+                <div><b>Risk Score</b><span class="mono" style="color: ${col}; font-weight: 700;">${score} / 100</span></div>
+                <div><b>Critical Findings</b><span class="mono">${d.critical_count ?? 0}</span></div>
+              </div>
+            </div>
+            
+            <div style="margin-top: 14px;">
+              <b style="font-size: 13px; color: var(--ink);">Audit Findings & Vector Breakdown:</b>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                ${findings.map((f) => {
+                  const sCol = f.severity === "CRITICAL" ? "#ef4444" : f.severity === "HIGH" ? "#f97316" : f.severity === "CLEAN" ? "#10b981" : "#7dd3fc";
+                  return `
+                    <div style="background: var(--bg); padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line);">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <b style="font-size: 13px;">${esc(f.vector)}</b>
+                        <span class="tag" style="background: ${sCol}22; color: ${sCol}; font-weight: 600;">${esc(f.severity)}</span>
+                      </div>
+                      <div style="font-size: 12.5px; color: var(--muted); margin-top: 4px;">${esc(f.detail)}</div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+
+            ${rems.length ? `
+              <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);">
+                <b style="color: var(--accent); font-size: 13px;">Recommended Immediate Remediation:</b>
+                <ul style="margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted);">
+                  ${rems.map((r) => `<li>${esc(r)}</li>`).join("")}
+                </ul>
+              </div>
+            ` : ""}
+          </div>
+        `;
+      })
+      .catch((err) => {
+        box.innerHTML = `<p class="muted">Error: ${esc(err.message.slice(0, 120))}</p>`;
+      });
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runAudit(targetInput?.value.trim(), typeSelect?.value || "domain");
+  });
+
+  $$("[data-audit-target]").forEach((b) => b.addEventListener("click", () => {
+    if (targetInput) targetInput.value = b.dataset.auditTarget;
+    if (typeSelect) typeSelect.value = b.dataset.auditType;
+    runAudit(b.dataset.auditTarget, b.dataset.auditType);
+  }));
+})();
+
+// ---------- Interactive Exploit Autopsy & Simulation Engine ----------
+async function openAutopsyModal(incidentId) {
+  const modal = $("#autopsy-modal");
+  const body = $("#autopsy-modal-body");
+  const title = $("#autopsy-modal-title");
+  if (!modal || !body) return;
+
+  modal.hidden = false;
+  body.innerHTML = '<p class="muted">Fetching forensic telemetry and assembling attack simulation…</p>';
+  simStep = 0;
+  if (simInterval) clearInterval(simInterval);
+
+  try {
+    const inc = await api(`/v1/black-october/incident/${encodeURIComponent(incidentId)}`);
+    activeIncident = inc;
+    title.innerHTML = `⚡ Forensic Autopsy: ${esc(inc.name)}`;
+    renderAutopsyContent(inc);
+  } catch (err) {
+    body.innerHTML = `<p class="muted">Failed to load autopsy: ${esc(err.message)}</p>`;
+  }
+}
+
+$("#autopsy-modal-close")?.addEventListener("click", () => {
+  $("#autopsy-modal").hidden = true;
+  if (simInterval) clearInterval(simInterval);
+});
+
+function renderAutopsyContent(inc) {
+  const body = $("#autopsy-modal-body");
+  if (!body) return;
+
+  const isPhp = inc.id === "php2shell";
+  const isEmudhra = inc.id === "emudhra";
+  const isLitellm = inc.id === "litellm" || inc.id === "cairn-ai";
+
+  body.innerHTML = `
+    <!-- Top Metadata Grid -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);">
+      <div>
+        <span class="mono" style="color: var(--accent); font-weight: 700;">${esc(inc.cve || "0-DAY IN THE WILD")}</span> ·
+        <span style="color: var(--muted);">${esc(inc.date)}</span>
+      </div>
+      <div>
+        <span class="tag" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700;">CVSS ${esc((inc.cvss || 8).toFixed(1))} CRITICAL</span>
+      </div>
+    </div>
+
+    <!-- Visual Attack Simulation Box -->
+    <div class="panel" style="background: #090d16; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; animation: live-pulse 1.6s infinite;"></span>
+          <b style="color: #fff; font-size: 14px; letter-spacing: 0.05em;">INTERACTIVE EXPLOIT SIMULATION</b>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="btn-sm chip" id="sim-prev-btn">◀ Previous</button>
+          <button type="button" class="btn-sm chip" id="sim-play-btn" style="background: #3b82f6; color: #fff; border-color: #3b82f6;">▶ Auto-Play</button>
+          <button type="button" class="btn-sm chip" id="sim-next-btn">Next Step ▶</button>
+        </div>
+      </div>
+
+      <!-- Simulation Display Area -->
+      <div id="sim-stage" style="min-height: 220px; font-family: var(--mono); font-size: 13px;"></div>
+    </div>
+
+    <!-- 5-Step Forensic Timeline -->
+    <div class="panel" style="margin-bottom: 20px;">
+      <h4 style="margin: 0 0 10px; color: var(--ink);">Forensic Chronology: How the Attack Unfolded</h4>
+      <pre style="background: var(--bg); padding: 14px; border-radius: 6px; font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; color: var(--ink); border: 1px solid var(--line);">${esc(inc.how_it_happened)}</pre>
+    </div>
+
+    <!-- Technical Mechanism & Mathematical Flaw -->
+    <div class="panel" style="margin-bottom: 20px; border-left: 4px solid var(--accent);">
+      <h4 style="margin: 0 0 6px; color: var(--accent);">Technical Mechanism & Cryptographic / Architectural Flaw</h4>
+      <p style="margin: 0; font-size: 13.5px; color: var(--ink); line-height: 1.5;">${esc(inc.technical_mechanism)}</p>
+      <div style="margin-top: 8px; font-size: 13px; color: var(--muted);"><b>Blast Radius & Impact:</b> ${esc(inc.impact)}</div>
+    </div>
+
+    <!-- 60-Second Instant Shell Remediation -->
+    <div class="panel" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <b style="color: #10b981; font-size: 14px;">⚡ 60-Second Emergency Shell Mitigation Command</b>
+        <button type="button" class="btn-sm chip" id="copy-autopsy-cmd" style="background: #10b981; color: #000; font-weight: 700; border: none;">Copy Command</button>
+      </div>
+      <pre id="autopsy-cmd-code" style="background: #020617; padding: 12px; border-radius: 6px; font-family: var(--mono); font-size: 12.5px; color: #38bdf8; overflow-x: auto; border: 1px solid #1e293b;">${esc(inc.mitigation)}</pre>
+      ${inc.waf_rule ? `
+        <div style="margin-top: 10px;">
+          <b style="color: #f59e0b; font-size: 12.5px;">WAF / ModSecurity Mitigation Rule:</b>
+          <pre style="background: #020617; padding: 10px; border-radius: 4px; font-family: var(--mono); font-size: 11.5px; color: #f59e0b; overflow-x: auto; margin-top: 4px; border: 1px solid #1e293b;">${esc(inc.waf_rule)}</pre>
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  // Attach copy button
+  $("#copy-autopsy-cmd")?.addEventListener("click", () => {
+    navigator.clipboard.writeText(inc.mitigation);
+    $("#copy-autopsy-cmd").textContent = "Copied!";
+    setTimeout(() => ($("#copy-autopsy-cmd").textContent = "Copy Command"), 2000);
+  });
+
+  // Wire simulation controls
+  setupSimulation(inc);
+}
+
+function setupSimulation(inc) {
+  let steps = [];
+
+  if (inc.id === "php2shell") {
+    steps = [
+      {
+        title: "STEP 1: Inbound Malicious HTTP Request",
+        badge: "ATTACKER INGESTION",
+        desc: "Attacker transmits deeply nested multipart/form-data boundary structures over standard HTTP POST.",
+        diagram: `
+┌──────────────────┐               ┌─────────────────────────────────────┐
+│  Attacker IP     │ ────────────> │  Target Web Server (Apache/Nginx)   │
+│  [185.220.101.5] │  HTTP POST    │  mod_php / php-fpm (Zend Engine)    │
+└──────────────────┘               └─────────────────────────────────────┘
+Payload: Content-Type: multipart/form-data; boundary=---------------------------97823...
+Header Nesting: 10,000+ recursive boundary wrappers packed with binary offsets.`
+      },
+      {
+        title: "STEP 2: Zend Engine Heap Memory Exhaustion (OOM)",
+        badge: "RESOURCE COLLAPSE",
+        desc: "The Zend memory manager attempts to allocate consecutive internal buffers, hitting the memory ceiling.",
+        diagram: `
+Zend Allocator Heap:
+[■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■] 100%
+>>> OUT OF MEMORY (OOM) ERROR TRIGGERED <<<
+Zend initiates emergency unwinding via: zend_error_noreturn(E_ERROR, "Allowed memory size exhausted");`
+      },
+      {
+        title: "STEP 3: The Flawed longjmp() Stack Unwinding",
+        badge: "CRITICAL VULNERABILITY",
+        desc: "longjmp() skips normal cleanup routines, leaving active frame execution pointers dangling in stack memory.",
+        diagram: `
+Call Stack:
+| [0x7ffe4200]  main()
+| [0x7ffe41a0]  php_execute_script()
+| [0x7ffe4100]  multipart_buffer_read()
+| [0x7ffe4080]  zend_throw_error() -> longjmp() invoked!
+* Dangling Pointer left pointing into freed execution frame address at [0x7ffe4080]!`
+      },
+      {
+        title: "STEP 4: Instruction Pointer Overwrite",
+        badge: "ARBITRARY WRITE",
+        desc: "Subsequent memory allocation reuse overwrites the dangling pointer with attacker-controlled shellcode address.",
+        diagram: `
+Memory Register State:
+%rax : 0x000000000000003b  (sys_execve syscall)
+%rdi : 0x00007ffe40801000  ("/bin/sh")
+%rip : [0x7ffe4080] ──────> OVERWRITTEN WITH ATTACKER SHELLCODE ADDRESS!`
+      },
+      {
+        title: "STEP 5: Web Shell Execution & Arbitrary Command Control",
+        badge: "SYSTEM COMPROMISE",
+        desc: "Kernel executes /bin/sh under web server UID (www-data/nginx). Unauthenticated remote code execution achieved.",
+        diagram: `
+[SUCCESSFUL REMOTE CODE EXECUTION]
+$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+$ uname -a
+Linux production-target 6.8.0-45-generic #45-Ubuntu SMP x86_64 GNU/Linux
+$ cat /etc/passwd | head -n 3
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/bin/sh`
+      }
+    ];
+  } else if (inc.id === "emudhra") {
+    steps = [
+      {
+        title: "STEP 1: The Cryptographic Key Ceremony",
+        badge: "EXPECTED SPECIFICATION",
+        desc: "A globally trusted Certificate Authority must generate a 384-bit ECDSA/ECC key with 116 digits of random noise.",
+        diagram: `
+Elliptic Curve secp384r1 (NIST P-384):
+Private Key Space: 2^384 possible combinations
+= 394,020,061,963,997,239,422,943,059,200,788,829,760,184,105,773,890,359... (116 decimal digits)
+Brute-force duration with planetary supercomputers: > 14 Billion Years.`
+      },
+      {
+        title: "STEP 2: The Scripting & Entropy Truncation Bug",
+        badge: "FATAL BUG",
+        desc: "Automated bash/HSM key ceremony wrapper zeroed out all but the lowest single byte of the random seed.",
+        diagram: `
+Expected 48-byte buffer:
+[F8 3A 9C 21 B4 07 E3 89 ... 48 RANDOM BYTES ...]
+
+ACTUAL BUFFER RECORDED:
+[00 00 00 00 00 00 00 00 00 00 00 00 00 ... 00 00 04]  <-- KEY WAS LITERALLY 4!
+Entropy collapsed from 384 bits to 8 bits: k ∈ [0, 255]!`
+      },
+      {
+        title: "STEP 3: 15-Millisecond Brute-Force Verification",
+        badge: "INSTANT CRACK",
+        desc: "Researchers looped k from 0 to 255 computing public point Q = k * G until matching public certificate.",
+        diagram: `
+Brute-Force Counter:
+k = 0 ... FAIL
+k = 1 ... FAIL
+k = 2 ... FAIL
+k = 3 ... FAIL
+k = 4 ... >>> MATCH CONFIRMED! <<<
+Time elapsed on consumer laptop: 0.014 seconds!
+All 8 Intermediate Private Keys recovered: [4, 56, 66, 115, 155, 156, 230, 237]!`
+      },
+      {
+        title: "STEP 4: Forged Certificate Minting (Man-in-the-Middle)",
+        badge: "GLOBAL TRUST HIJACK",
+        desc: "Armed with private key k=4, an attacker mints valid SSL certificates for ANY website on earth.",
+        diagram: `
+Attacker Certificate Signer:
+Target Domain: google.com / sbi.co.in / whitehouse.gov
+Issuer: eMudhra Sub-CA (signed with private key: 4)
+Validation Status:
+  ✓ Chrome: VALID & TRUSTED (Green Lock)
+  ✓ Apple Safari: VALID & TRUSTED
+  ✓ Windows Edge: VALID & TRUSTED
+Adversary performs transparent Man-in-the-Middle TLS decryption worldwide!`
+      }
+    ];
+  } else {
+    steps = [
+      {
+        title: "STEP 1: Perimeter Reconnaissance & Target Discovery",
+        badge: "PHASE 1",
+        desc: `Adversary targets exposed surfaces of ${inc.target}.`,
+        diagram: `
+Target: ${inc.target}
+CVE / Advisory: ${inc.cve || "Unauthenticated 0-Day"}
+Vector: ${inc.technical_mechanism}`
+      },
+      {
+        title: "STEP 2: Vulnerability Exploitation & Boundary Penetration",
+        badge: "PHASE 2",
+        desc: "Attacker executes specialized payload to breach security boundaries.",
+        diagram: `
+Execution Flow:
+${inc.how_it_happened}`
+      },
+      {
+        title: "STEP 3: Impact & Ecosystem Blast Radius",
+        badge: "PHASE 3",
+        desc: "Lateral movement and exfiltration executed across target infrastructure.",
+        diagram: `
+Severity: CVSS ${inc.cvss} CRITICAL
+Impact: ${inc.impact}
+Recommended Action:
+${inc.mitigation}`
+      }
+    ];
+  }
+
+  function renderStep(idx) {
+    const s = steps[idx];
+    const stage = $("#sim-stage");
+    if (!stage || !s) return;
+
+    stage.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <b style="color: #38bdf8; font-size: 14px;">${esc(s.title)}</b>
+        <span class="tag" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">${esc(s.badge)}</span>
+      </div>
+      <p style="color: var(--muted); margin: 0 0 10px; font-size: 13px;">${esc(s.desc)}</p>
+      <pre style="background: #020617; padding: 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; color: #a5f3fc; overflow-x: auto; border: 1px solid #1e293b;">${esc(s.diagram)}</pre>
+      <div style="display: flex; gap: 4px; margin-top: 10px;">
+        ${steps.map((_, i) => `
+          <div style="flex: 1; height: 4px; border-radius: 2px; background: ${i <= idx ? '#38bdf8' : '#334155'}; transition: background 0.2s;"></div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  simStep = 0;
+  renderStep(simStep);
+
+  $("#sim-prev-btn")?.addEventListener("click", () => {
+    if (simStep > 0) {
+      simStep--;
+      renderStep(simStep);
+    }
+  });
+
+  $("#sim-next-btn")?.addEventListener("click", () => {
+    if (simStep < steps.length - 1) {
+      simStep++;
+      renderStep(simStep);
+    }
+  });
+
+  $("#sim-play-btn")?.addEventListener("click", () => {
+    if (simInterval) {
+      clearInterval(simInterval);
+      simInterval = null;
+      $("#sim-play-btn").textContent = "▶ Auto-Play";
+    } else {
+      $("#sim-play-btn").textContent = "⏸ Pause";
+      simInterval = setInterval(() => {
+        if (simStep < steps.length - 1) {
+          simStep++;
+          renderStep(simStep);
+        } else {
+          clearInterval(simInterval);
+          simInterval = null;
+          $("#sim-play-btn").textContent = "▶ Replay";
+        }
+      }, 3500);
+    }
+  });
+}
+
 
 show(location.hash.slice(1) || "globe");
 startWorld();

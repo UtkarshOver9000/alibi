@@ -129,6 +129,7 @@ def evaluate_domain(domain: str) -> dict[str, Any]:
 # RFC 8484 DNS-over-HTTPS wire format
 # ---------------------------------------------------------------------------
 
+
 def parse_dns_qname(data: bytes, offset: int = 12) -> tuple[str, int]:
     """Parse DNS wire-format QNAME labels into a dot-separated domain name."""
     labels: list[str] = []
@@ -142,7 +143,7 @@ def parse_dns_qname(data: bytes, offset: int = 12) -> tuple[str, int]:
             curr += 2
             break
         curr += 1
-        labels.append(data[curr: curr + length].decode("ascii", errors="replace"))
+        labels.append(data[curr : curr + length].decode("ascii", errors="replace"))
         curr += length
     return ".".join(labels), curr
 
@@ -154,10 +155,11 @@ def build_dns_response(query_packet: bytes, sinkhole: bool = False, resolved_ip:
     tx_id = query_packet[:2]
     flags = b"\x81\x80"  # QR=1 AA=0 TC=0 RD=1 RA=1 RCODE=0
     _, q_end = parse_dns_qname(query_packet, 12)
-    q_section = query_packet[12: min(len(query_packet), q_end + 4)]
+    q_section = query_packet[12 : min(len(query_packet), q_end + 4)]
     ip_to_return = "0.0.0.0" if sinkhole else (resolved_ip or "127.0.0.1")
     try:
         import socket as _sock
+
         ip_bytes = _sock.inet_aton(ip_to_return)
     except Exception:
         ip_bytes = b"\x00\x00\x00\x00"

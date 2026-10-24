@@ -26,6 +26,7 @@ def _nvd_cve_fetch(cve_id: str) -> dict[str, Any] | None:
     if os.getenv("ALIBI_OFFLINE"):
         return None
     import urllib.parse
+
     url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={urllib.parse.quote(cve_id.upper())}"
     req = urllib.request.Request(url, headers={"User-Agent": _UA})
     try:
@@ -240,15 +241,12 @@ def remediate_ip(ip: str) -> dict[str, Any]:
             + (" It is a registered Tor exit relay — anonymising proxy." if is_tor else "")
             + (" It is a hosting/datacenter network." if is_hosting and not is_tor else "")
         )
-        who_is_impacted = (
-            "No active threat confirmed from current feeds. "
-            + (
-                "However, Tor exit relay traffic should be treated with elevated caution."
-                if is_tor
-                else "Monitor for unusual behaviour from this address if it appears in your logs."
-                if is_hosting
-                else "If this IP appears in your logs unexpectedly, investigate the connection."
-            )
+        who_is_impacted = "No active threat confirmed from current feeds. " + (
+            "However, Tor exit relay traffic should be treated with elevated caution."
+            if is_tor
+            else "Monitor for unusual behaviour from this address if it appears in your logs."
+            if is_hosting
+            else "If this IP appears in your logs unexpectedly, investigate the connection."
         )
         what_to_do_now = (
             f"1. Check your firewall and SIEM for {'all' if is_tor else 'recent'} connections from/to {ip}. "
@@ -298,6 +296,7 @@ def remediate_dga(domain: str, entropy: float = 0.0) -> dict[str, Any]:
     Re-evaluates entropy if not provided; checks domain against ThreatFox URLhaus feed.
     """
     from .dns_shield import calculate_entropy, evaluate_domain
+
     domain = domain.strip().lower().rstrip(".")
 
     # Get real evaluation from DNS shield
@@ -312,13 +311,14 @@ def remediate_dga(domain: str, entropy: float = 0.0) -> dict[str, Any]:
     label_entropy = calculate_entropy(label)
     is_dga_by_entropy = label_entropy > 3.65 and len(label) > 10
 
-    what_happened = (
-        f"Domain '{domain}' was flagged"
-        + (" by ThreatFox/URLhaus as an active malware C2 or download URL." if is_blocked and not is_dga_by_entropy else
-           f" by DGA entropy analysis (Shannon entropy: {real_entropy:.3f} > threshold 3.65). "
-           "High-entropy subdomain labels are a strong indicator of Domain Generation Algorithm (DGA) "
-           "malware that rotates C2 domains algorithmically to evade static blocklists." if is_dga_by_entropy else
-           f". Reason: {reason}")
+    what_happened = f"Domain '{domain}' was flagged" + (
+        " by ThreatFox/URLhaus as an active malware C2 or download URL."
+        if is_blocked and not is_dga_by_entropy
+        else f" by DGA entropy analysis (Shannon entropy: {real_entropy:.3f} > threshold 3.65). "
+        "High-entropy subdomain labels are a strong indicator of Domain Generation Algorithm (DGA) "
+        "malware that rotates C2 domains algorithmically to evade static blocklists."
+        if is_dga_by_entropy
+        else f". Reason: {reason}"
     )
     if resolved and resolved[0] != "NXDOMAIN":
         what_happened += f" Currently resolves to: {', '.join(resolved[:3])}."
@@ -345,7 +345,8 @@ def remediate_dga(domain: str, entropy: float = 0.0) -> dict[str, Any]:
         + (
             "# Also block resolved IPs:\n"
             + "\n".join(f"iptables -I FORWARD -d {ip} -j DROP" for ip in resolved[:4] if ip != "NXDOMAIN")
-            if resolved and resolved[0] != "NXDOMAIN" else ""
+            if resolved and resolved[0] != "NXDOMAIN"
+            else ""
         )
     )
 
