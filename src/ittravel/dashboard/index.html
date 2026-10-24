@@ -17,7 +17,7 @@
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
 <link rel="stylesheet" href="/static/vendor/leaflet.css">
-<link rel="stylesheet" href="/static/dashboard.css?v=16">
+<link rel="stylesheet" href="/static/dashboard.css?v=18">
 </head>
 <body>
 <header class="topbar">
@@ -33,15 +33,26 @@
   <button class="hbtn" id="open-help" type="button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-keyboard"/></svg></button>
 </header>
 <nav class="rail" aria-label="Modules">
-  <a href="#warroom" data-tab="warroom" aria-label="Black October Crisis War Room" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3);">
+  <a href="#warroom" data-tab="warroom" aria-label="Black October Crisis War Room" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.25);">
     <svg class="ico" aria-hidden="true" style="color: #ef4444;"><use href="/static/vendor/icons.svg#i-biohazard"/></svg>
-    <span class="lbl" style="color: #ef4444; font-weight: 700;">Crisis Room</span>
+    <span class="lbl" style="color: #ef4444; font-weight: 700;">Crisis Mesh</span>
     <b class="count pulse-badge" style="display:inline-block; margin-top:2px;">27</b>
   </a>
-  <a href="#globe" data-tab="globe" aria-label="Planetary Radar"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-globe"/></svg><span class="lbl">Radar</span></a>
-  <a href="#terminal" data-tab="terminal" aria-label="Tech Bloomberg Terminal"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-radar"/></svg><span class="lbl">Terminal</span></a>
-  <a href="#shield" data-tab="shield" aria-label="Defense Shield & Tripwires"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Defense</span></a>
-  <a href="#flaws" data-tab="flaws" aria-label="Global Threat Intel & Feeds"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-scale"/></svg><span class="lbl">Intel</span></a>
+  <a href="#globe" data-tab="globe" aria-label="Live globe"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-globe"/></svg><span class="lbl">Live globe</span></a>
+  <a href="#terminal" data-tab="terminal" aria-label="Tech Terminal"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-radar"/></svg><span class="lbl">Terminal</span></a>
+  <a href="#check" data-tab="check" aria-label="Live Footprint"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-fingerprint"/></svg><span class="lbl">Footprint</span></a>
+  <a href="#shield" data-tab="shield" aria-label="DNS Shield"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-shield-check"/></svg><span class="lbl">Shield</span></a>
+  <a href="#disruptions" data-tab="disruptions" aria-label="BGP Disruptions"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-wifi-off"/></svg><span class="lbl">Outages</span></a>
+  <a href="#supply-chain" data-tab="supply-chain" aria-label="Supply Chain"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-cpu"/></svg><span class="lbl">Packages</span></a>
+  <a href="#leaks" data-tab="leaks" aria-label="Leak Hunter"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-venetian-mask"/></svg><span class="lbl">Leak Hunter</span></a>
+  <a href="#canary" data-tab="canary" aria-label="Canary Tripwires"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bell"/></svg><span class="lbl">Tripwires</span></a>
+  <a href="#remediation" data-tab="remediation" aria-label="AI Remediation"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bot"/></svg><span class="lbl">Fix Engine</span></a>
+  <a href="#attacks" data-tab="attacks" aria-label="Threats"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-biohazard"/></svg><span class="lbl">Threats</span><b class="count" data-badge="attacks" hidden></b></a>
+  <a href="#breaches" data-tab="breaches" aria-label="Leaks"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-database-zap"/></svg><span class="lbl">Leaks</span><b class="count" data-badge="breaches" hidden></b></a>
+  <a href="#flaws" data-tab="flaws" aria-label="Exploited flaws"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-bug"/></svg><span class="lbl">Exploited flaws</span><b class="count" data-badge="flaws" hidden></b></a>
+  <span class="sep" aria-hidden="true"></span>
+  <a href="#news" data-tab="news" aria-label="News"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-newspaper"/></svg><span class="lbl">News</span></a>
+  <a href="#results" data-tab="results" aria-label="Sources and accuracy"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-scale"/></svg><span class="lbl">Sources</span></a>
 </nav>
 <div class="world" id="world">
   <div id="globe"></div>
@@ -82,10 +93,10 @@
           <div class="checks" id="layer-checks">
             <label><input type="checkbox" data-layer="c2" checked><i class="sw c2"></i>Botnet control servers <span class="n" data-count="c2"></span></label>
             <label><input type="checkbox" data-layer="dl" checked><i class="sw dl"></i>Malware download sites <span class="n" data-count="dl"></span></label>
-            <label><input type="checkbox" data-layer="tor"><i class="sw tor"></i>Tor exit relays <span class="n" data-count="tor"></span></label>
-            <label><input type="checkbox" data-layer="drop"><i class="sw drop"></i>Criminal networks (Spamhaus) <span class="n" data-count="drop"></span></label>
-            <label><input type="checkbox" id="show-cables"><i class="sw cable"></i>Undersea cables</label>
-            <label><input type="checkbox" id="show-compute"><i class="sw compute" style="background:#06b6d4;"></i>AI & Cloud Compute Hubs</label>
+            <label><input type="checkbox" data-layer="tor" checked><i class="sw tor"></i>Tor exit relays <span class="n" data-count="tor"></span></label>
+            <label><input type="checkbox" data-layer="drop" checked><i class="sw drop"></i>Criminal networks (Spamhaus) <span class="n" data-count="drop"></span></label>
+            <label><input type="checkbox" id="show-cables" checked><i class="sw cable"></i>Undersea cables</label>
+            <label><input type="checkbox" id="show-compute" checked><i class="sw compute" style="background:#06b6d4;"></i>AI & Cloud Compute Hubs</label>
           </div>
         </div>
         <div class="group legend" id="legend"></div>
@@ -215,74 +226,91 @@
   </section>
 
   
+  
   <section id="tab-warroom" class="tab page" hidden>
-    <div class="page-head" style="border-bottom: 2px solid #ef4444; padding-bottom: 16px;">
+    <div class="page-head" style="margin-bottom: 14px;">
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div>
-          <span class="tag" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 700; font-size: 13px; letter-spacing: 0.05em;">🔴 GLOBAL CYBER CRISIS · LIVE WAR ROOM</span>
-          <h2 style="margin: 8px 0 4px; font-size: 26px; color: #fff;">Black October 2026: The 27-Incident Catastrophe</h2>
-          <p class="sub" style="margin: 0; max-width: 800px;">
-            48 hours. 27 simultaneous critical infrastructure breaches and cryptographic failures.
-            From eMudhra's intermediate CA private key collapse (key = 4) to PHP2Shell core runtime RCE, Zeabur cloud shutdown, and LiteLLM/Cairn AI agent takeovers.
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="tag" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; font-weight: 700; font-size: 11.5px; letter-spacing: 0.08em; border: 1px solid rgba(239,68,68,0.25);">🔴 BLACK OCTOBER 2026</span>
+            <span style="font-size: 12.5px; color: var(--dim);">48 Hours · 27 Coordinated Catastrophes</span>
+          </div>
+          <h2 style="margin: 4px 0 2px; font-size: 22px; color: #fff;">Neural Attack Constellation</h2>
+          <p class="sub" style="margin: 0; max-width: 820px; font-size: 13px; color: var(--muted); line-height: 1.4;">
+            Touch or click any glowing synaptic node to open its complete forensic autopsy, interactive exploit simulation, and Cloudflare/edge defense guide.
           </p>
         </div>
-        <div>
-          <button class="btn-sm chip" id="refresh-warroom" style="background: #1c1f26; border-color: #ef4444; color: #ef4444;">Refresh Telemetry</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-sm chip" id="refresh-warroom" style="background: var(--panel); border-color: var(--line);">Refresh Constellation</button>
         </div>
       </div>
     </div>
 
-    <!-- Hero KPI Grid -->
-    <div class="kpis" id="warroom-kpis" style="margin-top: 16px;">
-      <div class="kpi panel"><b class="mono" style="color: #ef4444;">27</b><span class="label">Major 0-Days in 48h</span></div>
-      <div class="kpi panel"><b class="mono" style="color: #f59e0b;">Key = 4</b><span class="label">eMudhra CA Brute-Forced (&le;255 tries)</span></div>
-      <div class="kpi panel"><b class="mono" style="color: #ef4444;">Tens of M</b><span class="label">Servers Vulnerable to PHP2Shell</span></div>
-      <div class="kpi panel"><b class="mono" style="color: #38bdf8;">321,810</b><span class="label">Accounts in Zeabur PaaS Shutdown</span></div>
-      <div class="kpi panel"><b class="mono" style="color: #a855f7;">26,739</b><span class="label">Servers Exposed in Onamae Breach</span></div>
-      <div class="kpi panel"><b class="mono" style="color: #10b981;">100% Real</b><span class="label">Verified 2026 Incident Autopsies</span></div>
-    </div>
-
-    <!-- 1-Click Black October Stack Auditor -->
-    <div class="panel form" style="margin: 20px 0; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.03);">
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 10px;">
-        <div>
-          <h3 style="margin: 0; color: #fff;">1-Click Black October Stack Exposure Diagnostic</h3>
-          <p class="muted" style="margin: 4px 0 0; font-size: 13px;">
-            Audit any company domain, server IP, or software package live. Tests against revoked eMudhra intermediate CAs (crt.sh), unpatched PHP2Shell web runtimes, and vulnerable AI proxy gateway dependencies.
-          </p>
+    <!-- Neural Constellation Centerpiece Area -->
+    <div class="warroom-canvas-wrap" id="warroom-canvas-wrap">
+      <!-- Top HUD Over Canvas -->
+      <div class="neural-hud-top">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="pulse-badge" style="background: #ef4444; color: #fff; font-size: 9px;">LIVE MESH</span>
+          <span style="font: 700 11px var(--hud); color: #cbd5e1; letter-spacing: 0.08em;">27 NODES CONNECTED</span>
+        </div>
+        <div class="chips small" id="neural-filter-chips">
+          <button type="button" class="btn-sm chip on" data-cluster="all">All (27)</button>
+          <button type="button" class="btn-sm chip" data-cluster="crypto">Crypto & Trust (Key=4)</button>
+          <button type="button" class="btn-sm chip" data-cluster="runtime">Core Runtimes (PHP)</button>
+          <button type="button" class="btn-sm chip" data-cluster="cloud">Cloud & PaaS (Zeabur)</button>
+          <button type="button" class="btn-sm chip" data-cluster="ai">AI Agents (LiteLLM)</button>
+          <button type="button" class="btn-sm chip" data-cluster="infra">Critical Infra (SBI)</button>
         </div>
       </div>
-      <form id="warroom-audit-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <select id="warroom-audit-type" style="padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--sans);">
+
+      <!-- The Living HTML5 Interactive Canvas -->
+      <canvas id="neural-canvas"></canvas>
+
+      <!-- Hover Tooltip -->
+      <div id="neural-tooltip" class="neural-tip" hidden></div>
+
+      <!-- Docked Research & Simulation Inspector -->
+      <aside class="neural-inspector" id="neural-inspector" hidden>
+        <div class="neural-inspector-header">
+          <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; flex-shrink: 0;"></span>
+            <h3 id="inspector-title" style="margin: 0; font-size: 14.5px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Forensic Research Dossier</h3>
+          </div>
+          <button type="button" class="btn-sm chip" id="inspector-close-top" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #fff; cursor: pointer; padding: 4px 10px; font-weight: 700;" title="Close Inspector (Esc)">✕ Close</button>
+        </div>
+        <div class="neural-inspector-body" id="inspector-body">
+          <p class="muted">Select any node on the constellation to view deep forensic research.</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Compact 1-Click Stack Auditor (Below Centerpiece) -->
+    <div class="panel form" style="margin-top: 14px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--line);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+        <div>
+          <b style="font-size: 13.5px; color: var(--ink);">1-Click Stack Vulnerability & Trust Auditor</b>
+          <span class="fineprint" style="margin-left: 8px;">Audit any domain or package live against revoked eMudhra CAs, PHP2Shell runtimes, and exposed AI proxies.</span>
+        </div>
+      </div>
+      <form id="warroom-audit-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <select id="warroom-audit-type" style="padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 13px var(--sans);">
           <option value="domain">Domain (SSL/TLS & Web Server)</option>
           <option value="package">Package / Ecosystem (PyPI, npm)</option>
         </select>
-        <input type="text" id="warroom-audit-target" placeholder="Enter domain (e.g. sbi.co.in, litellm, zeabur.com, amazon.com)..." style="flex: 2; min-width: 250px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 14px var(--mono);" required />
-        <button type="submit" class="btn primary" style="padding: 10px 24px; background: #ef4444; border-color: #ef4444; color: #fff;">Audit Stack Exposure</button>
+        <input type="text" id="warroom-audit-target" placeholder="Enter target (e.g. sbi.co.in, litellm, zeabur.com, google.com)..." style="flex: 2; min-width: 200px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: 13px var(--mono);" required />
+        <button type="submit" class="btn primary" style="padding: 8px 18px;">Audit Stack</button>
       </form>
-      <div class="chips" style="margin-top: 10px;">
+      <div class="chips small" style="margin-top: 8px;">
         <button type="button" class="btn-sm chip" data-audit-target="sbi.co.in" data-audit-type="domain">sbi.co.in (State Bank of India)</button>
         <button type="button" class="btn-sm chip" data-audit-target="zeabur.com" data-audit-type="domain">zeabur.com (Breached PaaS)</button>
         <button type="button" class="btn-sm chip" data-audit-target="litellm" data-audit-type="package">litellm (AI Gateway Package)</button>
         <button type="button" class="btn-sm chip" data-audit-target="google.com" data-audit-type="domain">google.com (Clean Baseline)</button>
       </div>
-      <div id="warroom-audit-results" style="margin-top: 16px;"></div>
-    </div>
-
-    <!-- Incident Directory & Filter Tabs -->
-    <div class="panel" style="margin-bottom: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
-        <h3 style="margin: 0;">The 27 Incident Forensic Dossiers</h3>
-        <div class="chips small" id="warroom-filter-chips">
-          <button type="button" class="btn-sm chip on" data-tier="all">All Incidents (27)</button>
-          <button type="button" class="btn-sm chip" data-tier="year_level">Year-Level Catastrophes (10)</button>
-          <button type="button" class="btn-sm chip" data-tier="month_level">Month-Level Breaches (13)</button>
-          <button type="button" class="btn-sm chip" data-tier="critical_infra">Critical Infrastructure (4)</button>
-        </div>
-      </div>
-      <div id="warroom-incidents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px;"></div>
+      <div id="warroom-audit-results" style="margin-top: 12px;"></div>
     </div>
   </section>
+
 
   <section id="tab-terminal" class="tab page" hidden>
     <div class="page-head">
@@ -591,18 +619,9 @@
     </div>
   </div>
 </div>
-<script src="/static/dashboard.js?v=16"></script>
+<script src="/static/dashboard.js?v=18"></script>
 
-<div class="palette" id="autopsy-modal" hidden>
-  <div class="palette-box panel" role="dialog" aria-modal="true" aria-labelledby="autopsy-modal-title" style="max-width: 800px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line);">
-      <h3 id="autopsy-modal-title" style="margin: 0; font: 700 16px var(--hud); letter-spacing: 0.05em; color: #ef4444;">Incident Forensic Autopsy</h3>
-      <button class="link" id="autopsy-modal-close" type="button" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="/static/vendor/icons.svg#i-x"/></svg></button>
-    </div>
-    <div id="autopsy-modal-body" style="padding: 20px; max-height: 75vh; overflow-y: auto;">
-      <p class="muted">Loading forensic telemetry...</p>
-    </div>
-  </div>
+
 </div>
 
 </body>
