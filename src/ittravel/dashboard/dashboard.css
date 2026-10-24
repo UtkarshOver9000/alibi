@@ -425,3 +425,20 @@ body { padding-bottom: var(--wire-h); }
 .wire-item.breach b { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .wire-run { animation: none; position: static; } .wire-track { overflow-x: auto; } }
 @media (max-width: 900px) { :root { --wire-h: 0px; } .wire { display: none; } }
+
+
+/* ---- Pillar Sub-Navigation & Black October War Room ---- */
+.pillar-subnav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; padding: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 6px; }
+.subnav-btn { background: transparent; border: 1px solid transparent; color: var(--muted); padding: 8px 14px; border-radius: 4px; font: 600 13px var(--sans); cursor: pointer; transition: all 0.15s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.subnav-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.subnav-btn.on { color: #fff; background: var(--bg); border-color: var(--line); font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.subnav-btn .ico { width: 14px; height: 14px; }
+
+.warroom-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; transition: border-color 0.2s; position: relative; }
+.warroom-card:hover { border-color: #ef4444; }
+.warroom-card.tier-year { border-left: 4px solid #ef4444; }
+.warroom-card.tier-month { border-left: 4px solid #f59e0b; }
+.warroom-card.tier-critical { border-left: 4px solid #a855f7; }
+
+.pulse-badge { display: inline-block; padding: 2px 6px; border-radius: 10px; font: 700 10px var(--mono); background: #ef4444; color: #fff; animation: pulse-glow 2s infinite; }
+@keyframes pulse-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }

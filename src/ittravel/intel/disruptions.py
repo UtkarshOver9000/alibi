@@ -64,21 +64,21 @@ def _fetch_ioda() -> list[dict[str, Any]]:
                 sev_raw = str(item.get("level") or item.get("severity") or "normal").lower()
                 sev = _SEV_MAP.get(sev_raw, "MEDIUM")
                 started_ts = item.get("time") or item.get("startTime")
-                started_iso = (
-                    time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(int(started_ts))) if started_ts else None
+                started_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(int(started_ts))) if started_ts else None
+                alerts.append(
+                    {
+                        "id": item.get("id", f"ioda-{entity_code}"),
+                        "country": entity_code.upper() if len(entity_code) == 2 else "",
+                        "country_name": entity_name,
+                        "type": item.get("datasource", "bgp").upper(),
+                        "severity": sev,
+                        "started": started_iso,
+                        "drop_pct": item.get("overallScore"),
+                        "description": item.get("condition") or f"Internet disruption detected — {entity_name}.",
+                        "asns": item.get("asns", []),
+                        "source": "IODA (Georgia Tech / CAIDA)",
+                    }
                 )
-                alerts.append({
-                    "id": item.get("id", f"ioda-{entity_code}"),
-                    "country": entity_code.upper() if len(entity_code) == 2 else "",
-                    "country_name": entity_name,
-                    "type": item.get("datasource", "bgp").upper(),
-                    "severity": sev,
-                    "started": started_iso,
-                    "drop_pct": item.get("overallScore"),
-                    "description": item.get("condition") or f"Internet disruption detected — {entity_name}.",
-                    "asns": item.get("asns", []),
-                    "source": "IODA (Georgia Tech / CAIDA)",
-                })
             if not alerts:
                 alerts = _from_ooni_snapshot()
             _CACHE.update(data=alerts, ts=now)
@@ -106,21 +106,23 @@ def _from_ooni_snapshot() -> list[dict[str, Any]]:
         if blocks < 5:
             continue
         sev = "CRITICAL" if blocks > 200 else "HIGH" if blocks > 50 else "MEDIUM"
-        disruptions.append({
-            "id": f"ooni-{cc.lower()}",
-            "country": cc.upper(),
-            "country_name": info.get("name", cc),
-            "type": "OONI_CENSORSHIP",
-            "severity": sev,
-            "started": meta().get("fetched_at"),
-            "drop_pct": None,
-            "description": (
-                f"{blocks:,} confirmed OONI censorship/blocking measurements in {info.get('name', cc)}. "
-                "Probe volunteers reported consistent interference with web and network services."
-            ),
-            "asns": [],
-            "source": "OONI Explorer (ooni.org)",
-        })
+        disruptions.append(
+            {
+                "id": f"ooni-{cc.lower()}",
+                "country": cc.upper(),
+                "country_name": info.get("name", cc),
+                "type": "OONI_CENSORSHIP",
+                "severity": sev,
+                "started": meta().get("fetched_at"),
+                "drop_pct": None,
+                "description": (
+                    f"{blocks:,} confirmed OONI censorship/blocking measurements in {info.get('name', cc)}. "
+                    "Probe volunteers reported consistent interference with web and network services."
+                ),
+                "asns": [],
+                "source": "OONI Explorer (ooni.org)",
+            }
+        )
 
     disruptions.sort(key=lambda d: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(d["severity"], 4))
     return disruptions[:40]

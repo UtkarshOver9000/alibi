@@ -18,22 +18,39 @@ from typing import Any
 _UA = "Alibi-SupplyChain/1.0 (+https://github.com/UtkarshOver9000/alibi)"
 
 ECOSYSTEM_MAP = {
-    "pypi": "pypi", "python": "pypi",
-    "npm": "npm", "node": "npm", "javascript": "npm",
-    "go": "go", "golang": "go",
-    "cargo": "cargo", "rust": "cargo",
-    "maven": "maven", "java": "maven",
-    "nuget": "nuget", "csharp": "nuget", "dotnet": "nuget",
-    "hex": "hex", "elixir": "hex",
-    "pub": "pub", "dart": "pub",
-    "rubygems": "rubygems", "ruby": "rubygems",
+    "pypi": "pypi",
+    "python": "pypi",
+    "npm": "npm",
+    "node": "npm",
+    "javascript": "npm",
+    "go": "go",
+    "golang": "go",
+    "cargo": "cargo",
+    "rust": "cargo",
+    "maven": "maven",
+    "java": "maven",
+    "nuget": "nuget",
+    "csharp": "nuget",
+    "dotnet": "nuget",
+    "hex": "hex",
+    "elixir": "hex",
+    "pub": "pub",
+    "dart": "pub",
+    "rubygems": "rubygems",
+    "ruby": "rubygems",
 }
 
 # Maps deps.dev ecosystem name to OSV ecosystem name
 OSV_ECOSYSTEM = {
-    "pypi": "PyPI", "npm": "npm", "go": "Go",
-    "cargo": "crates.io", "maven": "Maven", "nuget": "NuGet",
-    "rubygems": "RubyGems", "pub": "Pub", "hex": "Hex",
+    "pypi": "PyPI",
+    "npm": "npm",
+    "go": "Go",
+    "cargo": "crates.io",
+    "maven": "Maven",
+    "nuget": "NuGet",
+    "rubygems": "RubyGems",
+    "pub": "Pub",
+    "hex": "Hex",
 }
 
 
@@ -112,18 +129,20 @@ def _osv_query(name: str, eco: str, version: str | None = None) -> list[dict[str
                             if evt.get("fixed"):
                                 ranges.append(f"<{evt['fixed']}")
 
-                vulns.append({
-                    "id": v.get("id"),
-                    "summary": v.get("summary", "Security advisory published")[:200],
-                    "details": (v.get("details") or "")[:300],
-                    "published": v.get("published"),
-                    "modified": v.get("modified"),
-                    "severity": severity,
-                    "cvss": cvss_score,
-                    "aliases": v.get("aliases", [])[:5],
-                    "affected_ranges": ranges[:6],
-                    "references": [r2.get("url") for r2 in v.get("references", [])[:3] if r2.get("url")],
-                })
+                vulns.append(
+                    {
+                        "id": v.get("id"),
+                        "summary": v.get("summary", "Security advisory published")[:200],
+                        "details": (v.get("details") or "")[:300],
+                        "published": v.get("published"),
+                        "modified": v.get("modified"),
+                        "severity": severity,
+                        "cvss": cvss_score,
+                        "aliases": v.get("aliases", [])[:5],
+                        "affected_ranges": ranges[:6],
+                        "references": [r2.get("url") for r2 in v.get("references", [])[:3] if r2.get("url")],
+                    }
+                )
             return vulns
     except Exception:
         return []
@@ -169,10 +188,7 @@ def analyze_package(package_name: str, ecosystem: str = "pypi") -> dict[str, Any
                 if isinstance(lic, str) and lic not in licenses:
                     licenses.append(lic)
 
-    has_copyleft = any(
-        any(c in lic.upper() for c in ("GPL", "AGPL", "LGPL"))
-        for lic in licenses
-    )
+    has_copyleft = any(any(c in lic.upper() for c in ("GPL", "AGPL", "LGPL")) for lic in licenses)
     if has_copyleft:
         license_risk = "HIGH (Copyleft — GPL/AGPL)"
     elif licenses:
@@ -216,7 +232,7 @@ def analyze_package(package_name: str, ecosystem: str = "pypi") -> dict[str, Any
     }.get(eco, f"https://deps.dev/{eco}/{urllib.parse.quote(package_name)}")
 
     # Fallback: if deps.dev returned nothing, OSV still has data
-    not_found = (total_versions == 0 and not ver_detail)
+    not_found = total_versions == 0 and not ver_detail
     if not_found and not vulns:
         return {
             "package": package_name,
