@@ -1,22 +1,28 @@
 {
-  "fetched_at": "2026-10-10T05:35:03Z",
+  "fetched_at": "2026-10-31T12:36:20Z",
   "network": {
-    "ranges": 458986,
-    "networks": 79175,
-    "hosting_networks": 195,
-    "reused_from": "2026-10-10T05:35:03Z"
+    "ranges": 459628,
+    "networks": 79393,
+    "hosting_networks": 195
+  },
+  "netrisk": {
+    "weeks": [
+      "2026-05-18",
+      "2026-10-19"
+    ],
+    "networks": 79393
   },
   "breaches": {
-    "breaches": 1024,
-    "accounts": 16293152805,
+    "breaches": 1029,
+    "accounts": 16294564283,
     "how": [
       [
         "Hacked, method not disclosed",
-        767
+        770
       ],
       [
         "Ransomware / extortion",
-        74
+        76
       ],
       [
         "Left open online",
@@ -53,33 +59,33 @@
     ]
   },
   "flaws": {
-    "flaws": 1739,
-    "catalog_version": "2026.10.08",
-    "released": "2026-10-08T20:09:18.9833Z",
-    "epss_date": "2026-10-09",
-    "epss_scored": 1739,
+    "flaws": 1766,
+    "catalog_version": "2026.10.30",
+    "released": "2026-10-30T17:02:45.3665Z",
+    "epss_date": "2026-10-30",
+    "epss_scored": 1765,
     "epss_from_previous_snapshot": false,
     "reused_from": null
   },
   "threats": {
-    "malicious_ips": 8913,
-    "threatfox_iocs_48h": 7242,
-    "urlhaus_urls_30d": 32711,
-    "spamhaus_drop_ranges": 1684,
-    "spamhaus_asn_drop": 431
+    "malicious_ips": 9021,
+    "threatfox_iocs_48h": 7126,
+    "urlhaus_urls_30d": 33683,
+    "spamhaus_drop_ranges": 1756,
+    "spamhaus_asn_drop": 447
   },
-  "threats_fetched_at": "2026-10-10T05:35:03Z",
+  "threats_fetched_at": "2026-10-31T12:36:20Z",
   "cables": {
     "cables": 733,
-    "landing_points": 1926,
+    "landing_points": 1928,
     "landings_without_country": 29
   },
   "states": {
     "states_provinces": 4596
   },
   "heat": {
-    "malware_located": 8913,
-    "malware_total": 8913,
+    "malware_located": 9021,
+    "malware_total": 9021,
     "dns_located": 62607,
     "dns_total": 62607,
     "ipv4_located": 3500527776,
@@ -87,11 +93,11 @@
   },
   "countries": {
     "tor_in_snapshot": true,
-    "tor_exit_relays": 2708,
-    "tor_exit_ips": 1176,
+    "tor_exit_relays": 2761,
+    "tor_exit_ips": 1212,
     "dns_resolvers": 62530,
-    "ooni_countries": 176,
-    "ooni_measurements": 51359858
+    "ooni_countries": 177,
+    "ooni_measurements": 50761256
   },
   "window_ooni": "last 30 days to fetch date",
   "feeds": [
@@ -102,7 +108,7 @@
       "url": "https://haveibeenpwned.com/api/v3/breaches",
       "cadence": "1d",
       "max_age": "7d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -113,7 +119,7 @@
       "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
       "cadence": "1d",
       "max_age": "7d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -124,7 +130,7 @@
       "url": "https://epss.empiricalsecurity.com/epss_scores-current.csv.gz",
       "cadence": "1d",
       "max_age": "3d",
-      "updated": "2026-10-10T05:34:34.123209+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -135,7 +141,7 @@
       "url": "https://iptoasn.com/data/ip2asn-v4.tsv.gz",
       "cadence": "1d",
       "max_age": "14d",
-      "updated": "2026-10-10T05:35:03Z",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -146,7 +152,7 @@
       "url": "https://public-dns.info/nameservers.csv",
       "cadence": "1d",
       "max_age": "14d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -157,7 +163,7 @@
       "url": "https://api.ooni.io/api/v1/aggregation",
       "cadence": "1d",
       "max_age": "7d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -168,7 +174,7 @@
       "url": "https://feodotracker.abuse.ch/downloads/ipblocklist.json",
       "cadence": "1d",
       "max_age": "3d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -179,7 +185,7 @@
       "url": "https://urlhaus.abuse.ch/downloads/csv_recent/",
       "cadence": "1d",
       "max_age": "3d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-21T04:52:21.939963+00:00",
       "optional": false,
       "available": true
     },
@@ -190,7 +196,18 @@
       "url": "https://threatfox.abuse.ch/export/json/recent/",
       "cadence": "1d",
       "max_age": "3d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-21T04:52:21.939963+00:00",
+      "optional": false,
+      "available": true
+    },
+    {
+      "id": "threatfox_full",
+      "name": "abuse.ch ThreatFox full export",
+      "licence": "CC0",
+      "url": "https://threatfox.abuse.ch/export/json/full/",
+      "cadence": "1d",
+      "max_age": "3d",
+      "updated": "2026-10-21T04:52:21.939963+00:00",
       "optional": false,
       "available": true
     },
@@ -201,7 +218,7 @@
       "url": "https://www.spamhaus.org/drop/drop_v4.json",
       "cadence": "1d",
       "max_age": "7d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -212,7 +229,7 @@
       "url": "https://www.spamhaus.org/drop/asndrop.json",
       "cadence": "1d",
       "max_age": "7d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -223,7 +240,7 @@
       "url": "https://www.ransomlook.io/api/last/7",
       "cadence": "1d",
       "max_age": "3d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": false,
       "available": true
     },
@@ -234,7 +251,7 @@
       "url": "https://www.submarinecablemap.com/api/v3/cable/cable-geo.json",
       "cadence": "7d",
       "max_age": "180d",
-      "updated": "2026-10-09T17:32:15.752441+00:00",
+      "updated": "2026-10-30T22:23:30.852878+00:00",
       "optional": false,
       "available": true
     },
@@ -245,7 +262,7 @@
       "url": "https://www.submarinecablemap.com/api/v3/landing-point/landing-point-geo.json",
       "cadence": "7d",
       "max_age": "180d",
-      "updated": "2026-10-09T17:32:20.936898+00:00",
+      "updated": "2026-10-30T22:23:30.852878+00:00",
       "optional": false,
       "available": true
     },
@@ -256,7 +273,7 @@
       "url": "https://download.db-ip.com/free/dbip-city-lite-{yyyy_mm}.csv.gz",
       "cadence": "30d",
       "max_age": "180d",
-      "updated": "2026-10-09T17:40:55.313979+00:00",
+      "updated": "2026-10-09T18:28:30.954418+00:00",
       "optional": false,
       "available": true
     },
@@ -267,7 +284,7 @@
       "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson",
       "cadence": "180d",
       "max_age": "1825d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-09T18:28:30.954418+00:00",
       "optional": false,
       "available": true
     },
@@ -278,64 +295,72 @@
       "url": "https://onionoo.torproject.org/details",
       "cadence": "1d",
       "max_age": "3d",
-      "updated": "2026-10-10T05:35:03.140901+00:00",
+      "updated": "2026-10-31T12:36:20.108702+00:00",
       "optional": true,
       "available": true
     }
   ],
   "files": {
     "bad_ips.json": {
-      "sha256": "aa1c654b965ae03bce93299e86e867acf3320ce0e766e8a6b85f2dcab65068f6",
-      "bytes": 2053459
+      "sha256": "dc43dc21b82f6ddcf75ef150eca125e15344b2da2cd3ea70b04fc972a6be3cb1",
+      "bytes": 2073615
     },
     "breaches.json": {
-      "sha256": "964c62b537437f6089c427b1e0555af02b33105d6ad35ca90bacc3c4cd9b5de1",
-      "bytes": 679598
+      "sha256": "7d8500c2218f5167a03f89216fe411fe77531f911cf1abc7712ddaf55a6423e8",
+      "bytes": 683834
     },
     "cables.json": {
-      "sha256": "a8b2f2c9fbc51a2c4b848d22d2f0f501712fc4e06a004a6da66552c250ce5364",
-      "bytes": 387831
+      "sha256": "9c2a78164bfdb3da7f5ca1c813c25170d90a84f2c88df6a0bc324862021884b6",
+      "bytes": 388147
     },
     "countries.json": {
-      "sha256": "ccafbda986e61b0afc684bc64990cee3f2e413de739a721a0f9dd6af1604829c",
-      "bytes": 52401
+      "sha256": "8b22994a513c47e86a131722a452e5f95d6f7a8dde398e44b09ee44b7782c003",
+      "bytes": 52450
     },
     "drop.npz": {
-      "sha256": "102ea0150113064f0bbad923f5edd719cdc32cace9559d9da3b52ac11d76ec87",
-      "bytes": 10405
+      "sha256": "c4906fb107ffba1fe07c86802d77e3c19c3c70e8bb3a085c31c334d2e0651027",
+      "bytes": 10710
     },
     "events.json": {
-      "sha256": "41f8a46db98c325fd0acbed85154b9a7f8f7c6e5f65b382688a12cdcfecf0ea8",
-      "bytes": 535604
+      "sha256": "9a248ec697e23356a9adc750e95af87722c8b7cb03a146d4e181f57bad57510e",
+      "bytes": 545034
     },
     "flaws.json": {
-      "sha256": "52693261f23230e091d7cf5edaa470496aaa8d565bcadee0db6480d95932df12",
-      "bytes": 628006
+      "sha256": "5abd5dc9db65ab4ed84f6ddd3f1175c058dc026cc2edd715a7d989dd9303ddbc",
+      "bytes": 648638
     },
     "heat.json": {
-      "sha256": "6c4fffd7be2d8a8643a510a18806bbf5ba571e6a197c822865ec5ed2de382f66",
-      "bytes": 258122
+      "sha256": "b9e0e6f267c12725453aa8e95489ed68b1dcf821c0469b56586569008b3fc47f",
+      "bytes": 257664
+    },
+    "netrisk.json": {
+      "sha256": "e99a38b5a3e918f33ef02a6af5e6330bb132435d532b005c3afa85e37c9c50cc",
+      "bytes": 4102
+    },
+    "netrisk.npz": {
+      "sha256": "e02829e808dc6a80b165da76c10397553f1bf256eff4e5de6e9666131c9fa783",
+      "bytes": 383525
     },
     "network.npz": {
-      "sha256": "5fc46e8f27a11d6a74c849955cb2c2effeaf069be09e1610ae79998f43821fff",
-      "bytes": 2293713
+      "sha256": "72d0ca339e48cfd069695a55aab1c3082b83808e1c8e24004a46a601229f4a95",
+      "bytes": 2299586
     },
     "network_names.json": {
-      "sha256": "24dfab95d8b2fb153c5d6090caf10346694cabbdc111a90bc4596c1c968cb6ae",
-      "bytes": 2703538
+      "sha256": "f9953ff93eabe406f8a6dffe33be4b9d6ef511fdb356f4839aefbee9e21b4f85",
+      "bytes": 2713234
     },
     "states.json": {
-      "sha256": "d304c379c063143bbec1dd429ee8effdda6d2e54d6c95031ab46bd240cf27352",
-      "bytes": 2101656
+      "sha256": "c275591381664b55e1632ca404ad5370de18ebff27eeb24da542b45e64a10a88",
+      "bytes": 2101657
     },
     "threats.json": {
-      "sha256": "30dfa4a5b151da5a6a5e4eb3205754cff7114e8eee07ed3478dadd2d1feef36b",
-      "bytes": 6011
+      "sha256": "8a6740d180a765b290227d4bef3d489d7cb2e54776c6485887126cd737bc2d54",
+      "bytes": 5556
     },
     "tor_exits.json": {
-      "sha256": "f7f398651217c73bbfe25abd1831e8f03203e94f731238dba9c0c70f3d32d2a0",
-      "bytes": 20207
+      "sha256": "43ef76872bdec337ffe32aae507d6c8df6ec9f934b4483e10cd647d5f32d7f08",
+      "bytes": 20790
     }
   },
-  "content_hash": "3797604a3c2c6d85583dfe03e836a432cfbcf8cd0ce007bf433f292c36a438cb"
+  "content_hash": "4854c6de03f39d1d2ef2f74e078c00f809357bb25cc71317e5ee138abbd0ae20"
 }
