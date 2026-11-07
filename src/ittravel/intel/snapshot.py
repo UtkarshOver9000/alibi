@@ -838,7 +838,7 @@ def feed_currency(raw: Path) -> list[dict]:
                 "id": f["id"],
                 "name": f["name"],
                 "licence": f["licence"],
-                "url": f["url"].split("?")[0],
+                "url": f["url"].split("?")[0].replace("{abuse_ch_key}", "<key>"),
                 "cadence": f["cadence"],
                 "max_age": f["max_age"],
                 "updated": updated,

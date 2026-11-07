@@ -238,7 +238,9 @@ def test_flaw_priority_is_explained_and_filterable():
     scores = [r["priority"] for r in res["flaws"]]
     assert scores == sorted(scores, reverse=True) and all(0 <= s <= 100 for s in scores)
     top = res["flaws"][0]
-    assert round(sum(res["weights"][k] * v for k, v in top["priority_parts"].items()), 0) == round(top["priority"], 0)
+    # priority is rounded to 0.1 and its parts to 0.001, so compare with a tolerance, not after rounding
+    # both sides (94.505 vs 94.5 rounds to 95 vs 94 and failed the scheduled refresh).
+    assert abs(sum(res["weights"][k] * v for k, v in top["priority_parts"].items()) - top["priority"]) < 0.1
 
 
 def test_readme_numbers_and_sources_match_the_data():

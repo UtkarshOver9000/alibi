@@ -6,6 +6,9 @@ Download every feed listed in sources.yaml into a raw folder.
 Per feed: a timeout, retries with exponential backoff, a descriptive User-Agent, and a
 conditional GET (ETag / If-Modified-Since) so unchanged files aren't downloaded again.
 A feed is skipped while its last success is younger than its cadence (unless --force).
+abuse.ch's URLhaus and ThreatFox exports need a free Auth-Key (auth.abuse.ch) in the URL
+path, read from ABUSE_CH_AUTH_KEY; without it those feeds are skipped, not failed, and the
+key is masked everywhere it could be logged or stored.
 Each download goes to a temporary file and replaces the old copy only when it is complete
 and non-empty, so a failed fetch never destroys the last good file.
 """
@@ -15,6 +18,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import os
 import shutil
 import sys
 import time
@@ -31,20 +35,28 @@ SOURCES = Path(__file__).resolve().parents[3] / "sources.yaml"
 USER_AGENT = "Alibi-threat-intel/4.0 (+https://github.com/UtkarshOver9000/alibi)"
 UNITS = {"m": 60, "h": 3600, "d": 86400}
 NO_RETRY = {400, 401, 403, 404, 410}
+KEY_ENV = "ABUSE_CH_AUTH_KEY"
+KEY_SLOT = "{abuse_ch_key}"
+MASK = "<ABUSE_CH_AUTH_KEY>"
 
 
 def seconds(span: str) -> int:
     return int(span[:-1]) * UNITS[span[-1]]
 
 
-def expand(url: str, now: datetime) -> str:
+def expand(url: str, now: datetime, key: str = MASK) -> str:
     prev_month = now.replace(day=1) - timedelta(days=1)
     return url.format(
         yyyy_mm=now.strftime("%Y-%m"),
         prev_yyyy_mm=prev_month.strftime("%Y-%m"),
         since=(now - timedelta(days=30)).strftime("%Y-%m-%d"),
         until=now.strftime("%Y-%m-%d"),
+        abuse_ch_key=key,
     )
+
+
+def _masked(text: str, key: str) -> str:
+    return text.replace(key, MASK) if key else text
 
 
 def _check_gzip(path: Path) -> None:
@@ -116,15 +128,20 @@ def run(raw: Path, force: bool = False, only: set[str] | None = None, now: datet
                 st["status"] = "fresh, skipped"
                 continue
         st["last_attempt"] = now.isoformat()
-        urls = [expand(feed["url"], now)] + ([expand(feed["fallback_url"], now)] if feed.get("fallback_url") else [])
-        for url in urls:
+        templates = [feed["url"]] + ([feed["fallback_url"]] if feed.get("fallback_url") else [])
+        key = os.environ.get(KEY_ENV, "").strip()
+        if any(KEY_SLOT in t for t in templates) and not key:
+            st["status"], st["error"] = "skipped", f"set {KEY_ENV} to download this feed"
+            continue
+        for template in templates:
+            url = expand(template, now, key or MASK)
             try:
                 status, validators = download(url, dest, st, validate=lambda p, i=feed["id"]: check(i, p), **kw)
             except Exception as e:
-                st["status"], st["error"] = "failed", f"{type(e).__name__}: {e}"[:300]
+                st["status"], st["error"] = "failed", _masked(f"{type(e).__name__}: {e}", key)[:300]
                 continue
             st.update({k: v for k, v in validators.items() if v})
-            st.update(status=status, url=url, last_success=now.isoformat(), bytes=dest.stat().st_size)
+            st.update(status=status, url=_masked(url, key), last_success=now.isoformat(), bytes=dest.stat().st_size)
             st.pop("error", None)
             break
         if st["status"] == "failed" and feed.get("optional"):

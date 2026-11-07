@@ -84,10 +84,10 @@ feeds:
 
   - id: urlhaus
     name: abuse.ch URLhaus recent malware URLs
-    url: https://urlhaus.abuse.ch/downloads/csv_recent/
+    url: https://urlhaus-api.abuse.ch/v2/files/exports/{abuse_ch_key}/recent.csv
     file: urlhaus_recent.csv
     licence: CC0
-    auth: none
+    auth: ABUSE_CH_AUTH_KEY
     cadence: 1d
     max_age: 3d
     parser: snapshot.build_threats
@@ -95,10 +95,10 @@ feeds:
 
   - id: threatfox
     name: abuse.ch ThreatFox recent indicators
-    url: https://threatfox.abuse.ch/export/json/recent/
+    url: https://threatfox-api.abuse.ch/v2/files/exports/{abuse_ch_key}/recent.json
     file: threatfox_recent.json
     licence: CC0
-    auth: none
+    auth: ABUSE_CH_AUTH_KEY
     cadence: 1d
     max_age: 3d
     parser: snapshot.build_threats
@@ -106,10 +106,10 @@ feeds:
 
   - id: threatfox_full
     name: abuse.ch ThreatFox full export
-    url: https://threatfox.abuse.ch/export/json/full/
+    url: https://threatfox-api.abuse.ch/v2/files/exports/{abuse_ch_key}/full.json.zip
     file: threatfox_full.json.zip
     licence: CC0
-    auth: none
+    auth: ABUSE_CH_AUTH_KEY
     cadence: 1d
     max_age: 3d
     parser: snapshot.build_netrisk

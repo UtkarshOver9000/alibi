@@ -1,5 +1,5 @@
 """
-ALIBI 1.0 — The Open-Source Planetary Tech & Defense Terminal.
+Alibi 1.0: open-source threat-intelligence dashboard and API on public security feeds.
 """
 
 from __future__ import annotations
@@ -30,13 +30,12 @@ from .routes import taxii as taxii_routes
 from .routes import terminal as terminal_routes
 
 app = FastAPI(
-    title="ALIBI: Open-Source Planetary Tech & Defense Terminal",
+    title="Alibi: open-source threat-intelligence API",
     description=(
-        "A planetary intelligence platform: a live 3D God's Eye radar across all 4,596 world states, "
-        "an open-source tech Bloomberg Terminal (company ASN footprint, breaches, exploited CVEs), "
-        "a live personal digital footprint & hacker tripwire diagnostic, "
-        "and an active Protective DNS Shield with ML-based DGA sinkholing. "
-        "100% real 2026 data — no synthetic records. "
+        "Threat intelligence built only on public feeds: a 3D globe of attack infrastructure across "
+        "4,596 states and provinces, company and domain lookups (networks, breaches, exploited CVEs), "
+        "IP footprint checks, a DNS shield with blocklists and an entropy heuristic for generated domains, "
+        "and a network-risk model trained on ThreatFox data. "
         "Data: abuse.ch (ThreatFox, URLhaus, Feodo), CISA KEV, FIRST EPSS, HIBP, Spamhaus DROP, "
         "RansomLook, iptoasn, DB-IP, OONI, TeleGeography, Natural Earth."
     ),
