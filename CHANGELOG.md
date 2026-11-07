@@ -153,3 +153,9 @@ Items from the Alibi 1.0 plan (148 items), newest last.
 - Added drop-in Linux nftables packet filter ruleset (`/v1/intel/export/nftables`) (#146).
 - Added Suricata / Snort IDS perimeter detection rules (`/v1/intel/export/suricata`) (#146).
 - Updated Makefile train recipe to target 2026 ThreatFox network-risk trainer.
+
+## 1.0.4 — Feeds and accuracy fixes
+- Read the URLhaus and ThreatFox exports from abuse.ch's keyed v2 endpoints; the old keyless URLs return 410 Gone since late October 2026. The key comes from `ABUSE_CH_AUTH_KEY`, is masked in logs and fetch state, and feeds that need it are skipped when it is unset.
+- Compare the flaw priority with its parts using a tolerance, so a 94.505 vs 94.5 rounding edge no longer fails the scheduled refresh.
+- Remove two Black October CVE IDs that point at unrelated products (CVE-2024-43788 is webpack, CVE-2024-38526 is pdoc, per cve.org).
+- Rewrite the README to describe what ships: the network-risk model with its simple-rule baseline and confidence intervals, no PR-AUC figure that the model card doesn't contain, and the war room labelled as hand-written summaries.

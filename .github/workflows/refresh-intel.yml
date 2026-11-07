@@ -42,6 +42,8 @@ jobs:
           key: intel-raw-${{ github.run_id }}
           restore-keys: intel-raw-
       - name: Download the feeds that are due
+        env:
+          ABUSE_CH_AUTH_KEY: ${{ secrets.ABUSE_CH_AUTH_KEY }}
         run: PYTHONPATH=src python -m ittravel.intel.fetch --raw data/intel ${{ inputs.force && '--force' || '' }}
       - run: PYTHONPATH=src python -m ittravel.intel.snapshot --raw data/intel
       - name: Refresh the README numbers and source table

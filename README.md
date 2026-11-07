@@ -1,142 +1,106 @@
-<p align="center"><img src="docs/img/logo.svg" width="132" alt="Alibi logo: planetary cyber intelligence terminal"></p>
+<p align="center"><img src="docs/img/logo.svg" width="120" alt="Alibi logo"></p>
 
-# ALIBI 1.0: Planetary Tech & Defense Terminal
+# Alibi
 
 [![CI](https://github.com/UtkarshOver9000/alibi/actions/workflows/ci.yml/badge.svg)](https://github.com/UtkarshOver9000/alibi/actions/workflows/ci.yml)
-[![Refresh](https://github.com/UtkarshOver9000/alibi/actions/workflows/refresh-intel.yml/badge.svg)](https://github.com/UtkarshOver9000/alibi/actions/workflows/refresh-intel.yml)
-[![Uptime](https://github.com/UtkarshOver9000/alibi/actions/workflows/uptime.yml/badge.svg)](https://github.com/UtkarshOver9000/alibi/actions/workflows/uptime.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> **ALIBI is the open-source planetary intelligence terminal for engineers — a free, real-data alternative to Palantir's God's Eye view and Bloomberg's $30,000/year corporate terminal.**
+Alibi is an open-source threat-intelligence dashboard and API built only on public security
+feeds. It refreshes 18 feeds (abuse.ch, CISA KEV, FIRST EPSS, Spamhaus, Have I Been Pwned,
+OONI, TeleGeography and others), maps them on a 3D globe, and scores every network on how
+likely it is to host a new attack server next week.
 
----
+**Live demo:** https://impossible-travel-auth-anomaly-engi.vercel.app
 
-## The Core Promise
+## What it does
 
-- **100% Real 2026 Data.** Zero synthetic records. Zero honeypot approximations. Zero outdated static datasets.
-- **Free Forever.** Open-source MIT license.
-- **Built for Engineers & Leaders:** Ethical hackers, DevOps/cloud architects, ML engineers, and technical leadership.
+- **Threat globe.** Botnet controllers and malware servers (abuse.ch Feodo, ThreatFox, URLhaus)
+  placed with DB-IP geolocation, OONI censorship results, undersea cables and Tor exits, across
+  4,596 states and provinces.
+- **Company and domain lookup.** Networks (ASNs) and upstream providers, subdomains from
+  Certificate Transparency (crt.sh), exploited CVEs (CISA KEV with FIRST EPSS scores), breach
+  history (HIBP), ransomware leak-site mentions (RansomLook) and an A–F posture grade.
+- **IP footprint.** Network type (home ISP, hosting, VPN, Tor), matches against abuse.ch and
+  Spamhaus DROP lists, and the nearest cable landing point.
+- **DNS shield.** Blocklist lookups plus a Shannon-entropy heuristic for algorithmically
+  generated domains, served over DNS-over-HTTPS (RFC 8484).
+- **Supply-chain check.** Known vulnerabilities and licence risk for PyPI, npm, Go, Cargo and
+  Maven packages, from deps.dev and OSV.
+- **Breach and password checks.** Breach exposure for a domain, and a k-anonymity password
+  check that only ever sends the first 5 characters of a SHA-1 hash.
+- **Canary tokens.** Decoy AWS keys, database URIs and tracking pixels that record the caller's
+  IP and network when someone uses them.
+- **Remediation cards.** Rule-based fix steps and firewall snippets (iptables, nftables,
+  Suricata, Windows Firewall) for CVEs, IPs and suspicious domains.
+- **Exports.** STIX 2.1, MISP, TAXII 2.1, CSV, plain blocklists, nftables and Suricata rules,
+  plus Prometheus metrics.
 
----
+**About the "Black October" war room.** That tab holds 27 hand-written summaries of incidents
+from October 2026. They are editorial write-ups, not one of the data feeds below, and they don't
+yet link their sources, so check each one against the vendor's advisory before relying on it.
 
-## Core Pillars (Alibi 1.0)
+## The network-risk model
 
-### 1. 🌐 God's Eye 3D Planetary Radar
-A full-screen 3D WebGL Earth (NASA Blue Marble) mapping all **4,596 world states and provinces**:
-- **Active Malware C2 & Botnets:** Live botnet controllers and malware distribution points (abuse.ch Feodo, ThreatFox, URLhaus) mapped via DB-IP.
-- **Censorship & Internet Interference:** Confirmed web blocks and tampering telemetry from OONI Explorer.
-- **Submarine Cable Infrastructure:** 733 global undersea fiber-optic cable routes and landing stations (TeleGeography).
-- **State Cyber Threat Density Score:** Hostile nodes per million IP addresses.
+**Question:** how likely is an address in a given network to become a new attack server next week?
 
-### 2. 💼 Open-Source Tech Bloomberg Terminal
-Search any company, domain, or technology (`Cloudflare`, `CrowdStrike`, `Stripe`, `your-org.com`):
-- **Corporate Cloud Footprint:** BGP ASNs, upstream ISPs, and network ranges.
-- **Attack Surface Discovery:** Real-time Certificate Transparency log enumeration (`crt.sh`) for subdomains.
-- **Exploited Flaws & Weaponization:** CISA Known Exploited Vulnerabilities (KEV) cross-referenced with FIRST EPSS exploit probabilities.
-- **Breach History:** Have I Been Pwned breach archives with total accounts exposed and leaked data types.
-- **Ransomware Watch:** Active extortion claims from RansomLook.
-- **Security Health Grade (A–F):** 100-point posture scoring with an executive summary.
+- **Data:** the abuse.ch ThreatFox full export (CC0): 13,142 attack-server IPs across 79,175 networks.
+- **Split by time, not at random:** train 1 Jun to 10 Aug 2026, validate 10 Aug to 7 Sep, test
+  7 Sep to 12 Oct. The test weeks come strictly after everything the model saw.
+- **Model choice:** a Poisson GLM on 8 features (recent servers per million addresses, malware
+  families, weeks since the last server, network size, hosting or not). It beat gradient boosting
+  on validation (ROC-AUC 0.966 vs 0.892), so the simpler model ships.
 
-### 3. ⚡ Live Personal Footprint & Hacker Tripwire
-Real-time network diagnostic for any client or target IP:
-- **Routing & ASN Intelligence:** Upstream carrier, ASN classification (residential ISP vs cloud hosting / VPN vs Tor exit).
-- **Threat Feed Interception:** Instant check against abuse.ch threat lists and Spamhaus DROP criminal network blocks.
-- **Subsea Infrastructure Adjacency:** Nearest physical undersea cable landing station.
-- **Tripwire Diagnostic:** Flags connections routing through malicious subnets, hostile anonymizers, or compromised nodes.
+| Held-out test: 395,875 network-weeks, 3,646 new attack servers | Model | Simple rule (servers per address, last 4 weeks) |
+|---|---|---|
+| ROC-AUC | **0.964** | 0.880 |
+| New attack servers caught in the riskiest 1% of address space | **69%** (95% CI 61–78%) | 68% |
+| New attack servers caught in the riskiest 0.1% of address space | **39%** (95% CI 33–51%) | 38% |
 
-### 4. 🛡️ Active Protective DNS Shield & RFC 8484 DoH
-Protective DNS endpoint with machine learning DGA detection and DNS-over-HTTPS:
-- **DGA Botnet Entropy Scorer:** Shannon entropy scoring flags algorithmic botnet domains (entropy > 3.65 on domain labels).
-- **Instant Sinkhole Response:** Sinkholes confirmed malware C2 and phishing domains to `0.0.0.0` in <15ms.
-- **RFC 8484 Standard:** Full binary wire format (`application/dns-message`) and JSON DoH at `/dns-query`.
+**What this means:** at the very top of the list the simple rule is almost as good, because
+networks that hosted attack servers recently tend to host them again. The model's gain is in
+ranking the long tail of networks. Confidence intervals come from 100 bootstrap resamples. The
+full model card is in [`netrisk_card.json`](src/ittravel/artifacts/netrisk_card.json).
 
-### 5. 📡 Planetary BGP & Internet Disruption Radar
-Real-time macro-level internet blackout and outage telemetry:
-- **CAIDA IODA & RIPE RIS:** Monitors routing table withdrawals, BGP leaks, and country-scale transit anomalies.
-- **Impact Analysis:** Severity scoring, transit volume loss percentage, and affected ASNs.
+**Earlier versions** scored logins with account-takeover models trained on the RBA dataset
+(Wiefling et al., CC BY 4.0). That data dates from 2020–21, its values are synthesised from real
+logins, and only 22 takeovers fell in the test window, so Alibi 1.0 retired those models instead
+of advertising their scores.
 
-### 6. 📦 Open-Source Supply Chain Analyzer
-Deep package dependency and license audit via Google deps.dev & OSV.dev:
-- **Multi-Ecosystem:** PyPI, npm, Go, Cargo (Rust), and Maven (Java).
-- **Vulnerability Mapping:** Direct correlation with published OSV and GHSA security advisories.
-- **License Risk Analysis:** Detects copyleft / restrictive licenses (AGPL, GPL, LGPL) vs permissive licenses.
-
-### 7. 🕵️ Corporate Breach & Credential Leak Hunter
-Audit domain employee breach exposures and credential safety:
-- **Zero-Knowledge k-Anonymity:** Hashes passwords client-side via SHA-1; only transmits the 5-character prefix (never transmits plaintext or full hashes).
-- **Ransomware Extortion Tracking:** Cross-references corporate domains against active ransomware gang extortion catalogs.
-
-### 8. 🪤 Canary Tokens & Hacker Tripwires
-Deploy deceptive decoy assets into private git repos, configuration files, and databases:
-- **Decoy Formats:** Fake AWS IAM access keys (`.aws/credentials`), Postgres database URIs, and 1x1 tracking beacons.
-- **Instant Intrusion Alarms:** Captures intruder IP, ASN, carrier, reverse geolocation, and user-agent the instant a token is probed.
-
-### 9. 🤖 AI Plain-English Defense Remediation Engine
-Deterministic, actionable mitigations for CVEs, malicious IPs, and DGA botnets:
-- **3-Bullet Executive Card:** What happened, Who is impacted, What to do right now.
-- **60-Second Shell Fixes:** Drop-in shell commands for `iptables`, `nftables`, Suricata, and Windows Firewall.
-
-### 10. 🏭 Global AI & Compute Infrastructure Atlas
-Planetary geospatial registry of frontier computing hubs:
-- **Hyperscaler Superclusters:** AWS US-East, GCP Council Bluffs, Azure Boydton, Meta Prineville, OCI Abilene.
-- **Semiconductor Fabs:** TSMC Tainan, ASML Veldhoven, Intel Chandler.
-- **Integrated Globe Layer:** Visualized directly on the 3D planetary globe.
-
----
-
-## Open Protocols & Standards
+## Open protocols and standards
 
 | Standard | Endpoint | Description |
 |:---|:---|:---|
-| **OASIS TAXII 2.1** | `/taxii2/`, `/taxii2/v21/collections/` | Industry standard threat intelligence sharing for SIEMs |
-| **OASIS STIX 2.1** | `/v1/intel/export/stix` | Complete STIX 2.1 JSON indicator bundle |
-| **MISP 2.4** | `/v1/intel/export/misp` | Standard MISP Event JSON export |
-| **RFC 8484 DoH** | `/dns-query` | DNS-over-HTTPS binary wire and JSON resolution |
-| **Prometheus** | `/metrics` | RFC 8967 text exposition metrics for Grafana / Datadog |
-| **Linux nftables** | `/v1/intel/export/nftables` | Drop-in packet filtering ruleset |
-| **Suricata / Snort** | `/v1/intel/export/suricata` | Intrusion Detection System perimeter rules |
-
----
+| **OASIS TAXII 2.1** | `/taxii2/`, `/taxii2/v21/collections/` | Threat-intelligence sharing for SIEMs |
+| **OASIS STIX 2.1** | `/v1/intel/export/stix` | STIX 2.1 JSON indicator bundle |
+| **MISP 2.4** | `/v1/intel/export/misp` | MISP event JSON export |
+| **RFC 8484 DoH** | `/dns-query` | DNS-over-HTTPS, binary wire format and JSON |
+| **Prometheus** | `/metrics` | Prometheus text exposition format for Grafana or Datadog |
+| **Linux nftables** | `/v1/intel/export/nftables` | Drop-in packet-filter ruleset |
+| **Suricata / Snort** | `/v1/intel/export/suricata` | IDS rules for the current indicators |
 
 ## Python SDK (`AlibiClient`)
 
-ALIBI includes a zero-dependency, type-safe Python client library:
+A small typed client with no extra dependencies:
 
 ```python
 from ittravel import AlibiClient
 
 client = AlibiClient()
 
-# Check IP footprint & threat posture
 footprint = client.footprint("1.1.1.1")
 print(f"Tier: {footprint.threat_tier}, ASN: {footprint.network.get('asn')}")
 
-# Analyze company tech attack surface
 company = client.company_tech("Cloudflare")
-print(f"Health Grade: {company.security_grade}, ASNs: {len(company.asns)}")
+print(f"Grade: {company.security_grade}, ASNs: {len(company.asns)}")
 
-# Inspect domain via DNS Shield
 shield = client.dns_shield("xq7b9kz1m0w8p2r4j6f.biz")
 print(f"Verdict: {shield.verdict}, Reason: {shield.dga_reason}")
 
-# Analyze open-source package supply chain
 pkg = client.supply_chain("fastapi", ecosystem="pypi")
 print(f"Status: {pkg.security_status}, License: {pkg.license_risk}")
 ```
 
----
-
-## Real 2026 ThreatFox Network-Risk Model
-
-ALIBI ships with a production-grade machine learning model (`netrisk_model.joblib`) trained on **real 2026 ThreatFox telemetry**:
-- **Task:** Predict the risk percentile of any autonomous system (ASN) hosting new malicious infrastructure.
-- **ROC-AUC:** **0.964** · **PR-AUC:** **0.941**
-- **Evaluation:** Out-of-time evaluation against real-world network routing allocations.
-- Detailed metrics, calibration curves, and feature importance available in [`netrisk_card.json`](src/ittravel/artifacts/netrisk_card.json).
-
----
-
-## Live Numbers
+## Live numbers
 
 <!-- numbers:start -->
 Numbers from the snapshot of **10 October 2026** (the live app shows the current ones):
@@ -153,9 +117,10 @@ Numbers from the snapshot of **10 October 2026** (the live app shows the current
 
 ---
 
-## Data Pipeline & Sources
+## Data sources
 
-> **Every single number, indicator, and record in ALIBI comes from a verified, publicly available, live 2026 data pipeline.**
+Every feed is public. The URLhaus and ThreatFox exports need a free abuse.ch Auth-Key
+(`ABUSE_CH_AUTH_KEY`, from https://auth.abuse.ch); without it the fetcher skips those two feeds.
 
 <!-- sources:start -->
 | Source | Licence / terms | Refreshed | Used for |
@@ -184,32 +149,32 @@ Generated from [`sources.yaml`](sources.yaml) by `scripts/readme_numbers.py`.
 
 ---
 
-## API Reference
+## API reference
 
 All read endpoints are keyless, rate-limited, and return an `X-Data-As-Of` timestamp header.
 
 | Method | Endpoint | Description |
 |:---|:---|:---|
-| `GET` | `/v1/terminal/company?q=` | Bloomberg-style company tech, breach, and KEV dossier |
-| `GET` | `/v1/terminal/footprint?ip=` | Live visitor digital footprint & tripwire diagnostic |
+| `GET` | `/v1/terminal/company?q=` | Company networks, subdomains, exploited CVEs and breaches |
+| `GET` | `/v1/terminal/footprint?ip=` | Network type and threat-list matches for an IP |
 | `GET` | `/v1/shield/check?domain=` | Domain threat check with Shannon entropy DGA scoring |
 | `GET, POST` | `/dns-query` | RFC 8484 DNS-over-HTTPS wire-format and JSON resolver |
-| `GET` | `/v1/intel/disruptions` | Planetary BGP and CAIDA IODA internet outages |
+| `GET` | `/v1/intel/disruptions` | Internet outages from CAIDA IODA and RIPE RIS |
 | `GET` | `/v1/supply-chain/analyze` | Open-source supply chain risk (deps.dev + OSV) |
-| `GET` | `/v1/terminal/leak-hunter` | Corporate domain employee breach & ransomware audit |
+| `GET` | `/v1/terminal/leak-hunter` | Breach and ransomware exposure for a domain |
 | `GET` | `/v1/terminal/pwned-password`| Zero-knowledge k-Anonymity password check |
 | `POST` | `/v1/canary/generate` | Generate decoy AWS keys, DB URIs, and tripwires |
 | `GET` | `/v1/canary/alarms` | Intrusion detection alarms from triggered decoys |
-| `GET` | `/v1/remediation/explain` | AI plain-English remediation card & 60s shell commands |
-| `GET` | `/v1/intel/compute-atlas` | Global AI superclusters and semiconductor fab atlas |
+| `GET` | `/v1/remediation/explain` | Rule-based remediation card with firewall snippets |
+| `GET` | `/v1/intel/compute-atlas` | Curated list of major data centres and chip fabs |
 | `GET` | `/taxii2/` | OASIS TAXII 2.1 Server Discovery |
 | `GET` | `/taxii2/v21/collections/` | OASIS TAXII 2.1 Collections list |
-| `GET` | `/metrics` | Prometheus metrics (RFC 8967) for platform health |
-| `GET` | `/v1/intel/state/{code}` | Full 4,596-state intelligence dossier |
-| `GET` | `/v1/intel/overview` | Planetary headline numbers across all feeds |
+| `GET` | `/metrics` | Prometheus metrics for platform health |
+| `GET` | `/v1/intel/state/{code}` | Everything known about one state or province |
+| `GET` | `/v1/intel/overview` | Headline numbers across all feeds |
 | `GET` | `/v1/intel/search?q=` | Unified search across IPs, CVEs, companies, domains |
 | `GET` | `/v1/intel/ip/{ip}` | Deep IP analysis (ASN, Tor, hosting, malware, DROP) |
-| `GET` | `/v1/intel/export/stix` | Planetary STIX 2.1 threat intelligence bundle |
+| `GET` | `/v1/intel/export/stix` | STIX 2.1 bundle of current indicators |
 | `GET` | `/v1/intel/export/misp` | Standard MISP 2.4 Event JSON export |
 | `GET` | `/v1/intel/export/csv` | Clean CSV export of active threat indicators |
 | `GET` | `/v1/intel/export/blocklist.txt`| Plaintext IP blocklist for firewalls and proxies |
@@ -221,7 +186,7 @@ Interactive Swagger documentation is available locally at `http://localhost:8000
 
 ---
 
-## Quick Start
+## Quick start
 
 ```bash
 # Clone the repository
@@ -234,15 +199,18 @@ uv sync --all-extras
 # Start the development server
 uv run uvicorn ittravel.api.app:app --reload --port 8000
 
-# Run full test suite
+# Run the test suite
 uv run pytest
+
+# Refresh the feeds (URLhaus and ThreatFox need ABUSE_CH_AUTH_KEY, see .env.example)
+make fetch
 ```
 
-Visit `http://localhost:8000` in your browser to explore the interactive terminal and 3D globe.
+Then open `http://localhost:8000`.
 
 ---
 
-## Project Documentation
+## Project documentation
 
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)

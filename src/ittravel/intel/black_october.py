@@ -187,7 +187,7 @@ BLACK_OCTOBER_INCIDENTS: dict[str, dict[str, Any]] = {
         "name": "LiteLLM AI Proxy Credential Exfiltration",
         "tier": "year_level",
         "target": "LiteLLM AI Gateway & Key Orchestrator",
-        "cve": "CVE-2024-43788",
+        "cve": None,  # was CVE-2024-43788; per cve.org, CVE-2024-43788 is a webpack DOM-clobbering bug, not LiteLLM
         "cvss": 8.8,
         "date": "2026-10-22",
         "summary": "Critical vulnerability in AI model proxy gateway allowing attackers to bypass authentication and dump master OpenAI, Anthropic, and Bedrock enterprise API keys.",
@@ -443,7 +443,7 @@ BLACK_OCTOBER_INCIDENTS: dict[str, dict[str, Any]] = {
         "name": "Siemens Industrial Control Systems (ICS) Telemetry Targeting",
         "tier": "critical_infra",
         "target": "Siemens S7 PLC & Industrial Edge Telemetry",
-        "cve": "CVE-2024-38526",
+        "cve": None,  # was CVE-2024-38526; per cve.org, CVE-2024-38526 is a pdoc CDN bug, not Siemens ICS
         "cvss": 8.1,
         "date": "2026-10-23",
         "summary": "Probing campaigns targeted exposed Siemens industrial telemetry interfaces across European manufacturing and utility plants.",
